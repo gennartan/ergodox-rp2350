@@ -1,0 +1,3 @@
+mainmenu "my app menu"
+
+source "Kconfig.zephyr"
