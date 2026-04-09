@@ -1,20 +1,10 @@
 / {
-    chosen {
-        zephyr,shell-uart = &uart0;
+    hid_dev_0: hid_dev_0 {
+        compatible = "zephyr,hid-device";
+        label = "HID0";
+        protocol-code = "keyboard";
+        in-report-size = <64>;
+        in-polling-period-us = <1000>;
     };
 
 };
-
-&pinctrl {
-    uart0_default: uart0_default {
-        group1 {
-            pinmux = <UART0_TX_P0>;
-        };
-
-        group2 {
-            pinmux = <UART0_RX_P1>;
-            input-enable;
-        };
-    };
-};
-

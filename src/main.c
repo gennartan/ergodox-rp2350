@@ -1,166 +1,159 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/uart.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/input/input.h>
 
-#include <string.h>
+#include <zephyr/usb/usbd.h>
+#include <zephyr/usb/class/usbd_hid.h>
 
-/* change this to any other UART peripheral if desired */
-#define UART_DEVICE_NODE DT_CHOSEN(zephyr_shell_uart)
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-#define MSG_SIZE 32
+static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 
-/* queue to store up to 10 messages (aligned to 4-byte boundary) */
-K_MSGQ_DEFINE(uart_msgq, MSG_SIZE, 10, 4);
+enum kb_report_idx {
+    KB_KEY_CODE1,
+    KB_KEY_CODE2,
+    KB_REPORT_COUNT,
+};
 
-static const struct device *const uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
-
-/* receive buffer used in UART ISR callback */
-static char rx_buf[MSG_SIZE];
-static int rx_buf_pos;
-
-/*
- * Read characters from UART until line end is detected. Afterwards push the
- * data to the message queue.
- */
-void serial_cb(const struct device *dev, void *user_data)
+struct kb_event
 {
-	uint8_t c;
+    uint16_t code;
+    int32_t value;
+};
 
-	if (!uart_irq_update(uart_dev)) {
-		return;
+UDC_STATIC_BUF_DEFINE(report, KB_REPORT_COUNT);
+static uint32_t kb_duration;
+static bool kb_ready;
+
+static void kb_iface_ready(const struct device *dev, const bool ready)
+{
+	LOG_INF("HID device %s interface is %s",
+		dev->name, ready ? "ready" : "not ready");
+	kb_ready = ready;
+}
+
+static int kb_get_report(const struct device *dev,
+			 const uint8_t type, const uint8_t id, const uint16_t len,
+			 uint8_t *const buf)
+{
+	LOG_WRN("Get Report not implemented, Type %u ID %u", type, id);
+
+	return 0;
+}
+
+static int kb_set_report(const struct device *dev,
+			 const uint8_t type, const uint8_t id, const uint16_t len,
+			 const uint8_t *const buf)
+{
+	if (type != HID_REPORT_TYPE_OUTPUT)
+    {
+		LOG_WRN("Unsupported report type");
+		return -ENOTSUP;
 	}
 
-	if (!uart_irq_rx_ready(uart_dev)) {
-		return;
+	return 0;
+}
+
+/* Idle duration is stored but not used to calculate idle reports. */
+static void kb_set_idle(const struct device *dev,
+			const uint8_t id, const uint32_t duration)
+{
+	LOG_INF("Set Idle %u to %u", id, duration);
+	kb_duration = duration;
+}
+
+static uint32_t kb_get_idle(const struct device *dev, const uint8_t id)
+{
+	LOG_INF("Get Idle %u to %u", id, kb_duration);
+	return kb_duration;
+}
+
+static void kb_set_protocol(const struct device *dev, const uint8_t proto)
+{
+	LOG_INF("Protocol changed to %s",
+		proto == 0U ? "Boot Protocol" : "Report Protocol");
+}
+
+static void kb_output_report(const struct device *dev, const uint16_t len,
+			     const uint8_t *const buf)
+{
+	LOG_HEXDUMP_DBG(buf, len, "o.r.");
+	kb_set_report(dev, HID_REPORT_TYPE_OUTPUT, 0U, len, buf);
+}
+
+struct hid_device_ops kb_ops = {
+	.iface_ready = kb_iface_ready,
+	.get_report = kb_get_report,
+	.set_report = kb_set_report,
+	.set_idle = kb_set_idle,
+	.get_idle = kb_get_idle,
+	.set_protocol = kb_set_protocol,
+	.output_report = kb_output_report,
+};
+
+static void msg_cb(struct usbd_context *const usbd_ctx,
+                   const struct usbd_msg *const msg)
+{
+	LOG_INF("USBD message: %s", usbd_msg_type_string(msg->type));
+
+	if (msg->type == USBD_MSG_CONFIGURATION)
+    {
+		LOG_INF("\tConfiguration value %d", msg->status);
 	}
 
-	/* read until FIFO empty */
-	while (uart_fifo_read(uart_dev, &c, 1) == 1) {
-		if ((c == '\n' || c == '\r') && rx_buf_pos > 0) {
-			/* terminate string */
-			rx_buf[rx_buf_pos] = '\0';
-
-			/* if queue is full, message is silently dropped */
-			k_msgq_put(&uart_msgq, &rx_buf, K_NO_WAIT);
-
-			/* reset the buffer (it was copied to the msgq) */
-			rx_buf_pos = 0;
-		} else if (rx_buf_pos < (sizeof(rx_buf) - 1)) {
-			rx_buf[rx_buf_pos++] = c;
+	if (usbd_can_detect_vbus(usbd_ctx))
+    {
+		if (msg->type == USBD_MSG_VBUS_READY)
+        {
+			if (usbd_enable(usbd_ctx))
+            {
+				LOG_ERR("Failed to enable device support");
+			}
 		}
-		/* else: characters beyond buffer size are dropped */
+
+		if (msg->type == USBD_MSG_VBUS_REMOVED)
+        {
+			if (usbd_disable(usbd_ctx))
+            {
+				LOG_ERR("Failed to disable device support");
+			}
+		}
 	}
 }
-
-/*
- * Print a null-terminated string character by character to the UART interface
- */
-void print_uart(char *buf)
-{
-	int msg_len = strlen(buf);
-
-	for (int i = 0; i < msg_len; i++) {
-		uart_poll_out(uart_dev, buf[i]);
-	}
-}
-
-struct k_work_q my_work_q;
-struct k_work my_work;
-
-#define MY_STACK_SIZE 500
-#define MY_PRIORITY 5
-
-extern void thread1_callback(void *, void *, void *)
-{
-	char tx_buf[MSG_SIZE];
-
-	print_uart("Hello! I'm your echo bot.\r\n");
-	print_uart("Tell me something and press enter:\r\n");
-
-	/* indefinitely wait for input from the user */
-	while (k_msgq_get(&uart_msgq, &tx_buf, K_FOREVER) == 0) {
-		//print_uart("1/Echo: ");
-		//print_uart(tx_buf);
-		//print_uart("\r\n");
-        k_work_submit(&tx_buf);
-	}
-}
-
-extern void thread2_callback(void *, void *, void *)
-{
-	char tx_buf[MSG_SIZE];
-
-	print_uart("Hello! I'm your echo bot.\r\n");
-	print_uart("Tell me something and press enter:\r\n");
-
-	/* indefinitely wait for input from the user */
-	while (k_msgq_get(&uart_msgq, &tx_buf, K_FOREVER) == 0) {
-		print_uart("2:Echo: ");
-		print_uart(tx_buf);
-		print_uart("\r\n");
-	}
-}
-
-void my_print(struct k_work *item)
-{
-}
-
-#define MY_STACK_SIZE 500
-#define MY_PRIORITY 5
-
-K_THREAD_STACK_DEFINE(my_main_stack, MY_STACK_SIZE);
-struct k_thread my_thread1_data;
-
-K_THREAD_STACK_DEFINE(my_stack1_area, MY_STACK_SIZE);
-struct k_thread my_thread1_data;
-
-K_THREAD_STACK_DEFINE(my_stack2_area, MY_STACK_SIZE);
-struct k_thread my_thread2_data;
 
 int main(void)
 {
-    if (!device_is_ready(uart_dev)) {
-        printk("UART device not found!");
-        return 0;
-    }
+    LOG_INF("Initialize ergodox custom keyboard");
 
-    /* configure interrupt and callback to receive data */
-    int ret = uart_irq_callback_user_data_set(uart_dev, serial_cb, NULL);
+    struct usbd_context *usbd;
+    const struct device *hid_dev;
+    int ret;
 
-    if (ret < 0) {
-        if (ret == -ENOTSUP) {
-            printk("Interrupt-driven UART API support not enabled\n");
-        } else if (ret == -ENOSYS) {
-            printk("UART device does not support interrupt-driven API\n");
-        } else {
-            printk("Error setting UART callback: %d\n", ret);
-        }
-        return 0;
-    }
-    uart_irq_rx_enable(uart_dev);
-
-    k_work_queue_init(&my_work_q);
-    k_work_queue_start(&my_work_q, my_main_stack,
-            K_THREAD_STACK_SIZEOF(my_main_stack), MY_PRIORITY,
-            NULL);
-    k_work_init(&my_work, my_print);
-
-    k_tid_t my_tid1 = k_thread_create(&my_thread1_data, my_stack1_area,
-            K_THREAD_STACK_SIZEOF(my_stack1_area),
-            thread1_callback,
-            NULL, NULL, NULL,
-            MY_PRIORITY, 0, K_NO_WAIT);
-
-    //k_tid_t my_tid2 = k_thread_create(&my_thread2_data, my_stack2_area,
-    //        K_THREAD_STACK_SIZEOF(my_stack2_area),
-    //        thread2_callback,
-    //        NULL, NULL, NULL,
-    //        MY_PRIORITY+1, 0, K_NO_WAIT);
-
-    while (true)
+    hid_dev = DEVICE_DT_GET_ONE(zephyr_hid_device);
+    if (!device_is_ready(hid_dev))
     {
-        k_sleep(K_MSEC(10000));
-		print_uart("Sleeping....\n\r");
+        LOG_ERR("Failed to find HID device in device tree");
+        return -EIO;
     }
+
+    ret = hid_device_register(hid_dev,
+                              hid_report_desc, sizeof(hid_report_desc),
+                              &kb_ops);
+    if (ret != 0)
+    {
+        LOG_ERR("Failed to initialize HID device");
+        return ret;
+    }
+
+    ret = usbd_init(&usbd);
+    if (ret != 0)
+    {
+        LOG_ERR("Failed to initiliaze USB device");
+        return ret;
+    }
+
+
     return 0;
 }
