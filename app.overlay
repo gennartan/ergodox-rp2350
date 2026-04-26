@@ -1,10 +1,51 @@
 / {
-    hid_dev_0: hid_dev_0 {
-        compatible = "zephyr,hid-device";
-        label = "HID0";
-        protocol-code = "keyboard";
-        in-report-size = <64>;
-        in-polling-period-us = <1000>;
+    // Define keyboard key GPIOs
+    keys: keys {
+        compatible = "gpio-keys";
+
+        key1: key1 { gpios = <&gpio0 1 GPIO_ACTIVE_LOW>; };
+        key2: key2 { gpios = <&gpio0 2 GPIO_ACTIVE_LOW>; };
+        key3: key3 { gpios = <&gpio0 3 GPIO_ACTIVE_LOW>; };
+        key4: key4 { gpios = <&gpio0 4 GPIO_ACTIVE_LOW>; };
+        key5: key5 { gpios = <&gpio0 5 GPIO_ACTIVE_LOW>; };
+        key6: key6 { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; };
+        key7: key7 { gpios = <&gpio0 7 GPIO_ACTIVE_LOW>; };
+        key8: key8 { gpios = <&gpio0 8 GPIO_ACTIVE_LOW>; };
+        key9: key9 { gpios = <&gpio0 9 GPIO_ACTIVE_LOW>; };
+        key10: key10 { gpios = <&gpio0 10 GPIO_ACTIVE_LOW>; };
+        key11: key11 { gpios = <&gpio0 11 GPIO_ACTIVE_LOW>; };
+        key12: key12 { gpios = <&gpio0 12 GPIO_ACTIVE_LOW>; };
+        key13: key13 { gpios = <&gpio0 13 GPIO_ACTIVE_LOW>; };
+        key14: key14 { gpios = <&gpio0 14 GPIO_ACTIVE_LOW>; };
+        key15: key15 { gpios = <&gpio0 15 GPIO_ACTIVE_LOW>; };
+        key16: key16 { gpios = <&gpio0 16 GPIO_ACTIVE_LOW>; };
+        key17: key17 { gpios = <&gpio0 17 GPIO_ACTIVE_LOW>; };
+        key18: key18 { gpios = <&gpio0 18 GPIO_ACTIVE_LOW>; };
+        key19: key19 { gpios = <&gpio0 19 GPIO_ACTIVE_LOW>; };
+        key20: key20 { gpios = <&gpio0 20 GPIO_ACTIVE_LOW>; };
+        key21: key21 { gpios = <&gpio0 21 GPIO_ACTIVE_LOW>; };
+        key22: key22 { gpios = <&gpio0 22 GPIO_ACTIVE_LOW>; };
+        key23: key23 { gpios = <&gpio0 23 GPIO_ACTIVE_LOW>; };
+        key24: key24 { gpios = <&gpio0 24 GPIO_ACTIVE_LOW>; };
+        key25: key25 { gpios = <&gpio0 25 GPIO_ACTIVE_LOW>; };
+        key26: key26 { gpios = <&gpio0 26 GPIO_ACTIVE_LOW>; };
+        key27: key27 { gpios = <&gpio0 27 GPIO_ACTIVE_LOW>; };
+        key28: key28 { gpios = <&gpio0 28 GPIO_ACTIVE_LOW>; };
+        key29: key29 { gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; };
+        key30: key30 { gpios = <&gpio0 30 GPIO_ACTIVE_LOW>; };
+        key31: key31 { gpios = <&gpio0 31 GPIO_ACTIVE_LOW>; };
+        key32: key32 { gpios = <&gpio0_hi 0 GPIO_ACTIVE_LOW>; };
+        key33: key33 { gpios = <&gpio0_hi 1 GPIO_ACTIVE_LOW>; };
+        key34: key34 { gpios = <&gpio0_hi 2 GPIO_ACTIVE_LOW>; };
+        key35: key35 { gpios = <&gpio0_hi 3 GPIO_ACTIVE_LOW>; };
+        key36: key36 { gpios = <&gpio0_hi 4 GPIO_ACTIVE_LOW>; };
+        key37: key37 { gpios = <&gpio0_hi 5 GPIO_ACTIVE_LOW>; };
+        key38: key38 { gpios = <&gpio0_hi 6 GPIO_ACTIVE_LOW>; };
+        key39: key39 { gpios = <&gpio0_hi 7 GPIO_ACTIVE_LOW>; };
     };
 
+    chosen {
+        zephyr,console = &uart0;
+        zephyr,shell-uart = &uart0;
+    };
 };

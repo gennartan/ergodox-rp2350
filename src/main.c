@@ -1,159 +1,172 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/input/input.h>
-
-#include <zephyr/usb/usbd.h>
-#include <zephyr/usb/class/usbd_hid.h>
-
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/usb/class/usb_hid.h>
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-static const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
+LOG_MODULE_REGISTER(kbd);
 
-enum kb_report_idx {
-    KB_KEY_CODE1,
-    KB_KEY_CODE2,
-    KB_REPORT_COUNT,
+#define KEYS 39
+
+// Individual key GPIOs for the electronic design
+static const struct gpio_dt_spec keys[KEYS] = {
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key1), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key2), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key3), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key4), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key5), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key6), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key7), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key8), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key9), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key10), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key11), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key12), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key13), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key14), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key15), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key16), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key17), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key18), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key19), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key20), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key21), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key22), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key23), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key24), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key25), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key26), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key27), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key28), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key29), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key30), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key31), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key32), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key33), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key34), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key35), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key36), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key37), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key38), gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(key39), gpios),
 };
 
-struct kb_event
-{
-    uint16_t code;
-    int32_t value;
+// Keymap - HID keycodes for each input position.
+// Adjust this array to match your electronic design key assignments.
+static const uint8_t keymap[KEYS] = {
+    HID_KEY_Q, HID_KEY_W, HID_KEY_E, HID_KEY_R, HID_KEY_T, HID_KEY_Y,
+    HID_KEY_A, HID_KEY_S, HID_KEY_D, HID_KEY_F, HID_KEY_G, HID_KEY_H,
+    HID_KEY_Z, HID_KEY_X, HID_KEY_C, HID_KEY_V, HID_KEY_B, HID_KEY_N,
+    HID_KEY_ESC, HID_KEY_TAB, HID_KEY_SPACE, HID_KEY_ENTER, HID_KEY_BACKSPACE, HID_KEY_LEFT,
+    HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-UDC_STATIC_BUF_DEFINE(report, KB_REPORT_COUNT);
-static uint32_t kb_duration;
-static bool kb_ready;
+const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 
-static void kb_iface_ready(const struct device *dev, const bool ready)
+static const struct device *hid_dev;
+
+// Current key states (pressed/released)
+static bool key_states[KEYS] = {0};
+
+// Debounce timer
+static struct k_timer debounce_timer;
+static bool debounce_active = false;
+
+// HID report buffer
+static uint8_t hid_report[8] = {0};
+static uint8_t modifier_report = 0;
+
+static void send_hid_report(void)
 {
-	LOG_INF("HID device %s interface is %s",
-		dev->name, ready ? "ready" : "not ready");
-	kb_ready = ready;
+    hid_report[0] = modifier_report;
+    hid_int_ep_write(hid_dev, hid_report, sizeof(hid_report), NULL);
 }
 
-static int kb_get_report(const struct device *dev,
-			 const uint8_t type, const uint8_t id, const uint16_t len,
-			 uint8_t *const buf)
+static void update_key(uint8_t index, bool pressed)
 {
-	LOG_WRN("Get Report not implemented, Type %u ID %u", type, id);
+    uint8_t keycode = keymap[index];
 
-	return 0;
+    if (pressed && !key_states[index]) {
+        // Key pressed
+        key_states[index] = true;
+        hid_report[2] = keycode;
+        send_hid_report();
+        LOG_INF("Key pressed: index %d, keycode 0x%02x", index + 1, keycode);
+
+        // Immediately send release report to make it a "tap"
+        hid_report[2] = 0;
+        send_hid_report();
+        LOG_INF("Key released: index %d", index + 1);
+
+        // Reset state immediately (key handled as tap, not hold)
+        key_states[index] = false;
+    }
 }
 
-static int kb_set_report(const struct device *dev,
-			 const uint8_t type, const uint8_t id, const uint16_t len,
-			 const uint8_t *const buf)
+static void scan_keys(void)
 {
-	if (type != HID_REPORT_TYPE_OUTPUT)
-    {
-		LOG_WRN("Unsupported report type");
-		return -ENOTSUP;
-	}
+    if (debounce_active) {
+        return;
+    }
 
-	return 0;
+    for (int i = 0; i < KEYS; i++) {
+        bool pressed = gpio_pin_get_dt(&keys[i]);
+        update_key(i, pressed);
+    }
 }
 
-/* Idle duration is stored but not used to calculate idle reports. */
-static void kb_set_idle(const struct device *dev,
-			const uint8_t id, const uint32_t duration)
+static void debounce_timer_handler(struct k_timer *timer)
 {
-	LOG_INF("Set Idle %u to %u", id, duration);
-	kb_duration = duration;
+    debounce_active = false;
 }
 
-static uint32_t kb_get_idle(const struct device *dev, const uint8_t id)
+static void key_scan_thread_callback(void)
 {
-	LOG_INF("Get Idle %u to %u", id, kb_duration);
-	return kb_duration;
+    while (1) {
+        scan_keys();
+        k_sleep(K_MSEC(10));
+    }
 }
 
-static void kb_set_protocol(const struct device *dev, const uint8_t proto)
-{
-	LOG_INF("Protocol changed to %s",
-		proto == 0U ? "Boot Protocol" : "Report Protocol");
-}
-
-static void kb_output_report(const struct device *dev, const uint16_t len,
-			     const uint8_t *const buf)
-{
-	LOG_HEXDUMP_DBG(buf, len, "o.r.");
-	kb_set_report(dev, HID_REPORT_TYPE_OUTPUT, 0U, len, buf);
-}
-
-struct hid_device_ops kb_ops = {
-	.iface_ready = kb_iface_ready,
-	.get_report = kb_get_report,
-	.set_report = kb_set_report,
-	.set_idle = kb_set_idle,
-	.get_idle = kb_get_idle,
-	.set_protocol = kb_set_protocol,
-	.output_report = kb_output_report,
-};
-
-static void msg_cb(struct usbd_context *const usbd_ctx,
-                   const struct usbd_msg *const msg)
-{
-	LOG_INF("USBD message: %s", usbd_msg_type_string(msg->type));
-
-	if (msg->type == USBD_MSG_CONFIGURATION)
-    {
-		LOG_INF("\tConfiguration value %d", msg->status);
-	}
-
-	if (usbd_can_detect_vbus(usbd_ctx))
-    {
-		if (msg->type == USBD_MSG_VBUS_READY)
-        {
-			if (usbd_enable(usbd_ctx))
-            {
-				LOG_ERR("Failed to enable device support");
-			}
-		}
-
-		if (msg->type == USBD_MSG_VBUS_REMOVED)
-        {
-			if (usbd_disable(usbd_ctx))
-            {
-				LOG_ERR("Failed to disable device support");
-			}
-		}
-	}
-}
+K_THREAD_DEFINE(key_scan_thread, 1024, key_scan_thread_callback, NULL, NULL, NULL, 5, 0, 0);
 
 int main(void)
 {
-    LOG_INF("Initialize ergodox custom keyboard");
-
-    struct usbd_context *usbd;
-    const struct device *hid_dev;
     int ret;
 
-    hid_dev = DEVICE_DT_GET_ONE(zephyr_hid_device);
-    if (!device_is_ready(hid_dev))
-    {
-        LOG_ERR("Failed to find HID device in device tree");
-        return -EIO;
+    LOG_INF("Keyboard scan start");
+
+    hid_dev = device_get_binding("HID_0");
+    if (!hid_dev) {
+        LOG_ERR("Cannot get HID device");
+        return -1;
     }
 
-    ret = hid_device_register(hid_dev,
-                              hid_report_desc, sizeof(hid_report_desc),
-                              &kb_ops);
-    if (ret != 0)
-    {
-        LOG_ERR("Failed to initialize HID device");
-        return ret;
+    usb_hid_register_device(hid_dev,
+        hid_report_desc,
+        sizeof(hid_report_desc),
+        NULL);
+
+    usb_hid_init(hid_dev);
+    usb_enable(NULL);
+
+    for (int i = 0; i < KEYS; i++) {
+        ret = gpio_pin_configure_dt(&keys[i], GPIO_INPUT | GPIO_PULL_UP);
+        if (ret < 0) {
+            LOG_ERR("Failed to configure key %d: %d", i + 1, ret);
+            return ret;
+        }
     }
 
-    ret = usbd_init(&usbd);
-    if (ret != 0)
-    {
-        LOG_ERR("Failed to initiliaze USB device");
-        return ret;
-    }
+    k_timer_init(&debounce_timer, debounce_timer_handler, NULL);
 
+    LOG_INF("Keyboard scan initialized");
+
+    while (1) {
+        k_sleep(K_SECONDS(1));
+    }
 
     return 0;
 }
