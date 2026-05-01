@@ -79,16 +79,21 @@ static const struct keyboard_action simple_layers[KEYBOARD_LAYER_COUNT][KEYBOARD
     },
 };
 
+#pragma GCC diagnostic ignored "-Wunused-const-variable="
 static const struct keyboard_layout simple_layout = {
     .name = "simple",
     .layer_count = KEYBOARD_LAYER_COUNT,
     .layers = simple_layers,
 };
+#pragma GCC diagnostic pop
 
 const struct keyboard_layout *keyboard_layout_get_selected(void)
 {
 #if defined(CONFIG_ERGODOX_KEYBOARD_LAYOUT_SIMPLE)
     return &simple_layout;
+#elif defined(CONFIG_ERGODOX_KEYBOARD_LAYOUT_CUSTOM)
+#include "custom_layout.c"
+    return &custom_layout;
 #else
     return &simple_layout;
 #endif

@@ -9,6 +9,11 @@ config ERGODOX_KEYBOARD_LAYOUT_SIMPLE
     help
       Default QWERTY-style layout with navigation, symbol, and function layers.
 
+config ERGODOX_KEYBOARD_LAYOUT_CUSTOM
+    bool "My custom layout"
+    help
+      Custom layout
+
 endchoice
 
 source "Kconfig.zephyr"
