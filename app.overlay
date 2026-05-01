@@ -76,3 +76,22 @@
         zephyr,shell-uart = &uart0;
     };
 };
+
+&pinctrl {
+    uart0_debug_probe: uart0_debug_probe {
+        group1 {
+            pinmux = <UART0_TX_P44>;
+        };
+        group2 {
+            pinmux = <UART0_RX_P45>;
+            input-enable;
+        };
+    };
+};
+
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart0_debug_probe>;
+    pinctrl-names = "default";
+};
