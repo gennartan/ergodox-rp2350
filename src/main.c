@@ -4,6 +4,7 @@
 #include <zephyr/usb/usbd.h>
 #include <zephyr/usb/class/usbd_hid.h>
 #include <zephyr/logging/log.h>
+#include <string.h>
 
 LOG_MODULE_REGISTER(kbd);
 
@@ -21,6 +22,7 @@ static const struct gpio_dt_spec leds[LEDS] = {
 };
 
 #define KEYS 39
+#define KEY_DEBOUNCE_MS 5
 
 // Individual key GPIOs for the electronic design
 static const struct gpio_dt_spec keys[KEYS] = {
@@ -95,9 +97,13 @@ USBD_CONFIGURATION_DEFINE(ergodox_fs_config, 0, 50, &ergodox_fs_desc);
 // Current key states (pressed/released)
 static bool key_states[KEYS] = {0};
 
-// Debounce timer
-static struct k_timer debounce_timer;
-static bool debounce_active = false;
+struct key_irq {
+    struct gpio_callback callback;
+    struct k_work_delayable work;
+    uint8_t index;
+};
+
+static struct key_irq key_irqs[KEYS];
 
 // HID report buffer
 UDC_STATIC_BUF_DEFINE(hid_report, 8);
@@ -283,59 +289,57 @@ static void send_hid_report(void)
     }
 }
 
+static void build_key_report(void)
+{
+    uint8_t report_index = 2;
+
+    memset(&hid_report[2], 0, 6);
+
+    for (int i = 0; i < KEYS && report_index < 8; i++) {
+        if (key_states[i] && keymap[i] != 0) {
+            hid_report[report_index++] = keymap[i];
+        }
+    }
+}
+
 static void update_key(uint8_t index, bool pressed)
 {
     uint8_t keycode = keymap[index];
 
-    if (pressed && !key_states[index]) {
-        // Key pressed
-        key_states[index] = true;
-        hid_report[2] = keycode;
-        send_hid_report();
-        LOG_INF("Key pressed: index %d, keycode 0x%02x", index + 1, keycode);
-
-        // Immediately send release report to make it a "tap"
-        hid_report[2] = 0;
-        send_hid_report();
-        LOG_INF("Key released: index %d", index + 1);
-
-        // Reset state immediately (key handled as tap, not hold)
-        key_states[index] = false;
-    }
-}
-
-static void scan_keys(void)
-{
-    if (debounce_active) {
+    if (pressed == key_states[index]) {
         return;
     }
 
-    for (int i = 0; i < KEYS; i++) {
-        bool pressed = gpio_pin_get_dt(&keys[i]);
-        update_key(i, pressed);
-    }
+    key_states[index] = pressed;
+    build_key_report();
+    send_hid_report();
+
+    LOG_INF("Key %s: index %d, keycode 0x%02x",
+        pressed ? "pressed" : "released", index + 1, keycode);
 }
 
-static void debounce_timer_handler(struct k_timer *timer)
+static void key_work_handler(struct k_work *work)
 {
-    debounce_active = false;
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct key_irq *key_irq = CONTAINER_OF(dwork, struct key_irq, work);
+    bool pressed = gpio_pin_get_dt(&keys[key_irq->index]);
+
+    update_key(key_irq->index, pressed);
 }
 
-static void key_scan_thread_callback(void)
+static void key_gpio_callback(const struct device *port,
+    struct gpio_callback *callback, gpio_port_pins_t pins)
 {
-    while (1) {
-        scan_keys();
-        k_sleep(K_MSEC(10));
-    }
-}
+    struct key_irq *key_irq = CONTAINER_OF(callback, struct key_irq, callback);
 
-K_THREAD_DEFINE(key_scan_thread, 1024, key_scan_thread_callback, NULL, NULL, NULL, 5, 0, 0);
+    k_work_reschedule(&key_irq->work, K_MSEC(KEY_DEBOUNCE_MS));
+}
 
 int main(void)
 {
     int ret;
 
-    LOG_INF("Keyboard scan start");
+    LOG_INF("Keyboard interrupt setup start");
 
     ret = init_usb_device();
     if (ret != 0) {
@@ -348,7 +352,29 @@ int main(void)
             LOG_ERR("Failed to configure key %d: %d", i + 1, ret);
             return ret;
         }
+
+        key_irqs[i].index = i;
+        k_work_init_delayable(&key_irqs[i].work, key_work_handler);
+        gpio_init_callback(&key_irqs[i].callback, key_gpio_callback,
+            BIT(keys[i].pin));
+
+        ret = gpio_add_callback(keys[i].port, &key_irqs[i].callback);
+        if (ret < 0) {
+            LOG_ERR("Failed to add key %d callback: %d", i + 1, ret);
+            return ret;
+        }
+
+        ret = gpio_pin_interrupt_configure_dt(&keys[i], GPIO_INT_EDGE_BOTH);
+        if (ret < 0) {
+            LOG_ERR("Failed to enable key %d interrupt: %d", i + 1, ret);
+            return ret;
+        }
+
+        key_states[i] = gpio_pin_get_dt(&keys[i]);
     }
+
+    build_key_report();
+    send_hid_report();
 
     for (int i = 0; i < LEDS; i++) {
         ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_ACTIVE);
@@ -358,9 +384,7 @@ int main(void)
         }
     }
 
-    k_timer_init(&debounce_timer, debounce_timer_handler, NULL);
-
-    LOG_INF("Keyboard scan initialized");
+    LOG_INF("Keyboard interrupts initialized");
 
     bool led_state = false;
     for (int i = 0; i < LEDS; i++) {
