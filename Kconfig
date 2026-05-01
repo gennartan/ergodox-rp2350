@@ -1,3 +1,14 @@
 mainmenu "Ergodox custom main menu"
 
+choice ERGODOX_KEYBOARD_LAYOUT
+    prompt "Keyboard layout"
+    default ERGODOX_KEYBOARD_LAYOUT_SIMPLE
+
+config ERGODOX_KEYBOARD_LAYOUT_SIMPLE
+    bool "Simple layered layout"
+    help
+      Default QWERTY-style layout with navigation, symbol, and function layers.
+
+endchoice
+
 source "Kconfig.zephyr"

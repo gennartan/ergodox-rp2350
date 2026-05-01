@@ -4,7 +4,8 @@
 #include <zephyr/usb/usbd.h>
 #include <zephyr/usb/class/usbd_hid.h>
 #include <zephyr/logging/log.h>
-#include <string.h>
+
+#include "keyboard_layout.h"
 
 LOG_MODULE_REGISTER(kbd);
 
@@ -21,11 +22,10 @@ static const struct gpio_dt_spec leds[LEDS] = {
     GPIO_DT_SPEC_GET(LED3_NODE, gpios),
 };
 
-#define KEYS 39
 #define KEY_DEBOUNCE_MS 5
 
 // Individual key GPIOs for the electronic design
-static const struct gpio_dt_spec keys[KEYS] = {
+static const struct gpio_dt_spec keys[KEYBOARD_KEY_COUNT] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(key1), gpios),
     GPIO_DT_SPEC_GET(DT_NODELABEL(key2), gpios),
     GPIO_DT_SPEC_GET(DT_NODELABEL(key3), gpios),
@@ -67,17 +67,6 @@ static const struct gpio_dt_spec keys[KEYS] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(key39), gpios),
 };
 
-// Keymap - HID keycodes for each input position.
-// Adjust this array to match your electronic design key assignments.
-static const uint8_t keymap[KEYS] = {
-    HID_KEY_Q, HID_KEY_W, HID_KEY_E, HID_KEY_R, HID_KEY_T, HID_KEY_Y,
-    HID_KEY_A, HID_KEY_S, HID_KEY_D, HID_KEY_F, HID_KEY_G, HID_KEY_H,
-    HID_KEY_Z, HID_KEY_X, HID_KEY_C, HID_KEY_V, HID_KEY_B, HID_KEY_N,
-    HID_KEY_ESC, HID_KEY_TAB, HID_KEY_SPACE, HID_KEY_ENTER, HID_KEY_BACKSPACE, HID_KEY_LEFT,
-    HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
-
 const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 
 static const struct device *hid_dev;
@@ -94,20 +83,17 @@ USBD_DESC_PRODUCT_DEFINE(ergodox_product, "Ergodox Custom Keyboard");
 USBD_DESC_CONFIG_DEFINE(ergodox_fs_desc, "FS Configuration");
 USBD_CONFIGURATION_DEFINE(ergodox_fs_config, 0, 50, &ergodox_fs_desc);
 
-// Current key states (pressed/released)
-static bool key_states[KEYS] = {0};
-
 struct key_irq {
     struct gpio_callback callback;
     struct k_work_delayable work;
     uint8_t index;
 };
 
-static struct key_irq key_irqs[KEYS];
+static struct key_irq key_irqs[KEYBOARD_KEY_COUNT];
+static struct keyboard_runtime keyboard;
 
 // HID report buffer
-UDC_STATIC_BUF_DEFINE(hid_report, 8);
-static uint8_t modifier_report = 0;
+UDC_STATIC_BUF_DEFINE(hid_report, KEYBOARD_HID_REPORT_SIZE);
 
 
 static void kb_iface_ready(const struct device *dev, const bool ready)
@@ -282,40 +268,28 @@ static void send_hid_report(void)
         return;
     }
 
-    hid_report[0] = modifier_report;
-    ret = hid_device_submit_report(hid_dev, 8, hid_report);
+    ret = hid_device_submit_report(hid_dev, KEYBOARD_HID_REPORT_SIZE,
+        hid_report);
     if (ret != 0) {
         LOG_ERR("Failed to submit HID report: %d", ret);
     }
 }
 
-static void build_key_report(void)
-{
-    uint8_t report_index = 2;
-
-    memset(&hid_report[2], 0, 6);
-
-    for (int i = 0; i < KEYS && report_index < 8; i++) {
-        if (key_states[i] && keymap[i] != 0) {
-            hid_report[report_index++] = keymap[i];
-        }
-    }
-}
-
 static void update_key(uint8_t index, bool pressed)
 {
-    uint8_t keycode = keymap[index];
+    const struct keyboard_action *action;
 
-    if (pressed == key_states[index]) {
+    if (!keyboard_runtime_handle_key(&keyboard, index, pressed)) {
         return;
     }
 
-    key_states[index] = pressed;
-    build_key_report();
+    keyboard_runtime_build_hid_report(&keyboard, hid_report);
     send_hid_report();
 
-    LOG_INF("Key %s: index %d, keycode 0x%02x",
-        pressed ? "pressed" : "released", index + 1, keycode);
+    action = keyboard_runtime_pressed_action(&keyboard, index);
+    LOG_INF("Key %s: index %d, keycode 0x%02x, layers 0x%08x",
+        pressed ? "pressed" : "released", index + 1, action->keycode,
+        keyboard_runtime_active_layers(&keyboard));
 }
 
 static void key_work_handler(struct k_work *work)
@@ -341,12 +315,15 @@ int main(void)
 
     LOG_INF("Keyboard interrupt setup start");
 
+    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected());
+    LOG_INF("Keyboard layout: %s", keyboard.layout->name);
+
     ret = init_usb_device();
     if (ret != 0) {
         return ret;
     }
 
-    for (int i = 0; i < KEYS; i++) {
+    for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
         ret = gpio_pin_configure_dt(&keys[i], GPIO_INPUT | GPIO_PULL_UP);
         if (ret < 0) {
             LOG_ERR("Failed to configure key %d: %d", i + 1, ret);
@@ -369,11 +346,10 @@ int main(void)
             LOG_ERR("Failed to enable key %d interrupt: %d", i + 1, ret);
             return ret;
         }
-
-        key_states[i] = gpio_pin_get_dt(&keys[i]);
+        keyboard_runtime_handle_key(&keyboard, i, gpio_pin_get_dt(&keys[i]));
     }
 
-    build_key_report();
+    keyboard_runtime_build_hid_report(&keyboard, hid_report);
     send_hid_report();
 
     for (int i = 0; i < LEDS; i++) {
