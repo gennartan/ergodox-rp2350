@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import ctypes.util
 import json
+import math
 import os
 import re
 import sys
@@ -32,7 +33,8 @@ except ImportError:
 Signal = QtCore.Signal if hasattr(QtCore, "Signal") else QtCore.pyqtSignal
 
 
-KEY_COUNT = 39
+KEY_COUNT = 38
+HANDS = ["right", "left"]
 LAYERS = ["BASE", "NAV", "SYMBOL", "FN"]
 ACTION_TYPES = [
     "transparent",
@@ -83,15 +85,137 @@ MODIFIERS = [
     ("Right GUI", "HID_KBD_MODIFIER_RIGHT_UI"),
 ]
 
-KEY_POSITIONS = [
-    (0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5),
-    (1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5),
-    (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 5),
-    (0, 8), (0, 9), (0, 10), (0, 11), (0, 12), (0, 13),
-    (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13),
-    (3, 4), (3, 5), (3, 8), (3, 9), (4, 4), (4, 5),
-    (4, 8), (4, 9), (5, 6),
+KEY_UNIT = 58
+KEY_GAP = 8
+BOARD_WIDTH = 620
+BOARD_HEIGHT = 480
+
+
+@dataclass(frozen=True)
+class KeyPlacement:
+    key_index: int
+    x: float
+    y: float
+    w: float = 1.0
+    h: float = 1.0
+    rotation: float = 0.0
+
+
+ColumnKey = tuple[int, float, float]
+ColumnSpec = tuple[float, float, list[ColumnKey]]
+
+
+RIGHT_COLUMN_SPECS: list[ColumnSpec] = [
+    # x, y, [(key index, width units, height units), ...]
+    # Change the key index to move a GPIO-backed key to another physical spot.
+    (124, 30, [
+        (0, 1.0, 1.0),
+        (1, 1.0, 1.5),
+        (2, 1.0, 1.5),
+    ]),
+    (198, 30, [
+        (3, 1.0, 1.0),
+        (4, 1.0, 1.0),
+        (5, 1.0, 1.0),
+        (6, 1.0, 1.0),
+    ]),
+    (272, 25, [
+        (7, 1.0, 1.0),
+        (8, 1.0, 1.0),
+        (9, 1.0, 1.0),
+        (10, 1.0, 1.0),
+        (11, 1.0, 1.0),
+    ]),
+    (346, 20, [
+        (12, 1.0, 1.0),
+        (13, 1.0, 1.0),
+        (14, 1.0, 1.0),
+        (15, 1.0, 1.0),
+        (16, 1.0, 1.0),
+    ]),
+    (420, 25, [
+        (17, 1.0, 1.0),
+        (18, 1.0, 1.0),
+        (19, 1.0, 1.0),
+        (20, 1.0, 1.0),
+        (21, 1.0, 1.0),
+    ]),
+    (494, 30, [
+        (22, 1.0, 1.0),
+        (23, 1.0, 1.0),
+        (24, 1.0, 1.0),
+        (25, 1.0, 1.0),
+        (26, 1.0, 1.0),
+    ]),
+    (568, 30, [
+        (27, 1.5, 1.0),
+        (28, 1.5, 1.0),
+        (29, 1.5, 1.0),
+        (30, 1.5, 1.0),
+        (31, 1.0, 1.0),
+    ]),
 ]
+
+def rotate_key(key: KeyPlacement, pivot_x, pivot_y, angle_degrees):
+    angle_rad = math.radians(angle_degrees)
+
+    # Original coordinates
+    x, y = key.x, key.y
+
+    # Step 1: translate to origin (pivot becomes 0,0)
+    tx = x - pivot_x
+    ty = y - pivot_y
+
+    # Step 2: rotate
+    rx = tx * math.cos(angle_rad) - ty * math.sin(angle_rad)
+    ry = tx * math.sin(angle_rad) + ty * math.cos(angle_rad)
+
+    # Step 3: translate back
+    new_x = rx + pivot_x
+    new_y = ry + pivot_y
+
+    # Return a new KeyPlacement (keeping other fields the same)
+    return KeyPlacement(
+        key.key_index,
+        new_x,
+        new_y,
+        key.w,
+        key.h,
+        key.rotation + angle_degrees # or update if needed
+    )
+
+RIGHT_THUMB_SPECS = [rotate_key(key, 0, 300, 0) for key in [
+    KeyPlacement(32, 66, 300, 1.0, 1.0, 0),
+    KeyPlacement(33, 0, 300, 1.0, 1.0, 0),
+    KeyPlacement(34, 0, 366, 1.0, 1.0, 0),
+    KeyPlacement(35, 0, 432, 1.0, 1.0, 0),
+    KeyPlacement(36, 66, 374, 1.0, 2.0, 0),
+    KeyPlacement(37, 132, 374, 1.0, 2.0, 0),
+]]
+
+
+def make_right_placements() -> list[KeyPlacement]:
+    placements: list[KeyPlacement] = []
+
+    for x, y, keys in RIGHT_COLUMN_SPECS:
+        current_y = y
+        for key_index, width, height in keys:
+            placements.append(KeyPlacement(key_index, x, current_y, width, height))
+            current_y += height * KEY_UNIT + KEY_GAP
+
+    placements.extend(RIGHT_THUMB_SPECS)
+
+    keys = sorted(placement.key_index for placement in placements)
+    expected = list(range(KEY_COUNT))
+    if keys != expected:
+        raise ValueError(
+            f"Right-hand placement must contain each key index 0..{KEY_COUNT - 1} once; got {keys}"
+        )
+
+    return placements
+
+
+KEY_PLACEMENTS_RIGHT = make_right_placements()
 
 
 def configure_qt_platform(platform: str) -> None:
@@ -129,6 +253,7 @@ def empty_action(layer: str) -> dict[str, Any]:
 def default_layout() -> dict[str, Any]:
     return {
         "name": "custom",
+        "hand": "right",
         "layers": {
             layer: [empty_action(layer) for _ in range(KEY_COUNT)]
             for layer in LAYERS
@@ -161,6 +286,9 @@ def load_layout(path: Path | None) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     layout = default_layout()
     layout["name"] = data.get("name", layout["name"])
+    layout["hand"] = data.get("hand", layout["hand"])
+    if layout["hand"] not in HANDS:
+        layout["hand"] = "right"
 
     for layer in LAYERS:
         source = data.get("layers", {}).get(layer, [])
@@ -221,8 +349,32 @@ def short_modifier(modifier: str) -> str:
     )
 
 
+def short_gpio(gpio: str) -> str:
+    parts = gpio.split()
+    if len(parts) >= 2:
+        return f"{parts[0].upper()} {parts[1]}"
+    return gpio
+
+
 def layer_enum(layer: str) -> str:
     return f"KEYBOARD_LAYER_{layer}"
+
+
+def key_placements(hand: str) -> list[KeyPlacement]:
+    if hand == "left":
+        return [
+            KeyPlacement(
+                placement.key_index,
+                BOARD_WIDTH - placement.x - placement.w * KEY_UNIT,
+                placement.y,
+                placement.w,
+                placement.h,
+                -placement.rotation,
+            )
+            for placement in KEY_PLACEMENTS_RIGHT
+        ]
+
+    return KEY_PLACEMENTS_RIGHT
 
 
 def action_to_c(action: dict[str, Any]) -> str:
@@ -251,6 +403,7 @@ def export_c(layout: dict[str, Any]) -> str:
     lines = [
         "#include \"keyboard_layout.h\"",
         "",
+        f"/* Generated layout: {layout['name']} ({layout.get('hand', 'right')} half, {KEY_COUNT} keys). */",
         f"static const struct keyboard_action {c_name}_layers[KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {{",
     ]
 
@@ -284,7 +437,8 @@ class KeyButton(QtWidgets.QPushButton):
         super().__init__()
         self.info = info
         self.setCheckable(True)
-        self.setMinimumSize(76, 58)
+        self.setMinimumSize(1, 1)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         self.clicked.connect(lambda: self.selected.emit(self.info.index))
 
 
@@ -309,21 +463,35 @@ class Configurator(QtWidgets.QMainWindow):
         outer = QtWidgets.QHBoxLayout(root)
 
         left = QtWidgets.QVBoxLayout()
+
+        selector_row = QtWidgets.QHBoxLayout()
+        selector_row.addWidget(QtWidgets.QLabel("Half"))
+        self.hand_selector = QtWidgets.QComboBox()
+        self.hand_selector.addItems([hand.title() for hand in HANDS])
+        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.hand_selector.currentIndexChanged.connect(self.on_hand_changed)
+        selector_row.addWidget(self.hand_selector)
+        selector_row.addStretch(1)
+        left.addLayout(selector_row)
+
         self.layer_tabs = QtWidgets.QTabBar()
         for layer in LAYERS:
             self.layer_tabs.addTab(layer.title())
         self.layer_tabs.currentChanged.connect(self.on_layer_changed)
         left.addWidget(self.layer_tabs)
 
-        board = QtWidgets.QGridLayout()
-        board.setHorizontalSpacing(8)
-        board.setVerticalSpacing(8)
-        for info, (row, col) in zip(self.key_infos, KEY_POSITIONS):
-            button = KeyButton(info)
-            button.selected.connect(self.select_key)
-            self.buttons.append(button)
-            board.addWidget(button, row, col)
-        left.addLayout(board)
+        self.board_box = QtWidgets.QGroupBox()
+        board_box_layout = QtWidgets.QVBoxLayout(self.board_box)
+        self.board_scene = QtWidgets.QGraphicsScene(self)
+        self.board_view = QtWidgets.QGraphicsView(self.board_scene)
+        self.board_view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        self.board_view.setMinimumSize(BOARD_WIDTH + 40, BOARD_HEIGHT + 40)
+        self.board_view.setSceneRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT)
+        self.board_view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.board_view.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        board_box_layout.addWidget(self.board_view)
+        self.render_keyboard()
+        left.addWidget(self.board_box)
         left.addStretch(1)
 
         right = self.build_editor()
@@ -393,6 +561,28 @@ class Configurator(QtWidgets.QMainWindow):
 
         return panel
 
+    def render_keyboard(self) -> None:
+        self.board_scene.clear()
+        self.buttons = []
+        self.board_box.setTitle(f"{self.layout['hand'].title()} half, {KEY_COUNT} keys")
+
+        for placement in key_placements(self.layout["hand"]):
+            info = self.key_infos[placement.key_index]
+            button = KeyButton(info)
+            button.setFixedSize(
+                int(placement.w * KEY_UNIT),
+                int(placement.h * KEY_UNIT),
+            )
+            button.selected.connect(self.select_key)
+            self.buttons.append(button)
+
+            proxy = self.board_scene.addWidget(button)
+            proxy.setPos(placement.x, placement.y)
+            proxy.setTransformOriginPoint(button.width() / 2, button.height() / 2)
+            proxy.setRotation(placement.rotation)
+
+        self.refresh_buttons()
+
     def current_action(self) -> dict[str, Any]:
         return self.layout["layers"][self.current_layer][self.current_key]
 
@@ -415,6 +605,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.current_layer = LAYERS[index]
         self.refresh_buttons()
         self.select_key(self.current_key)
+
+    def on_hand_changed(self, index: int) -> None:
+        self.layout["hand"] = HANDS[index]
+        self.render_keyboard()
+        self.select_key(min(self.current_key, KEY_COUNT - 1))
+        self.refresh_preview()
 
     def load_action_to_editor(self, action: dict[str, Any]) -> None:
         self.block_editor_signals(True)
@@ -461,7 +657,7 @@ class Configurator(QtWidgets.QMainWindow):
         for button in self.buttons:
             action = self.layout["layers"][self.current_layer][button.info.index]
             button.setText(
-                f"{button.info.label}\n{action_label(action)}\n{button.info.gpio}"
+                f"{button.info.label}\n{action_label(action)}\n{short_gpio(button.info.gpio)}"
             )
 
     def refresh_preview(self) -> None:
@@ -488,7 +684,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.layout = default_layout()
         self.layout_path = None
         self.layout_name.setText(self.layout["name"])
-        self.refresh_buttons()
+        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.render_keyboard()
         self.select_key(0)
 
     def open_json(self) -> None:
@@ -500,7 +697,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.layout_path = Path(path)
         self.layout = load_layout(self.layout_path)
         self.layout_name.setText(self.layout["name"])
-        self.refresh_buttons()
+        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.render_keyboard()
         self.select_key(self.current_key)
 
     def save_json(self) -> None:
@@ -545,6 +743,31 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("Ergodox Custom Keyboard Configurator")
+    app.setStyleSheet("""
+        QMainWindow { background: #f6f7f9; }
+        QGroupBox {
+            font-weight: 600;
+            border: 1px solid #c8ced8;
+            border-radius: 8px;
+            margin-top: 10px;
+            background: #eef2f6;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 12px;
+            padding: 0 6px;
+        }
+        QPushButton {
+            border: 1px solid #aab3c1;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 4px;
+        }
+        QPushButton:checked {
+            border: 2px solid #2d6cdf;
+            background: #dbe8ff;
+        }
+    """)
     window = Configurator(repo_root, args.layout)
     window.show()
     return app.exec()
