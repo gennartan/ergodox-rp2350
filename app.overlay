@@ -1,4 +1,11 @@
 / {
+    aliases {
+        led0 = &led0;
+        led1 = &led1;
+        led2 = &led2;
+        led3 = &led3;
+    };
+    
     // Define keyboard key GPIOs
     keys: keys {
         compatible = "gpio-keys";
@@ -42,6 +49,26 @@
         key37: key37 { gpios = <&gpio0_hi 5 GPIO_ACTIVE_LOW>; };
         key38: key38 { gpios = <&gpio0_hi 6 GPIO_ACTIVE_LOW>; };
         key39: key39 { gpios = <&gpio0_hi 7 GPIO_ACTIVE_LOW>; };
+    };
+
+    leds {
+        compatible = "gpio-leds";
+        led0: led_0 {
+            gpios = <&gpio0_hi 8 GPIO_ACTIVE_LOW>;
+            label = "Red LED";
+        };
+        led1: led_1 {
+            gpios = <&gpio0_hi 9 GPIO_ACTIVE_LOW>;
+            label = "Green LED";
+        };
+        led2: led_2 {
+            gpios = <&gpio0_hi 10 GPIO_ACTIVE_LOW>;
+            label = "Blue LED";
+        };
+        led3: led_3 {
+            gpios = <&gpio0_hi 11 GPIO_ACTIVE_LOW>;
+            label = "White LED";
+        };
     };
 
     chosen {

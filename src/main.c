@@ -7,6 +7,19 @@
 
 LOG_MODULE_REGISTER(kbd);
 
+#define LEDS 4
+#define LED0_NODE DT_ALIAS(led0)
+#define LED1_NODE DT_ALIAS(led1)
+#define LED2_NODE DT_ALIAS(led2)
+#define LED3_NODE DT_ALIAS(led3)
+
+static const struct gpio_dt_spec leds[LEDS] = {
+    GPIO_DT_SPEC_GET(LED0_NODE, gpios),
+    GPIO_DT_SPEC_GET(LED1_NODE, gpios),
+    GPIO_DT_SPEC_GET(LED2_NODE, gpios),
+    GPIO_DT_SPEC_GET(LED3_NODE, gpios),
+};
+
 #define KEYS 39
 
 // Individual key GPIOs for the electronic design
@@ -160,9 +173,22 @@ int main(void)
         }
     }
 
+    for (int i = 0; i < LEDS; i++) {
+        ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_ACTIVE);
+        if (ret < 0) {
+            LOG_ERR("Failed to configure LED %d: %d", i, ret);
+            return ret;
+        }
+    }
+
     k_timer_init(&debounce_timer, debounce_timer_handler, NULL);
 
     LOG_INF("Keyboard scan initialized");
+
+    bool led_state = false;
+    for (int i = 0; i < LEDS; i++) {
+        gpio_pin_set_dt(&leds[i], led_state);
+    }
 
     while (1) {
         k_sleep(K_SECONDS(1));
