@@ -1,8 +1,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/usb/usb_device.h>
-#include <zephyr/usb/class/usb_hid.h>
+#include <zephyr/usb/usbd.h>
+#include <zephyr/usb/class/usbd_hid.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(kbd);
@@ -79,6 +79,18 @@ static const uint8_t keymap[KEYS] = {
 const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
 
 static const struct device *hid_dev;
+static bool hid_ready;
+static uint32_t hid_duration;
+
+USBD_DEVICE_DEFINE(ergodox_usbd,
+    DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
+    0x2fe3, 0x0007);
+
+USBD_DESC_LANG_DEFINE(ergodox_lang);
+USBD_DESC_MANUFACTURER_DEFINE(ergodox_mfr, "Zephyr");
+USBD_DESC_PRODUCT_DEFINE(ergodox_product, "Ergodox Custom Keyboard");
+USBD_DESC_CONFIG_DEFINE(ergodox_fs_desc, "FS Configuration");
+USBD_CONFIGURATION_DEFINE(ergodox_fs_config, 0, 50, &ergodox_fs_desc);
 
 // Current key states (pressed/released)
 static bool key_states[KEYS] = {0};
@@ -88,13 +100,187 @@ static struct k_timer debounce_timer;
 static bool debounce_active = false;
 
 // HID report buffer
-static uint8_t hid_report[8] = {0};
+UDC_STATIC_BUF_DEFINE(hid_report, 8);
 static uint8_t modifier_report = 0;
+
+
+static void kb_iface_ready(const struct device *dev, const bool ready)
+{
+	LOG_INF("HID device %s interface is %s",
+		dev->name, ready ? "ready" : "not ready");
+	hid_ready = ready;
+}
+
+static int kb_get_report(const struct device *dev,
+			 const uint8_t type, const uint8_t id, const uint16_t len,
+			 uint8_t *const buf)
+{
+	LOG_WRN("Get Report not implemented, Type %u ID %u", type, id);
+
+	return 0;
+}
+
+static int kb_set_report(const struct device *dev,
+			 const uint8_t type, const uint8_t id, const uint16_t len,
+			 const uint8_t *const buf)
+{
+    LOG_WRN("Set Report not implemented, Type %u ID %u", type, id);
+	return 0;
+}
+
+/* Idle duration is stored but not used to calculate idle reports. */
+static void kb_set_idle(const struct device *dev,
+			const uint8_t id, const uint32_t duration)
+{
+	LOG_INF("Set Idle %u to %u", id, duration);
+	hid_duration = duration;
+}
+
+static uint32_t kb_get_idle(const struct device *dev, const uint8_t id)
+{
+	LOG_INF("Get Idle %u to %u", id, hid_duration);
+	return hid_duration;
+}
+
+static void kb_set_protocol(const struct device *dev, const uint8_t proto)
+{
+	LOG_INF("Protocol changed to %s",
+		proto == 0U ? "Boot Protocol" : "Report Protocol");
+}
+
+static void kb_output_report(const struct device *dev, const uint16_t len,
+			     const uint8_t *const buf)
+{
+	LOG_HEXDUMP_DBG(buf, len, "o.r.");
+	kb_set_report(dev, HID_REPORT_TYPE_OUTPUT, 0U, len, buf);
+}
+
+struct hid_device_ops kb_ops = {
+	.iface_ready = kb_iface_ready,
+	.get_report = kb_get_report,
+	.set_report = kb_set_report,
+	.set_idle = kb_set_idle,
+	.get_idle = kb_get_idle,
+	.set_protocol = kb_set_protocol,
+	.output_report = kb_output_report,
+};
+
+static void usbd_msg_cb(struct usbd_context *const usbd_ctx,
+    const struct usbd_msg *const msg)
+{
+    LOG_INF("USBD message: %s", usbd_msg_type_string(msg->type));
+
+    if (msg->type == USBD_MSG_CONFIGURATION) {
+        LOG_INF("Configuration value %d", msg->status);
+    }
+
+    if (usbd_can_detect_vbus(usbd_ctx)) {
+        if (msg->type == USBD_MSG_VBUS_READY) {
+            if (usbd_enable(usbd_ctx)) {
+                LOG_ERR("Failed to enable USB device support");
+            }
+        }
+
+        if (msg->type == USBD_MSG_VBUS_REMOVED) {
+            hid_ready = false;
+            if (usbd_disable(usbd_ctx)) {
+                LOG_ERR("Failed to disable USB device support");
+            }
+        }
+    }
+}
+
+static int init_usb_device(void)
+{
+    int ret;
+
+    hid_dev = DEVICE_DT_GET_ONE(zephyr_hid_device);
+    if (!device_is_ready(hid_dev)) {
+        LOG_ERR("HID device is not ready");
+        return -ENODEV;
+    }
+
+    ret = hid_device_register(hid_dev, hid_report_desc,
+        sizeof(hid_report_desc), &kb_ops);
+    if (ret != 0) {
+        LOG_ERR("Failed to register HID device: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_add_descriptor(&ergodox_usbd, &ergodox_lang);
+    if (ret != 0) {
+        LOG_ERR("Failed to add language descriptor: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_add_descriptor(&ergodox_usbd, &ergodox_mfr);
+    if (ret != 0) {
+        LOG_ERR("Failed to add manufacturer descriptor: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_add_descriptor(&ergodox_usbd, &ergodox_product);
+    if (ret != 0) {
+        LOG_ERR("Failed to add product descriptor: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_add_configuration(&ergodox_usbd, USBD_SPEED_FS,
+        &ergodox_fs_config);
+    if (ret != 0) {
+        LOG_ERR("Failed to add full-speed configuration: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_register_all_classes(&ergodox_usbd, USBD_SPEED_FS, 1, NULL);
+    if (ret != 0) {
+        LOG_ERR("Failed to register USB classes: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_device_set_code_triple(&ergodox_usbd, USBD_SPEED_FS, 0, 0, 0);
+    if (ret != 0) {
+        LOG_ERR("Failed to set USB code triple: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_msg_register_cb(&ergodox_usbd, usbd_msg_cb);
+    if (ret != 0) {
+        LOG_ERR("Failed to register USB message callback: %d", ret);
+        return ret;
+    }
+
+    ret = usbd_init(&ergodox_usbd);
+    if (ret != 0) {
+        LOG_ERR("Failed to initialize USB device support: %d", ret);
+        return ret;
+    }
+
+    if (!usbd_can_detect_vbus(&ergodox_usbd)) {
+        ret = usbd_enable(&ergodox_usbd);
+        if (ret != 0) {
+            LOG_ERR("Failed to enable USB device support: %d", ret);
+            return ret;
+        }
+    }
+
+    return 0;
+}
 
 static void send_hid_report(void)
 {
+    int ret;
+
+    if (!hid_ready) {
+        LOG_DBG("USB HID interface is not ready");
+        return;
+    }
+
     hid_report[0] = modifier_report;
-    hid_int_ep_write(hid_dev, hid_report, sizeof(hid_report), NULL);
+    ret = hid_device_submit_report(hid_dev, 8, hid_report);
+    if (ret != 0) {
+        LOG_ERR("Failed to submit HID report: %d", ret);
+    }
 }
 
 static void update_key(uint8_t index, bool pressed)
@@ -151,19 +337,10 @@ int main(void)
 
     LOG_INF("Keyboard scan start");
 
-    hid_dev = device_get_binding("HID_0");
-    if (!hid_dev) {
-        LOG_ERR("Cannot get HID device");
-        return -1;
+    ret = init_usb_device();
+    if (ret != 0) {
+        return ret;
     }
-
-    usb_hid_register_device(hid_dev,
-        hid_report_desc,
-        sizeof(hid_report_desc),
-        NULL);
-
-    usb_hid_init(hid_dev);
-    usb_enable(NULL);
 
     for (int i = 0; i < KEYS; i++) {
         ret = gpio_pin_configure_dt(&keys[i], GPIO_INPUT | GPIO_PULL_UP);
