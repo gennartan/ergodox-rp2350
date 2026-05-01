@@ -667,6 +667,11 @@ class Configurator(QtWidgets.QMainWindow):
         self.layout["name"] = text.strip() or "custom"
         self.refresh_preview()
 
+
+        self.clear_key_button = QtWidgets.QPushButton("Clear Key")
+        self.clear_key_button.clicked.connect(self.clear_key)
+        form.addRow(self.clear_key_button)
+
     def copy_base_to_current_layer(self) -> None:
         if self.current_layer == "BASE":
             return
@@ -744,7 +749,12 @@ def main() -> int:
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("Ergodox Custom Keyboard Configurator")
     app.setStyleSheet("""
-        QMainWindow { background: #f6f7f9; }
+        QMainWindow {
+            background: #f6f7f9;
+        }
+        QWidget {
+            font-size: 10px;
+        }
         QGroupBox {
             font-weight: 600;
             border: 1px solid #c8ced8;
@@ -762,10 +772,12 @@ def main() -> int:
             border-radius: 8px;
             background: #ffffff;
             padding: 4px;
+            color: #1f2937;
         }
         QPushButton:checked {
             border: 2px solid #2d6cdf;
             background: #dbe8ff;
+            color: #1f2937;
         }
     """)
     window = Configurator(repo_root, args.layout)
