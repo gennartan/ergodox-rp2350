@@ -64,7 +64,6 @@ static const struct gpio_dt_spec keys[KEYBOARD_KEY_COUNT] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(key36), gpios),
     GPIO_DT_SPEC_GET(DT_NODELABEL(key37), gpios),
     GPIO_DT_SPEC_GET(DT_NODELABEL(key38), gpios),
-    GPIO_DT_SPEC_GET(DT_NODELABEL(key39), gpios),
 };
 
 const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();

@@ -6,7 +6,7 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/usb/class/hid.h>
 
-#define KEYBOARD_KEY_COUNT 39
+#define KEYBOARD_KEY_COUNT 38
 #define KEYBOARD_MAX_LAYERS 8
 #define KEYBOARD_HID_REPORT_SIZE 8
 #define KEYBOARD_MAX_REPORT_KEYS 6
