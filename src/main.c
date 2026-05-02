@@ -258,6 +258,23 @@ static int init_usb_device(void)
     return 0;
 }
 
+static void update_leds_for_layers(void)
+{
+    uint32_t active_layers = keyboard_runtime_active_layers(&keyboard);
+
+    // Map layers to LEDs (BASE layer has no LED indicator)
+    // Layer 0 (BASE) = all LEDs off
+    // Layer 1 (NAV) = LED0 on
+    // Layer 2 (SYMBOL) = LED1 on
+    // Layer 3 (FN) = LED2 on
+    for (int i = 0; i < LEDS; i++) {
+        // Turn on LED if the corresponding layer (i+1) is active
+        int led_state = (active_layers & BIT(i + 1)) ? 1 : 0;
+        gpio_pin_set_dt(&leds[i], led_state);
+        LOG_INF("LED %d %s for layer %d", i, led_state ? "ON" : "OFF", i + 1);
+    }
+}
+
 static void send_hid_report(void)
 {
     int ret;
@@ -279,6 +296,7 @@ static void update_key(uint8_t index, bool pressed)
     const struct keyboard_action *action;
 
     if (!keyboard_runtime_handle_key(&keyboard, index, pressed)) {
+        update_leds_for_layers();
         return;
     }
 
@@ -352,19 +370,17 @@ int main(void)
     send_hid_report();
 
     for (int i = 0; i < LEDS; i++) {
-        ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_ACTIVE);
+        ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_INACTIVE);
         if (ret < 0) {
             LOG_ERR("Failed to configure LED %d: %d", i, ret);
             return ret;
         }
     }
 
-    LOG_INF("Keyboard interrupts initialized");
+    // Set initial LED states based on active layers
+    update_leds_for_layers();
 
-    bool led_state = false;
-    for (int i = 0; i < LEDS; i++) {
-        gpio_pin_set_dt(&leds[i], led_state);
-    }
+    LOG_INF("Keyboard interrupts initialized");
 
     while (1) {
         k_sleep(K_SECONDS(1));
