@@ -314,7 +314,7 @@ int main(void)
 
     LOG_INF("Keyboard interrupt setup start");
 
-    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected());
+    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected(), KEYBOARD_HAND_RIGHT);
     LOG_INF("Keyboard layout: %s", keyboard.layout->name);
 
     ret = init_usb_device();

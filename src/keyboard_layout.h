@@ -11,6 +11,12 @@
 #define KEYBOARD_HID_REPORT_SIZE 8
 #define KEYBOARD_MAX_REPORT_KEYS 6
 
+enum keyboard_hand {
+    KEYBOARD_HAND_LEFT,
+    KEYBOARD_HAND_RIGHT,
+    KEYBOARD_HAND_COUNT,
+};
+
 enum keyboard_layer {
     KEYBOARD_LAYER_BASE,
     KEYBOARD_LAYER_NAV,
@@ -37,14 +43,14 @@ struct keyboard_action {
 
 struct keyboard_layout {
     const char *name;
-    uint8_t layer_count;
-    const struct keyboard_action (*layers)[KEYBOARD_KEY_COUNT];
+    const struct keyboard_action (*layers)[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT];
 };
 
 struct keyboard_runtime {
     const struct keyboard_layout *layout;
     struct keyboard_action pressed_actions[KEYBOARD_KEY_COUNT];
     bool pressed[KEYBOARD_KEY_COUNT];
+    uint8_t current_hand;
     uint32_t default_layer;
     uint32_t active_layers;
 };
@@ -67,7 +73,7 @@ struct keyboard_runtime {
 const struct keyboard_layout *keyboard_layout_get_selected(void);
 
 void keyboard_runtime_init(struct keyboard_runtime *runtime,
-    const struct keyboard_layout *layout);
+    const struct keyboard_layout *layout, uint8_t current_hand);
 bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
     uint8_t key_index, bool pressed);
 void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,

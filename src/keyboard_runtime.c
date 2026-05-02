@@ -22,14 +22,14 @@ static const struct keyboard_action *resolve_action(
         return &no_action;
     }
 
-    for (int layer = runtime->layout->layer_count - 1; layer >= 0; layer--) {
+    for (int layer = KEYBOARD_LAYER_COUNT - 1; layer >= 0; layer--) {
         const struct keyboard_action *action;
 
         if ((layers & BIT(layer)) == 0) {
             continue;
         }
 
-        action = &runtime->layout->layers[layer][key_index];
+        action = &(*runtime->layout->layers)[runtime->current_hand][layer][key_index];
         if (action->type != KEYBOARD_ACTION_TRANSPARENT) {
             return action;
         }
@@ -39,11 +39,13 @@ static const struct keyboard_action *resolve_action(
 }
 
 void keyboard_runtime_init(struct keyboard_runtime *runtime,
-    const struct keyboard_layout *layout)
+    const struct keyboard_layout *layout,
+    uint8_t current_hand)
 {
     memset(runtime, 0, sizeof(*runtime));
     runtime->layout = layout;
     runtime->default_layer = BIT(KEYBOARD_LAYER_BASE);
+    runtime->current_hand = current_hand;
 }
 
 bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,

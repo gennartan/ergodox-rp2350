@@ -357,11 +357,18 @@ def empty_action(layer: str) -> dict[str, Any]:
 def default_layout() -> dict[str, Any]:
     return {
         "name": "custom",
-        "hand": "right",
-        "layers": {
-            layer: [empty_action(layer) for _ in range(KEY_COUNT)]
-            for layer in LAYERS
+        "right": {
+            "layers": {
+                layer: [empty_action(layer) for _ in range(KEY_COUNT)]
+                for layer in LAYERS
+            },
         },
+        "left": {
+            "layers": {
+                layer: [empty_action(layer) for _ in range(KEY_COUNT)]
+                for layer in LAYERS
+            },
+        }
     }
 
 
@@ -390,14 +397,13 @@ def load_layout(path: Path | None) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     layout = default_layout()
     layout["name"] = data.get("name", layout["name"])
-    layout["hand"] = data.get("hand", layout["hand"])
-    if layout["hand"] not in HANDS:
-        layout["hand"] = "right"
 
-    for layer in LAYERS:
-        source = data.get("layers", {}).get(layer, [])
-        for index, action in enumerate(source[:KEY_COUNT]):
-            layout["layers"][layer][index] = normalize_action(action, layer)
+    for hand in HANDS:
+        hand_data = data.get(hand, {})
+        for layer in LAYERS:
+            source = hand_data.get("layers", {}).get(layer, [])
+            for index, action in enumerate(source[:KEY_COUNT]):
+                layout[hand]["layers"][layer][index] = normalize_action(action, layer)
 
     return layout
 
@@ -463,6 +469,8 @@ def short_gpio(gpio: str) -> str:
 def layer_enum(layer: str) -> str:
     return f"KEYBOARD_LAYER_{layer}"
 
+def keyboard_hand_enum(hand: str) -> str:
+    return f"KEYBOARD_HAND_{hand.upper()}"
 
 def key_placements(hand: str) -> list[KeyPlacement]:
     if hand == "left":
@@ -507,18 +515,21 @@ def export_c(layout: dict[str, Any]) -> str:
     lines = [
         "#include \"keyboard_layout.h\"",
         "",
-        f"/* Generated layout: {layout['name']} ({layout.get('hand', 'right')} half, {KEY_COUNT} keys). */",
-        f"static const struct keyboard_action {c_name}_layers[KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {{",
+        f"/* Generated layout: {layout['name']} - {KEY_COUNT} keys per half). */",
     ]
 
-    for layer in LAYERS:
-        lines.append(f"    [{layer_enum(layer)}] = {{")
-        for index, action in enumerate(layout["layers"][layer]):
-            if action.get("type") == "transparent" and layer != "BASE":
-                continue
-            if action.get("type") == "none" and layer == "BASE":
-                continue
-            lines.append(f"        [{index}] = {action_to_c(action)},")
+    lines.append(f"static const struct keyboard_action {c_name}_layers[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {{")
+    for hand in HANDS:
+        lines.append(f"    [{keyboard_hand_enum(hand)}] = {{")
+        for layer in LAYERS:
+            lines.append(f"        [{layer_enum(layer)}] = {{")
+            for index, action in enumerate(layout[hand]["layers"][layer]):
+                if action.get("type") == "transparent" and layer != "BASE":
+                    continue
+                if action.get("type") == "none" and layer == "BASE":
+                    continue
+                lines.append(f"            [{index}] = {action_to_c(action)},")
+            lines.append("        },")
         lines.append("    },")
 
     lines.extend([
@@ -526,8 +537,7 @@ def export_c(layout: dict[str, Any]) -> str:
         "",
         f"static const struct keyboard_layout {c_name}_layout = {{",
         f"    .name = \"{layout['name']}\",",
-        "    .layer_count = KEYBOARD_LAYER_COUNT,",
-        f"    .layers = {c_name}_layers,",
+        f"    .layers = &{c_name}_layers,",
         "};",
         "",
     ])
@@ -552,6 +562,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.repo_root = repo_root
         self.layout_path = layout_path
         self.layout = load_layout(layout_path)
+        self.current_hand = "right"
         self.key_infos = parse_key_infos(repo_root)
         self.current_layer = LAYERS[0]
         self.current_key = 0
@@ -572,7 +583,7 @@ class Configurator(QtWidgets.QMainWindow):
         selector_row.addWidget(QtWidgets.QLabel("Half"))
         self.hand_selector = QtWidgets.QComboBox()
         self.hand_selector.addItems([hand.title() for hand in HANDS])
-        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.hand_selector.setCurrentIndex(HANDS.index("right"))
         self.hand_selector.currentIndexChanged.connect(self.on_hand_changed)
         selector_row.addWidget(self.hand_selector)
         selector_row.addStretch(1)
@@ -668,9 +679,9 @@ class Configurator(QtWidgets.QMainWindow):
     def render_keyboard(self) -> None:
         self.board_scene.clear()
         self.buttons = []
-        self.board_box.setTitle(f"{self.layout['hand'].title()} half, {KEY_COUNT} keys")
+        self.board_box.setTitle(f"{self.current_hand.title()} half, {KEY_COUNT} keys")
 
-        for placement in key_placements(self.layout["hand"]):
+        for placement in key_placements(self.current_hand):
             info = self.key_infos[placement.key_index]
             button = KeyButton(info)
             button.setFixedSize(
@@ -688,10 +699,10 @@ class Configurator(QtWidgets.QMainWindow):
         self.refresh_buttons()
 
     def current_action(self) -> dict[str, Any]:
-        return self.layout["layers"][self.current_layer][self.current_key]
+        return self.layout[self.current_hand]["layers"][self.current_layer][self.current_key]
 
     def set_current_action(self, action: dict[str, Any]) -> None:
-        self.layout["layers"][self.current_layer][self.current_key] = normalize_action(
+        self.layout[self.current_hand]["layers"][self.current_layer][self.current_key] = normalize_action(
             action, self.current_layer
         )
         self.refresh_buttons()
@@ -711,7 +722,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.select_key(self.current_key)
 
     def on_hand_changed(self, index: int) -> None:
-        self.layout["hand"] = HANDS[index]
+        self.current_hand = HANDS[index]
         self.render_keyboard()
         self.select_key(min(self.current_key, KEY_COUNT - 1))
         self.refresh_preview()
@@ -759,7 +770,7 @@ class Configurator(QtWidgets.QMainWindow):
 
     def refresh_buttons(self) -> None:
         for button in self.buttons:
-            action = self.layout["layers"][self.current_layer][button.info.index]
+            action = self.layout[self.current_hand]["layers"][self.current_layer][button.info.index]
             button.setText(
                 f"{button.info.label}\n{action_label(action)}\n{short_gpio(button.info.gpio)}"
             )
@@ -779,8 +790,8 @@ class Configurator(QtWidgets.QMainWindow):
     def copy_base_to_current_layer(self) -> None:
         if self.current_layer == "BASE":
             return
-        self.layout["layers"][self.current_layer] = [
-            dict(action) for action in self.layout["layers"]["BASE"]
+        self.layout[self.current_hand]["layers"][self.current_layer] = [
+            dict(action) for action in self.layout[self.current_hand]["layers"]["BASE"]
         ]
         self.refresh_buttons()
         self.select_key(self.current_key)
@@ -793,7 +804,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.layout = default_layout()
         self.layout_path = None
         self.layout_name.setText(self.layout["name"])
-        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.hand_selector.setCurrentIndex(HANDS.index(self.current_hand))
         self.render_keyboard()
         self.select_key(0)
 
@@ -806,7 +817,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.layout_path = Path(path)
         self.layout = load_layout(self.layout_path)
         self.layout_name.setText(self.layout["name"])
-        self.hand_selector.setCurrentIndex(HANDS.index(self.layout["hand"]))
+        self.hand_selector.setCurrentIndex(HANDS.index(self.current_hand))
         self.render_keyboard()
         self.select_key(self.current_key)
 
@@ -858,6 +869,9 @@ def main() -> int:
         }
         QWidget {
             font-size: 10px;
+        }
+        QCheckBox {
+            color: #1f2937;
         }
         QGroupBox {
             font-weight: 600;
