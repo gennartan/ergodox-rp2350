@@ -208,6 +208,33 @@ class KeyPlacement:
 ColumnKey = tuple[int, float, float]
 ColumnSpec = tuple[float, float, list[ColumnKey]]
 
+def rotate_key(key: KeyPlacement, pivot_x, pivot_y, angle_degrees):
+    angle_rad = math.radians(angle_degrees)
+
+    # Original coordinates
+    x, y = key.x, key.y
+
+    # Step 1: translate to origin (pivot becomes 0,0)
+    tx = x - pivot_x
+    ty = y - pivot_y
+
+    # Step 2: rotate
+    rx = tx * math.cos(angle_rad) - ty * math.sin(angle_rad)
+    ry = tx * math.sin(angle_rad) + ty * math.cos(angle_rad)
+
+    # Step 3: translate back
+    new_x = rx + pivot_x
+    new_y = ry + pivot_y
+
+    # Return a new KeyPlacement (keeping other fields the same)
+    return KeyPlacement(
+        key.key_index,
+        new_x,
+        new_y,
+        key.w,
+        key.h,
+        key.rotation + angle_degrees # or update if needed
+    )
 
 RIGHT_COLUMN_SPECS: list[ColumnSpec] = [
     # x, y, [(key index, width units, height units), ...]
@@ -260,34 +287,6 @@ RIGHT_COLUMN_SPECS: list[ColumnSpec] = [
     ]),
 ]
 
-def rotate_key(key: KeyPlacement, pivot_x, pivot_y, angle_degrees):
-    angle_rad = math.radians(angle_degrees)
-
-    # Original coordinates
-    x, y = key.x, key.y
-
-    # Step 1: translate to origin (pivot becomes 0,0)
-    tx = x - pivot_x
-    ty = y - pivot_y
-
-    # Step 2: rotate
-    rx = tx * math.cos(angle_rad) - ty * math.sin(angle_rad)
-    ry = tx * math.sin(angle_rad) + ty * math.cos(angle_rad)
-
-    # Step 3: translate back
-    new_x = rx + pivot_x
-    new_y = ry + pivot_y
-
-    # Return a new KeyPlacement (keeping other fields the same)
-    return KeyPlacement(
-        key.key_index,
-        new_x,
-        new_y,
-        key.w,
-        key.h,
-        key.rotation + angle_degrees # or update if needed
-    )
-
 RIGHT_THUMB_SPECS = [rotate_key(key, 0, 300, 0) for key in [
     KeyPlacement(32, 66, 300, 1.0, 1.0, 0),
     KeyPlacement(33, 0, 300, 1.0, 1.0, 0),
@@ -297,29 +296,91 @@ RIGHT_THUMB_SPECS = [rotate_key(key, 0, 300, 0) for key in [
     KeyPlacement(37, 132, 374, 1.0, 2.0, 0),
 ]]
 
+LEFT_COLUMN_SPECS: list[ColumnSpec] = [
+    # x, y, [(key index, width units, height units), ...]
+    # Change the key index to move a GPIO-backed key to another physical spot.
+    (0, 30, [
+        (26, 1.5, 1.0),
+        (25, 1.5, 1.0),
+        (24, 1.5, 1.0),
+        (23, 1.5, 1.0),
+        (22, 1.0, 1.0),
+    ]),
+    (98, 30, [
+        (31, 1.0, 1.0),        
+        (30, 1.0, 1.0),
+        (29, 1.0, 1.0),
+        (28, 1.0, 1.0),
+        (27, 1.0, 1.0),
+    ]),
+    (172, 30, [
+        (4, 1.0, 1.0),
+        (3, 1.0, 1.0),
+        (2, 1.0, 1.0),
+        (1, 1.0, 1.0),
+        (0, 1.0, 1.0),
+    ]),
+    (246, 25, [
+        (9, 1.0, 1.0),
+        (8, 1.0, 1.0),
+        (7, 1.0, 1.0),
+        (6, 1.0, 1.0),
+        (5, 1.0, 1.0),
+    ]),
+    (320, 20, [
+        (14, 1.0, 1.0),
+        (13, 1.0, 1.0),
+        (12, 1.0, 1.0),
+        (11, 1.0, 1.0),
+        (10, 1.0, 1.0),
+    ]),
+    (394, 25, [
+        (18, 1.0, 1.0),
+        (17, 1.0, 1.0),
+        (16, 1.0, 1.0),
+        (15, 1.0, 1.0),
+    ]),
+    (468, 30, [
+        (21, 1.0, 1.5),
+        (20, 1.0, 1.5),
+        (19, 1.0, 1.5),
 
-def make_right_placements() -> list[KeyPlacement]:
+    ]),
+
+]
+
+DX = 500
+LEFT_THUMB_SPECS = [rotate_key(key, 0, 300, 0) for key in [
+    KeyPlacement(37, 66 + DX, 300, 1.0, 1.0, 0),
+    KeyPlacement(36, 132 + DX, 300, 1.0, 1.0, 0),
+    KeyPlacement(35, 132 + DX, 366, 1.0, 1.0, 0),
+    KeyPlacement(34, 132 + DX, 432, 1.0, 1.0, 0),
+    KeyPlacement(33, 66 + DX, 374, 1.0, 2.0, 0),
+    KeyPlacement(32, 0 + DX, 374, 1.0, 2.0, 0),
+]]
+
+def make_placements(COLUMN_SPECS, THUMB_SPECS):
     placements: list[KeyPlacement] = []
 
-    for x, y, keys in RIGHT_COLUMN_SPECS:
+    for x, y, keys in COLUMN_SPECS:
         current_y = y
         for key_index, width, height in keys:
             placements.append(KeyPlacement(key_index, x, current_y, width, height))
             current_y += height * KEY_UNIT + KEY_GAP
 
-    placements.extend(RIGHT_THUMB_SPECS)
+    placements.extend(THUMB_SPECS)
 
     keys = sorted(placement.key_index for placement in placements)
     expected = list(range(KEY_COUNT))
     if keys != expected:
         raise ValueError(
-            f"Right-hand placement must contain each key index 0..{KEY_COUNT - 1} once; got {keys}"
+            f"Placement must contain each key index 0..{KEY_COUNT - 1} once; got {keys}"
         )
 
     return placements
 
-
-KEY_PLACEMENTS_RIGHT = make_right_placements()
+KEY_PLACEMENTS_RIGHT = make_placements(RIGHT_COLUMN_SPECS, RIGHT_THUMB_SPECS)
+KEY_PLACEMENTS_LEFT = make_placements(LEFT_COLUMN_SPECS, LEFT_THUMB_SPECS)
 
 
 def configure_qt_platform(platform: str) -> None:
@@ -474,20 +535,9 @@ def keyboard_hand_enum(hand: str) -> str:
 
 def key_placements(hand: str) -> list[KeyPlacement]:
     if hand == "left":
-        return [
-            KeyPlacement(
-                placement.key_index,
-                BOARD_WIDTH - placement.x - placement.w * KEY_UNIT,
-                placement.y,
-                placement.w,
-                placement.h,
-                -placement.rotation,
-            )
-            for placement in KEY_PLACEMENTS_RIGHT
-        ]
+        return KEY_PLACEMENTS_LEFT
 
     return KEY_PLACEMENTS_RIGHT
-
 
 def action_to_c(action: dict[str, Any]) -> str:
     action_type = action.get("type")
