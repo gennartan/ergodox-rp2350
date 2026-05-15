@@ -570,7 +570,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_W",
+          "keycode": "HID_KEY_Z",
           "modifiers": []
         },
         {
@@ -664,8 +664,10 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTCTRL",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_CTRL"
+          ]
         },
         {
           "type": "key",
@@ -692,17 +694,17 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_Z",
-          "modifiers": []
-        },
-        {
-          "type": "key",
-          "keycode": "HID_KEY_A",
+          "keycode": "HID_KEY_W",
           "modifiers": []
         },
         {
           "type": "key",
           "keycode": "HID_KEY_Q",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_A",
           "modifiers": []
         },
         {
