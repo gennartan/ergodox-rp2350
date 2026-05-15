@@ -189,6 +189,107 @@ MODIFIERS = [
     ("Right GUI", "HID_KBD_MODIFIER_RIGHT_UI"),
 ]
 
+def qt_key_value(key: Any) -> int:
+    return int(key.value) if hasattr(key, "value") else int(key)
+
+
+def qt_modifier_value(modifier: Any) -> int:
+    return int(modifier.value) if hasattr(modifier, "value") else int(modifier)
+
+
+QT_KEY_TO_HID = {
+    qt_key_value(QtCore.Qt.Key.Key_A): "HID_KEY_A",
+    qt_key_value(QtCore.Qt.Key.Key_B): "HID_KEY_B",
+    qt_key_value(QtCore.Qt.Key.Key_C): "HID_KEY_C",
+    qt_key_value(QtCore.Qt.Key.Key_D): "HID_KEY_D",
+    qt_key_value(QtCore.Qt.Key.Key_E): "HID_KEY_E",
+    qt_key_value(QtCore.Qt.Key.Key_F): "HID_KEY_F",
+    qt_key_value(QtCore.Qt.Key.Key_G): "HID_KEY_G",
+    qt_key_value(QtCore.Qt.Key.Key_H): "HID_KEY_H",
+    qt_key_value(QtCore.Qt.Key.Key_I): "HID_KEY_I",
+    qt_key_value(QtCore.Qt.Key.Key_J): "HID_KEY_J",
+    qt_key_value(QtCore.Qt.Key.Key_K): "HID_KEY_K",
+    qt_key_value(QtCore.Qt.Key.Key_L): "HID_KEY_L",
+    qt_key_value(QtCore.Qt.Key.Key_M): "HID_KEY_M",
+    qt_key_value(QtCore.Qt.Key.Key_N): "HID_KEY_N",
+    qt_key_value(QtCore.Qt.Key.Key_O): "HID_KEY_O",
+    qt_key_value(QtCore.Qt.Key.Key_P): "HID_KEY_P",
+    qt_key_value(QtCore.Qt.Key.Key_Q): "HID_KEY_Q",
+    qt_key_value(QtCore.Qt.Key.Key_R): "HID_KEY_R",
+    qt_key_value(QtCore.Qt.Key.Key_S): "HID_KEY_S",
+    qt_key_value(QtCore.Qt.Key.Key_T): "HID_KEY_T",
+    qt_key_value(QtCore.Qt.Key.Key_U): "HID_KEY_U",
+    qt_key_value(QtCore.Qt.Key.Key_V): "HID_KEY_V",
+    qt_key_value(QtCore.Qt.Key.Key_W): "HID_KEY_W",
+    qt_key_value(QtCore.Qt.Key.Key_X): "HID_KEY_X",
+    qt_key_value(QtCore.Qt.Key.Key_Y): "HID_KEY_Y",
+    qt_key_value(QtCore.Qt.Key.Key_Z): "HID_KEY_Z",
+    qt_key_value(QtCore.Qt.Key.Key_1): "HID_KEY_1",
+    qt_key_value(QtCore.Qt.Key.Key_2): "HID_KEY_2",
+    qt_key_value(QtCore.Qt.Key.Key_3): "HID_KEY_3",
+    qt_key_value(QtCore.Qt.Key.Key_4): "HID_KEY_4",
+    qt_key_value(QtCore.Qt.Key.Key_5): "HID_KEY_5",
+    qt_key_value(QtCore.Qt.Key.Key_6): "HID_KEY_6",
+    qt_key_value(QtCore.Qt.Key.Key_7): "HID_KEY_7",
+    qt_key_value(QtCore.Qt.Key.Key_8): "HID_KEY_8",
+    qt_key_value(QtCore.Qt.Key.Key_9): "HID_KEY_9",
+    qt_key_value(QtCore.Qt.Key.Key_0): "HID_KEY_0",
+    qt_key_value(QtCore.Qt.Key.Key_Return): "HID_KEY_ENTER",
+    qt_key_value(QtCore.Qt.Key.Key_Enter): "HID_KEY_ENTER",
+    qt_key_value(QtCore.Qt.Key.Key_Escape): "HID_KEY_ESC",
+    qt_key_value(QtCore.Qt.Key.Key_Backspace): "HID_KEY_BACKSPACE",
+    qt_key_value(QtCore.Qt.Key.Key_Tab): "HID_KEY_TAB",
+    qt_key_value(QtCore.Qt.Key.Key_Space): "HID_KEY_SPACE",
+    qt_key_value(QtCore.Qt.Key.Key_Minus): "HID_KEY_MINUS",
+    qt_key_value(QtCore.Qt.Key.Key_Equal): "HID_KEY_EQUAL",
+    qt_key_value(QtCore.Qt.Key.Key_BracketLeft): "HID_KEY_LEFTBRACE",
+    qt_key_value(QtCore.Qt.Key.Key_BracketRight): "HID_KEY_RIGHTBRACE",
+    qt_key_value(QtCore.Qt.Key.Key_Backslash): "HID_KEY_BACKSLASH",
+    qt_key_value(QtCore.Qt.Key.Key_Semicolon): "HID_KEY_SEMICOLON",
+    qt_key_value(QtCore.Qt.Key.Key_Apostrophe): "HID_KEY_APOSTROPHE",
+    qt_key_value(QtCore.Qt.Key.Key_QuoteLeft): "HID_KEY_GRAVE",
+    qt_key_value(QtCore.Qt.Key.Key_Comma): "HID_KEY_COMMA",
+    qt_key_value(QtCore.Qt.Key.Key_Period): "HID_KEY_DOT",
+    qt_key_value(QtCore.Qt.Key.Key_Slash): "HID_KEY_SLASH",
+    qt_key_value(QtCore.Qt.Key.Key_CapsLock): "HID_KEY_CAPSLOCK",
+    qt_key_value(QtCore.Qt.Key.Key_F1): "HID_KEY_F1",
+    qt_key_value(QtCore.Qt.Key.Key_F2): "HID_KEY_F2",
+    qt_key_value(QtCore.Qt.Key.Key_F3): "HID_KEY_F3",
+    qt_key_value(QtCore.Qt.Key.Key_F4): "HID_KEY_F4",
+    qt_key_value(QtCore.Qt.Key.Key_F5): "HID_KEY_F5",
+    qt_key_value(QtCore.Qt.Key.Key_F6): "HID_KEY_F6",
+    qt_key_value(QtCore.Qt.Key.Key_F7): "HID_KEY_F7",
+    qt_key_value(QtCore.Qt.Key.Key_F8): "HID_KEY_F8",
+    qt_key_value(QtCore.Qt.Key.Key_F9): "HID_KEY_F9",
+    qt_key_value(QtCore.Qt.Key.Key_F10): "HID_KEY_F10",
+    qt_key_value(QtCore.Qt.Key.Key_F11): "HID_KEY_F11",
+    qt_key_value(QtCore.Qt.Key.Key_F12): "HID_KEY_F12",
+    qt_key_value(QtCore.Qt.Key.Key_Insert): "HID_KEY_INSERT",
+    qt_key_value(QtCore.Qt.Key.Key_Home): "HID_KEY_HOME",
+    qt_key_value(QtCore.Qt.Key.Key_PageUp): "HID_KEY_PAGEUP",
+    qt_key_value(QtCore.Qt.Key.Key_Delete): "HID_KEY_DELETE",
+    qt_key_value(QtCore.Qt.Key.Key_End): "HID_KEY_END",
+    qt_key_value(QtCore.Qt.Key.Key_PageDown): "HID_KEY_PAGEDOWN",
+    qt_key_value(QtCore.Qt.Key.Key_Right): "HID_KEY_RIGHT",
+    qt_key_value(QtCore.Qt.Key.Key_Left): "HID_KEY_LEFT",
+    qt_key_value(QtCore.Qt.Key.Key_Down): "HID_KEY_DOWN",
+    qt_key_value(QtCore.Qt.Key.Key_Up): "HID_KEY_UP",
+}
+
+QT_MODIFIER_KEY_TO_HID_MODIFIER = {
+    qt_key_value(QtCore.Qt.Key.Key_Control): "HID_KBD_MODIFIER_LEFT_CTRL",
+    qt_key_value(QtCore.Qt.Key.Key_Shift): "HID_KBD_MODIFIER_LEFT_SHIFT",
+    qt_key_value(QtCore.Qt.Key.Key_Alt): "HID_KBD_MODIFIER_LEFT_ALT",
+    qt_key_value(QtCore.Qt.Key.Key_Meta): "HID_KBD_MODIFIER_LEFT_UI",
+}
+
+QT_MODIFIERS_TO_HID_MODIFIERS = [
+    (qt_modifier_value(QtCore.Qt.KeyboardModifier.ControlModifier), "HID_KBD_MODIFIER_LEFT_CTRL"),
+    (qt_modifier_value(QtCore.Qt.KeyboardModifier.ShiftModifier), "HID_KBD_MODIFIER_LEFT_SHIFT"),
+    (qt_modifier_value(QtCore.Qt.KeyboardModifier.AltModifier), "HID_KBD_MODIFIER_LEFT_ALT"),
+    (qt_modifier_value(QtCore.Qt.KeyboardModifier.MetaModifier), "HID_KBD_MODIFIER_LEFT_UI"),
+]
+
 KEY_UNIT = 58
 KEY_GAP = 8
 BOARD_WIDTH = 620
@@ -487,6 +588,28 @@ def normalize_action(action: dict[str, Any], layer: str) -> dict[str, Any]:
     return normalized
 
 
+def event_to_key_action(event: QtGui.QKeyEvent) -> dict[str, Any] | None:
+    key = event.key()
+    modifiers = []
+    event_modifiers = qt_modifier_value(event.modifiers())
+
+    for qt_modifier, hid_modifier in QT_MODIFIERS_TO_HID_MODIFIERS:
+        if event_modifiers & qt_modifier:
+            modifiers.append(hid_modifier)
+
+    if key in QT_MODIFIER_KEY_TO_HID_MODIFIER:
+        modifier = QT_MODIFIER_KEY_TO_HID_MODIFIER[key]
+        if modifier not in modifiers:
+            modifiers.append(modifier)
+        return {"type": "key", "keycode": "0", "modifiers": modifiers}
+
+    keycode = QT_KEY_TO_HID.get(key)
+    if keycode is None:
+        return None
+
+    return {"type": "key", "keycode": keycode, "modifiers": modifiers}
+
+
 def action_label(action: dict[str, Any]) -> str:
     action_type = action.get("type")
     if action_type == "transparent":
@@ -496,6 +619,8 @@ def action_label(action: dict[str, Any]) -> str:
     if action_type == "key":
         key = action.get("keycode", "")
         mods = action.get("modifiers", [])
+        if key == "0":
+            return "+".join(short_modifier(mod) for mod in mods) if mods else "NONE"
         if mods:
             return "+".join([short_modifier(mod) for mod in mods] + [short_key(key)])
         return short_key(key)
@@ -616,10 +741,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.key_infos = parse_key_infos(repo_root)
         self.current_layer = LAYERS[0]
         self.current_key = 0
+        self.capture_next_key = False
         self.buttons: list[KeyButton] = []
 
         self.setWindowTitle("Ergodox Custom Keyboard Configurator")
         self.resize(1180, 760)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
         self.build_ui()
         self.select_key(0)
 
@@ -670,6 +797,8 @@ class Configurator(QtWidgets.QMainWindow):
         toolbar.addAction("Save JSON", self.save_json)
         toolbar.addAction("Save JSON As", self.save_json_as)
         toolbar.addAction("Export C", self.export_c_file)
+        capture_shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+K"), self)
+        capture_shortcut.activated.connect(self.start_key_capture)
 
         self.refresh_buttons()
 
@@ -683,6 +812,16 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.selected_label = QtWidgets.QLabel()
         form.addRow("Selected", self.selected_label)
+
+        self.capture_button = QtWidgets.QPushButton("Capture Next Key")
+        self.capture_button.setCheckable(True)
+        self.capture_button.clicked.connect(self.start_key_capture)
+        form.addRow(self.capture_button)
+
+        self.capture_status = QtWidgets.QLabel("Select a visual key, then capture from your keyboard.")
+        self.capture_status.setWordWrap(True)
+        self.capture_status.setObjectName("captureStatus")
+        form.addRow("Capture", self.capture_status)
 
         self.action_type = QtWidgets.QComboBox()
         self.action_type.addItems(ACTION_TYPES)
@@ -748,6 +887,42 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.refresh_buttons()
 
+    def start_key_capture(self) -> None:
+        self.capture_next_key = True
+        self.capture_button.setChecked(True)
+        self.capture_status.setText(
+            f"Press a key for {self.key_infos[self.current_key].label}. Esc cancels."
+        )
+        self.setFocus()
+
+    def stop_key_capture(self, message: str) -> None:
+        self.capture_next_key = False
+        self.capture_button.setChecked(False)
+        self.capture_status.setText(message)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if not self.capture_next_key:
+            super().keyPressEvent(event)
+            return
+
+        if event.key() == qt_key_value(QtCore.Qt.Key.Key_Escape):
+            self.stop_key_capture("Capture cancelled.")
+            event.accept()
+            return
+
+        action = event_to_key_action(event)
+        if action is None:
+            self.stop_key_capture(f"Unsupported key: {event.text() or event.key()}")
+            event.accept()
+            return
+
+        self.set_current_action(action)
+        self.load_action_to_editor(self.current_action())
+        self.stop_key_capture(
+            f"Captured {action_label(action)} for {self.key_infos[self.current_key].label}."
+        )
+        event.accept()
+
     def current_action(self) -> dict[str, Any]:
         return self.layout[self.current_hand]["layers"][self.current_layer][self.current_key]
 
@@ -764,6 +939,10 @@ class Configurator(QtWidgets.QMainWindow):
             button.setChecked(button.info.index == index)
         info = self.key_infos[index]
         self.selected_label.setText(f"{info.label} / {info.gpio}")
+        if not self.capture_next_key:
+            self.capture_status.setText(
+                f"Selected {info.label}. Click Capture Next Key, then press a physical key."
+            )
         self.load_action_to_editor(self.current_action())
 
     def on_layer_changed(self, index: int) -> None:
@@ -919,11 +1098,28 @@ def main() -> int:
         }
         QWidget {
             font-size: 10px;
-        }
-        QCheckBox {
             color: #1f2937;
         }
+        QLabel, QCheckBox, QRadioButton {
+            color: #1f2937;
+        }
+        QLineEdit, QComboBox, QPlainTextEdit {
+            background: #ffffff;
+            color: #111827;
+            border: 1px solid #aab3c1;
+            border-radius: 4px;
+            padding: 3px;
+            selection-background-color: #2d6cdf;
+            selection-color: #ffffff;
+        }
+        QComboBox QAbstractItemView {
+            background: #ffffff;
+            color: #111827;
+            selection-background-color: #dbe8ff;
+            selection-color: #111827;
+        }
         QGroupBox {
+            color: #111827;
             font-weight: 600;
             border: 1px solid #c8ced8;
             border-radius: 8px;
@@ -946,6 +1142,13 @@ def main() -> int:
             border: 2px solid #2d6cdf;
             background: #dbe8ff;
             color: #1f2937;
+        }
+        QLabel#captureStatus {
+            background: #eef6ff;
+            color: #1f2937;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 6px;
         }
     """)
     window = Configurator(repo_root, args.layout)
