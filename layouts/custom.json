@@ -144,13 +144,15 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_BACKSPACE",
+          "keycode": "HID_KEY_RIGHT",
           "modifiers": []
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_GRAVE",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
         },
         {
           "type": "key",
@@ -164,7 +166,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_RIGHT",
+          "keycode": "HID_KEY_BACKSPACE",
           "modifiers": []
         },
         {
