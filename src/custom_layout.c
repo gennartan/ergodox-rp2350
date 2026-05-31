@@ -64,7 +64,7 @@ static const struct keyboard_action custom_layers[KEYBOARD_HAND_COUNT][KEYBOARD_
             [7] = KB_KEY(HID_KEY_D),
             [8] = KB_KEY(HID_KEY_E),
             [9] = KB_KEY(HID_KEY_3),
-            [10] = KB_KEY(HID_KEY_LEFTALT),
+            [10] = KB_MOD(HID_KBD_MODIFIER_LEFT_ALT, 0),
             [11] = KB_KEY(HID_KEY_V),
             [12] = KB_KEY(HID_KEY_F),
             [13] = KB_KEY(HID_KEY_R),

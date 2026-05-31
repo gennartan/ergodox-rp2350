@@ -1,0 +1,943 @@
+{
+  "name": "custom",
+  "right": {
+    "layers": {
+      "BASE": [
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_B",
+          "modifiers": []
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        }
+      ],
+      "NAV": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "SYMBOL": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "FN": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ]
+    }
+  },
+  "left": {
+    "layers": {
+      "BASE": [
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_A",
+          "modifiers": []
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        },
+        {
+          "type": "none"
+        }
+      ],
+      "NAV": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "SYMBOL": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "FN": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ]
+    }
+  }
+}
