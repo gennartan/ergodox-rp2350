@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
@@ -6,6 +8,7 @@
 #include <zephyr/logging/log.h>
 
 #include "keyboard_layout.h"
+#include "split_transport.h"
 
 LOG_MODULE_REGISTER(kbd);
 
@@ -90,6 +93,17 @@ struct key_irq {
 
 static struct key_irq key_irqs[KEYBOARD_KEY_COUNT];
 static struct keyboard_runtime keyboard;
+static uint8_t local_report[KEYBOARD_HID_REPORT_SIZE];
+static uint8_t remote_report[KEYBOARD_HID_REPORT_SIZE];
+static struct k_spinlock report_lock;
+static struct k_work remote_report_work;
+
+enum keyboard_transport_mode {
+    KEYBOARD_TRANSPORT_USB,
+    KEYBOARD_TRANSPORT_UART,
+};
+
+static enum keyboard_transport_mode transport_mode = KEYBOARD_TRANSPORT_UART;
 
 #if IS_ENABLED(CONFIG_ERGODOX_KEYBOARD_HAND_LEFT)
 #define ERGODOX_KEYBOARD_HAND KEYBOARD_HAND_LEFT
@@ -299,17 +313,128 @@ static void send_hid_report(void)
     }
 }
 
+static void append_report_key(uint8_t report[KEYBOARD_HID_REPORT_SIZE],
+    uint8_t *report_index, uint8_t keycode)
+{
+    if (keycode == 0 || *report_index >= KEYBOARD_HID_REPORT_SIZE) {
+        return;
+    }
+
+    for (uint8_t i = 2; i < *report_index; i++) {
+        if (report[i] == keycode) {
+            return;
+        }
+    }
+
+    report[(*report_index)++] = keycode;
+}
+
+static void merge_report_keys(uint8_t merged[KEYBOARD_HID_REPORT_SIZE],
+    uint8_t *report_index, const uint8_t report[KEYBOARD_HID_REPORT_SIZE])
+{
+    for (uint8_t i = 2; i < KEYBOARD_HID_REPORT_SIZE; i++) {
+        append_report_key(merged, report_index, report[i]);
+    }
+}
+
+static void build_merged_hid_report(void)
+{
+    uint8_t report_index = 2;
+
+    memset(hid_report, 0, KEYBOARD_HID_REPORT_SIZE);
+    hid_report[0] = local_report[0] | remote_report[0];
+
+    merge_report_keys(hid_report, &report_index, local_report);
+    merge_report_keys(hid_report, &report_index, remote_report);
+}
+
+static void submit_merged_hid_report(void)
+{
+    k_spinlock_key_t key = k_spin_lock(&report_lock);
+
+    build_merged_hid_report();
+
+    k_spin_unlock(&report_lock, key);
+    send_hid_report();
+}
+
+static void remote_report_work_handler(struct k_work *work)
+{
+    ARG_UNUSED(work);
+    submit_merged_hid_report();
+}
+
+static void split_report_received(const uint8_t *report, uint8_t len,
+    void *user_data)
+{
+    ARG_UNUSED(user_data);
+
+    if (len != KEYBOARD_HID_REPORT_SIZE) {
+        return;
+    }
+
+    k_spinlock_key_t key = k_spin_lock(&report_lock);
+
+    memcpy(remote_report, report, KEYBOARD_HID_REPORT_SIZE);
+
+    k_spin_unlock(&report_lock, key);
+    k_work_submit(&remote_report_work);
+}
+
+static bool wait_for_usb_ready(void)
+{
+    int64_t deadline = k_uptime_get() + CONFIG_ERGODOX_USB_READY_TIMEOUT_MS;
+
+    while (k_uptime_get() < deadline) {
+        if (hid_ready) {
+            return true;
+        }
+
+        k_msleep(10);
+    }
+
+    return hid_ready;
+}
+
+static void update_local_report(void)
+{
+    k_spinlock_key_t key = k_spin_lock(&report_lock);
+
+    keyboard_runtime_build_hid_report(&keyboard, local_report);
+
+    k_spin_unlock(&report_lock, key);
+}
+
+static int publish_local_report(void)
+{
+    if (transport_mode == KEYBOARD_TRANSPORT_USB) {
+        submit_merged_hid_report();
+        return 0;
+    }
+
+#if IS_ENABLED(CONFIG_ERGODOX_SPLIT_UART)
+    return split_transport_send_report(local_report, KEYBOARD_HID_REPORT_SIZE);
+#else
+    return -ENOTSUP;
+#endif
+}
+
 static void update_key(uint8_t index, bool pressed)
 {
     const struct keyboard_action *action;
+    int ret;
 
     if (!keyboard_runtime_handle_key(&keyboard, index, pressed)) {
         update_leds_for_layers();
         return;
     }
 
-    keyboard_runtime_build_hid_report(&keyboard, hid_report);
-    send_hid_report();
+    update_local_report();
+
+    ret = publish_local_report();
+    if (ret != 0) {
+        LOG_WRN("Failed to publish local report: %d", ret);
+    }
 
     action = keyboard_runtime_pressed_action(&keyboard, index);
     LOG_INF("Key %s: index %d, keycode 0x%02x, layers 0x%08x",
@@ -331,7 +456,43 @@ static void key_gpio_callback(const struct device *port,
 {
     struct key_irq *key_irq = CONTAINER_OF(callback, struct key_irq, callback);
 
+    ARG_UNUSED(port);
+    ARG_UNUSED(pins);
+
     k_work_reschedule(&key_irq->work, K_MSEC(KEY_DEBOUNCE_MS));
+}
+
+static int init_split_transport(bool receive_reports)
+{
+#if IS_ENABLED(CONFIG_ERGODOX_SPLIT_UART)
+    return split_transport_init(receive_reports ? split_report_received : NULL,
+        NULL);
+#else
+    ARG_UNUSED(receive_reports);
+    return 0;
+#endif
+}
+
+static int select_transport_mode(void)
+{
+    int ret = init_usb_device();
+
+    if (ret == 0 && wait_for_usb_ready()) {
+        transport_mode = KEYBOARD_TRANSPORT_USB;
+        LOG_INF("Using USB HID to host and UART for split RX");
+        return init_split_transport(true);
+    }
+
+    if (ret != 0) {
+        LOG_WRN("USB initialization failed, falling back to UART: %d", ret);
+    } else {
+        LOG_WRN("USB HID not ready after %d ms, falling back to UART",
+            CONFIG_ERGODOX_USB_READY_TIMEOUT_MS);
+        (void)usbd_disable(&ergodox_usbd);
+    }
+
+    transport_mode = KEYBOARD_TRANSPORT_UART;
+    return init_split_transport(false);
 }
 
 int main(void)
@@ -339,14 +500,16 @@ int main(void)
     int ret;
 
     LOG_INF("Keyboard interrupt setup start");
+    k_work_init(&remote_report_work, remote_report_work_handler);
 
     keyboard_runtime_init(&keyboard, keyboard_layout_get_selected(),
         ERGODOX_KEYBOARD_HAND);
     LOG_INF("Keyboard layout: %s, hand: %s", keyboard.layout->name,
         ERGODOX_KEYBOARD_HAND_NAME);
 
-    ret = init_usb_device();
+    ret = select_transport_mode();
     if (ret != 0) {
+        LOG_ERR("Failed to initialize keyboard transport: %d", ret);
         return ret;
     }
 
@@ -376,8 +539,11 @@ int main(void)
         keyboard_runtime_handle_key(&keyboard, i, gpio_pin_get_dt(&keys[i]));
     }
 
-    keyboard_runtime_build_hid_report(&keyboard, hid_report);
-    send_hid_report();
+    update_local_report();
+    ret = publish_local_report();
+    if (ret != 0) {
+        LOG_WRN("Failed to publish initial report: %d", ret);
+    }
 
     for (int i = 0; i < LEDS; i++) {
         ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_INACTIVE);

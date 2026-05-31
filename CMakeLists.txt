@@ -11,3 +11,6 @@ target_sources(app PRIVATE
   src/keyboard_runtime.c
 )
 
+target_sources_ifdef(CONFIG_ERGODOX_SPLIT_UART app PRIVATE
+  src/split_transport_uart.c
+)

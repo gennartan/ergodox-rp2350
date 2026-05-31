@@ -16,6 +16,28 @@ config ERGODOX_KEYBOARD_HAND_RIGHT
 
 endchoice
 
+config ERGODOX_SPLIT_UART
+    bool "Enable split keyboard UART transport"
+    default y
+    select SERIAL
+    select UART_INTERRUPT_DRIVEN
+    help
+      Enable the UART transport used to forward HID reports from the non-USB
+      half to the USB-connected half.
+
+config ERGODOX_SPLIT_UART_BAUDRATE
+    int "Split UART baudrate"
+    default 1000000
+    depends on ERGODOX_SPLIT_UART
+
+config ERGODOX_USB_READY_TIMEOUT_MS
+    int "USB ready timeout before falling back to UART"
+    default 1500
+    help
+      Time to wait at boot for the USB HID interface to become ready. If USB
+      initialization fails or the interface is not ready before this timeout,
+      the firmware acts as the UART-sender half.
+
 choice ERGODOX_KEYBOARD_LAYOUT
     prompt "Keyboard layout"
     default ERGODOX_KEYBOARD_LAYOUT_SIMPLE
