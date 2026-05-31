@@ -91,6 +91,14 @@ struct key_irq {
 static struct key_irq key_irqs[KEYBOARD_KEY_COUNT];
 static struct keyboard_runtime keyboard;
 
+#if IS_ENABLED(CONFIG_ERGODOX_KEYBOARD_HAND_LEFT)
+#define ERGODOX_KEYBOARD_HAND KEYBOARD_HAND_LEFT
+#define ERGODOX_KEYBOARD_HAND_NAME "left"
+#else
+#define ERGODOX_KEYBOARD_HAND KEYBOARD_HAND_RIGHT
+#define ERGODOX_KEYBOARD_HAND_NAME "right"
+#endif
+
 // HID report buffer
 UDC_STATIC_BUF_DEFINE(hid_report, KEYBOARD_HID_REPORT_SIZE);
 
@@ -332,8 +340,10 @@ int main(void)
 
     LOG_INF("Keyboard interrupt setup start");
 
-    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected(), KEYBOARD_HAND_RIGHT);
-    LOG_INF("Keyboard layout: %s", keyboard.layout->name);
+    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected(),
+        ERGODOX_KEYBOARD_HAND);
+    LOG_INF("Keyboard layout: %s, hand: %s", keyboard.layout->name,
+        ERGODOX_KEYBOARD_HAND_NAME);
 
     ret = init_usb_device();
     if (ret != 0) {

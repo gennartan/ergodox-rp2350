@@ -1,5 +1,21 @@
 mainmenu "Ergodox custom main menu"
 
+choice ERGODOX_KEYBOARD_HAND
+    prompt "Keyboard hand"
+    default ERGODOX_KEYBOARD_HAND_RIGHT
+
+config ERGODOX_KEYBOARD_HAND_LEFT
+    bool "Left hand"
+    help
+      Build firmware using the left-hand side of the selected layout.
+
+config ERGODOX_KEYBOARD_HAND_RIGHT
+    bool "Right hand"
+    help
+      Build firmware using the right-hand side of the selected layout.
+
+endchoice
+
 choice ERGODOX_KEYBOARD_LAYOUT
     prompt "Keyboard layout"
     default ERGODOX_KEYBOARD_LAYOUT_SIMPLE
