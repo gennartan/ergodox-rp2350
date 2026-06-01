@@ -39,7 +39,7 @@ static const struct keyboard_action custom_layers[KEYBOARD_HAND_COUNT][KEYBOARD_
             [33] = KB_MO(KEYBOARD_LAYER_SYMBOL),
             [34] = KB_DF(KEYBOARD_LAYER_NAV),
             [35] = KB_TG(KEYBOARD_LAYER_NAV),
-            [36] = KB_MO(KEYBOARD_LAYER_NAV),
+            [36] = KB_MO(KEYBOARD_LAYER_SYMBOL),
             [37] = KB_KEY(HID_KEY_ENTER),
         },
         [KEYBOARD_LAYER_NAV] = {

@@ -188,7 +188,7 @@
         },
         {
           "type": "momentary_layer",
-          "layer": "NAV"
+          "layer": "SYMBOL"
         },
         {
           "type": "key",
