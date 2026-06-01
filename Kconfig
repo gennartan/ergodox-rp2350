@@ -22,8 +22,8 @@ config ERGODOX_SPLIT_UART
     select SERIAL
     select UART_INTERRUPT_DRIVEN
     help
-      Enable the UART transport used to forward HID reports from the non-USB
-      half to the USB-connected half.
+      Enable the UART transport used to forward raw key events from the
+      non-USB half to the USB-connected half.
 
 config ERGODOX_SPLIT_UART_BAUDRATE
     int "Split UART baudrate"

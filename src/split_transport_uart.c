@@ -8,13 +8,13 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "keyboard_layout.h"
-
 LOG_MODULE_REGISTER(split_uart);
 
 #define SPLIT_MAGIC 0xa5
-#define SPLIT_VERSION 1
-#define SPLIT_PACKET_SIZE (3 + KEYBOARD_HID_REPORT_SIZE + 1)
+#define SPLIT_VERSION 2
+#define SPLIT_EVENT_SIZE 3
+#define SPLIT_PAYLOAD_SIZE (SPLIT_TRANSPORT_MAX_EVENTS * SPLIT_EVENT_SIZE)
+#define SPLIT_PACKET_SIZE (3 + SPLIT_PAYLOAD_SIZE + 1)
 
 #if DT_HAS_CHOSEN(ergodox_split_uart)
 #define SPLIT_UART_NODE DT_CHOSEN(ergodox_split_uart)
@@ -23,8 +23,8 @@ LOG_MODULE_REGISTER(split_uart);
 #endif
 
 static const struct device *const split_uart = DEVICE_DT_GET(SPLIT_UART_NODE);
-static split_report_cb_t report_cb;
-static void *report_user_data;
+static split_events_cb_t events_cb;
+static void *events_user_data;
 static uint8_t rx_buf[SPLIT_PACKET_SIZE];
 static uint8_t rx_pos;
 
@@ -48,39 +48,76 @@ static uint8_t packet_checksum(const uint8_t *packet)
 }
 
 static void encode_packet(uint8_t packet[SPLIT_PACKET_SIZE],
-    const uint8_t *report, uint8_t len)
+    const struct split_key_event *events, uint8_t count)
 {
     memset(packet, 0, SPLIT_PACKET_SIZE);
     packet[0] = SPLIT_MAGIC;
     packet[1] = SPLIT_VERSION;
-    packet[2] = len;
+    packet[2] = count;
 
-    memcpy(&packet[3], report, len);
+    for (uint8_t i = 0; i < count; i++) {
+        uint8_t *event = &packet[3 + i * SPLIT_EVENT_SIZE];
+
+        event[0] = events[i].hand;
+        event[1] = events[i].key_index;
+        event[2] = events[i].type;
+    }
+
     packet[SPLIT_PACKET_SIZE - 1] = packet_checksum(packet);
 }
 
+static int append_events_to_packet(uint8_t packet[SPLIT_PACKET_SIZE],
+    const struct split_key_event *events, uint8_t count)
+{
+    uint8_t old_count = packet[2];
+
+    if (old_count + count > SPLIT_TRANSPORT_MAX_EVENTS) {
+        return -ENOMEM;
+    }
+
+    for (uint8_t i = 0; i < count; i++) {
+        uint8_t *event = &packet[3 + (old_count + i) * SPLIT_EVENT_SIZE];
+
+        event[0] = events[i].hand;
+        event[1] = events[i].key_index;
+        event[2] = events[i].type;
+    }
+
+    packet[2] = old_count + count;
+    packet[SPLIT_PACKET_SIZE - 1] = packet_checksum(packet);
+
+    return 0;
+}
+
 static bool decode_packet(const uint8_t packet[SPLIT_PACKET_SIZE],
-    uint8_t report[KEYBOARD_HID_REPORT_SIZE], uint8_t *len)
+    struct split_key_event events[SPLIT_TRANSPORT_MAX_EVENTS], uint8_t *count)
 {
     if (packet[0] != SPLIT_MAGIC || packet[1] != SPLIT_VERSION ||
         packet[SPLIT_PACKET_SIZE - 1] != packet_checksum(packet)) {
         return false;
     }
 
-    if (packet[2] != KEYBOARD_HID_REPORT_SIZE) {
+    if (packet[2] > SPLIT_TRANSPORT_MAX_EVENTS) {
         return false;
     }
 
-    *len = packet[2];
-    memcpy(report, &packet[3], *len);
+    *count = packet[2];
+
+    for (uint8_t i = 0; i < *count; i++) {
+        const uint8_t *event = &packet[3 + i * SPLIT_EVENT_SIZE];
+
+        events[i].hand = event[0];
+        events[i].key_index = event[1];
+        events[i].type = event[2];
+    }
 
     return true;
 }
 
 static void process_rx_byte(uint8_t byte)
 {
-    uint8_t report[KEYBOARD_HID_REPORT_SIZE];
-    uint8_t len;
+    struct split_key_event events[SPLIT_TRANSPORT_MAX_EVENTS];
+    uint8_t count;
 
     if (rx_pos == 0 && byte != SPLIT_MAGIC) {
         return;
@@ -93,13 +130,13 @@ static void process_rx_byte(uint8_t byte)
 
     rx_pos = 0;
 
-    if (!decode_packet(rx_buf, report, &len)) {
-        LOG_WRN("Dropped invalid split report packet");
+    if (!decode_packet(rx_buf, events, &count)) {
+        LOG_WRN("Dropped invalid split event packet");
         return;
     }
 
-    if (report_cb != NULL) {
-        report_cb(report, len, report_user_data);
+    if (events_cb != NULL) {
+        events_cb(events, count, events_user_data);
     }
 }
 
@@ -154,7 +191,7 @@ static void split_uart_irq_callback(const struct device *dev, void *user_data)
     }
 }
 
-int split_transport_init(split_report_cb_t cb, void *user_data)
+int split_transport_init(split_events_cb_t cb, void *user_data)
 {
     int ret;
     const struct uart_config cfg = {
@@ -176,8 +213,8 @@ int split_transport_init(split_report_cb_t cb, void *user_data)
         return ret;
     }
 
-    report_cb = cb;
-    report_user_data = user_data;
+    events_cb = cb;
+    events_user_data = user_data;
 
     ret = uart_irq_callback_user_data_set(split_uart, split_uart_irq_callback,
         NULL);
@@ -191,9 +228,11 @@ int split_transport_init(split_report_cb_t cb, void *user_data)
     return 0;
 }
 
-int split_transport_send_report(const uint8_t *report, uint8_t len)
+int split_transport_send_events(const struct split_key_event *events,
+    uint8_t count)
 {
-    if (report == NULL || len != KEYBOARD_HID_REPORT_SIZE) {
+    if ((events == NULL && count != 0) ||
+        count > SPLIT_TRANSPORT_MAX_EVENTS) {
         return -EINVAL;
     }
 
@@ -204,13 +243,20 @@ int split_transport_send_report(const uint8_t *report, uint8_t len)
     k_spinlock_key_t key = k_spin_lock(&tx_lock);
 
     if (tx_busy) {
-        encode_packet(tx_pending_buf, report, len);
+        if (tx_pending) {
+            int ret = append_events_to_packet(tx_pending_buf, events, count);
+
+            k_spin_unlock(&tx_lock, key);
+            return ret;
+        }
+
+        encode_packet(tx_pending_buf, events, count);
         tx_pending = true;
         k_spin_unlock(&tx_lock, key);
         return 0;
     }
 
-    encode_packet(tx_buf, report, len);
+    encode_packet(tx_buf, events, count);
     tx_pos = 0;
     tx_len = SPLIT_PACKET_SIZE;
     tx_busy = true;
@@ -219,4 +265,9 @@ int split_transport_send_report(const uint8_t *report, uint8_t len)
     uart_irq_tx_enable(split_uart);
 
     return 0;
+}
+
+int split_transport_send_event(const struct split_key_event *event)
+{
+    return split_transport_send_events(event, 1);
 }

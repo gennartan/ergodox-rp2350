@@ -93,10 +93,10 @@ struct key_irq {
 
 static struct key_irq key_irqs[KEYBOARD_KEY_COUNT];
 static struct keyboard_runtime keyboard;
-static uint8_t local_report[KEYBOARD_HID_REPORT_SIZE];
-static uint8_t remote_report[KEYBOARD_HID_REPORT_SIZE];
-static struct k_spinlock report_lock;
-static struct k_work remote_report_work;
+static bool local_pressed[KEYBOARD_KEY_COUNT];
+static struct k_spinlock runtime_lock;
+static struct k_work split_events_work;
+K_MSGQ_DEFINE(split_event_msgq, sizeof(struct split_key_event), 32, 4);
 
 enum keyboard_transport_mode {
     KEYBOARD_TRANSPORT_USB,
@@ -282,7 +282,10 @@ static int init_usb_device(void)
 
 static void update_leds_for_layers(void)
 {
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
     uint32_t active_layers = keyboard_runtime_active_layers(&keyboard);
+
+    k_spin_unlock(&runtime_lock, key);
 
     // Map layers to LEDs (BASE layer has no LED indicator)
     // Layer 0 (BASE) = all LEDs off
@@ -313,72 +316,97 @@ static void send_hid_report(void)
     }
 }
 
-static void append_report_key(uint8_t report[KEYBOARD_HID_REPORT_SIZE],
-    uint8_t *report_index, uint8_t keycode)
+static void submit_hid_report_from_runtime(void)
 {
-    if (keycode == 0 || *report_index >= KEYBOARD_HID_REPORT_SIZE) {
-        return;
-    }
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
 
-    for (uint8_t i = 2; i < *report_index; i++) {
-        if (report[i] == keycode) {
-            return;
-        }
-    }
+    keyboard_runtime_build_hid_report(&keyboard, hid_report);
 
-    report[(*report_index)++] = keycode;
-}
-
-static void merge_report_keys(uint8_t merged[KEYBOARD_HID_REPORT_SIZE],
-    uint8_t *report_index, const uint8_t report[KEYBOARD_HID_REPORT_SIZE])
-{
-    for (uint8_t i = 2; i < KEYBOARD_HID_REPORT_SIZE; i++) {
-        append_report_key(merged, report_index, report[i]);
-    }
-}
-
-static void build_merged_hid_report(void)
-{
-    uint8_t report_index = 2;
-
-    memset(hid_report, 0, KEYBOARD_HID_REPORT_SIZE);
-    hid_report[0] = local_report[0] | remote_report[0];
-
-    merge_report_keys(hid_report, &report_index, local_report);
-    merge_report_keys(hid_report, &report_index, remote_report);
-}
-
-static void submit_merged_hid_report(void)
-{
-    k_spinlock_key_t key = k_spin_lock(&report_lock);
-
-    build_merged_hid_report();
-
-    k_spin_unlock(&report_lock, key);
+    k_spin_unlock(&runtime_lock, key);
     send_hid_report();
 }
 
-static void remote_report_work_handler(struct k_work *work)
+static void process_key_event(const struct split_key_event *event)
 {
-    ARG_UNUSED(work);
-    submit_merged_hid_report();
-}
+    struct keyboard_action action;
+    uint32_t active_layers;
+    bool pressed;
+    bool report_changed;
 
-static void split_report_received(const uint8_t *report, uint8_t len,
-    void *user_data)
-{
-    ARG_UNUSED(user_data);
-
-    if (len != KEYBOARD_HID_REPORT_SIZE) {
+    if (event->hand >= KEYBOARD_HAND_COUNT ||
+        event->key_index >= KEYBOARD_KEY_COUNT) {
         return;
     }
 
-    k_spinlock_key_t key = k_spin_lock(&report_lock);
+    if (event->type == SPLIT_KEY_EVENT_DOUBLE_TAP) {
+        struct split_key_event press = *event;
+        struct split_key_event release = *event;
 
-    memcpy(remote_report, report, KEYBOARD_HID_REPORT_SIZE);
+        press.type = SPLIT_KEY_EVENT_PRESS;
+        release.type = SPLIT_KEY_EVENT_RELEASE;
+        process_key_event(&press);
+        process_key_event(&release);
+        process_key_event(&press);
+        process_key_event(&release);
+        return;
+    }
 
-    k_spin_unlock(&report_lock, key);
-    k_work_submit(&remote_report_work);
+    switch (event->type) {
+    case SPLIT_KEY_EVENT_PRESS:
+        pressed = true;
+        break;
+    case SPLIT_KEY_EVENT_RELEASE:
+        pressed = false;
+        break;
+    default:
+        LOG_WRN("Unsupported split key event type %u", event->type);
+        return;
+    }
+
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+
+    report_changed = keyboard_runtime_handle_key(&keyboard, event->hand,
+        event->key_index, pressed);
+    action = *keyboard_runtime_pressed_action(&keyboard, event->hand,
+        event->key_index);
+    active_layers = keyboard_runtime_active_layers(&keyboard);
+
+    k_spin_unlock(&runtime_lock, key);
+
+    update_leds_for_layers();
+
+    if (report_changed) {
+        submit_hid_report_from_runtime();
+    }
+
+    LOG_INF("Key %s: hand %u, index %d, keycode 0x%02x, layers 0x%08x",
+        pressed ? "pressed" : "released", event->hand, event->key_index + 1,
+        action.keycode, active_layers);
+}
+
+static void split_events_work_handler(struct k_work *work)
+{
+    struct split_key_event event;
+
+    ARG_UNUSED(work);
+
+    while (k_msgq_get(&split_event_msgq, &event, K_NO_WAIT) == 0) {
+        process_key_event(&event);
+    }
+}
+
+static void split_events_received(const struct split_key_event *events,
+    uint8_t count, void *user_data)
+{
+    ARG_UNUSED(user_data);
+
+    for (uint8_t i = 0; i < count; i++) {
+        if (k_msgq_put(&split_event_msgq, &events[i], K_NO_WAIT) != 0) {
+            LOG_WRN("Dropped split key event");
+        }
+    }
+
+    k_work_submit(&split_events_work);
 }
 
 static bool wait_for_usb_ready(void)
@@ -396,50 +424,46 @@ static bool wait_for_usb_ready(void)
     return hid_ready;
 }
 
-static void update_local_report(void)
+static int publish_key_event(uint8_t index, bool pressed)
 {
-    k_spinlock_key_t key = k_spin_lock(&report_lock);
-
-    keyboard_runtime_build_hid_report(&keyboard, local_report);
-
-    k_spin_unlock(&report_lock, key);
-}
-
-static int publish_local_report(void)
-{
-    if (transport_mode == KEYBOARD_TRANSPORT_USB) {
-        submit_merged_hid_report();
-        return 0;
-    }
+    struct split_key_event event = {
+        .hand = ERGODOX_KEYBOARD_HAND,
+        .key_index = index,
+        .type = pressed ? SPLIT_KEY_EVENT_PRESS : SPLIT_KEY_EVENT_RELEASE,
+    };
 
 #if IS_ENABLED(CONFIG_ERGODOX_SPLIT_UART)
-    return split_transport_send_report(local_report, KEYBOARD_HID_REPORT_SIZE);
+    return split_transport_send_event(&event);
 #else
+    ARG_UNUSED(event);
     return -ENOTSUP;
 #endif
 }
 
 static void update_key(uint8_t index, bool pressed)
 {
-    const struct keyboard_action *action;
+    struct split_key_event event = {
+        .hand = ERGODOX_KEYBOARD_HAND,
+        .key_index = index,
+        .type = pressed ? SPLIT_KEY_EVENT_PRESS : SPLIT_KEY_EVENT_RELEASE,
+    };
     int ret;
 
-    if (!keyboard_runtime_handle_key(&keyboard, index, pressed)) {
-        update_leds_for_layers();
+    if (index >= KEYBOARD_KEY_COUNT || pressed == local_pressed[index]) {
         return;
     }
 
-    update_local_report();
+    local_pressed[index] = pressed;
 
-    ret = publish_local_report();
-    if (ret != 0) {
-        LOG_WRN("Failed to publish local report: %d", ret);
+    if (transport_mode == KEYBOARD_TRANSPORT_USB) {
+        process_key_event(&event);
+        return;
     }
 
-    action = keyboard_runtime_pressed_action(&keyboard, index);
-    LOG_INF("Key %s: index %d, keycode 0x%02x, layers 0x%08x",
-        pressed ? "pressed" : "released", index + 1, action->keycode,
-        keyboard_runtime_active_layers(&keyboard));
+    ret = publish_key_event(index, pressed);
+    if (ret != 0) {
+        LOG_WRN("Failed to publish local key event: %d", ret);
+    }
 }
 
 static void key_work_handler(struct k_work *work)
@@ -462,13 +486,13 @@ static void key_gpio_callback(const struct device *port,
     k_work_reschedule(&key_irq->work, K_MSEC(KEY_DEBOUNCE_MS));
 }
 
-static int init_split_transport(bool receive_reports)
+static int init_split_transport(bool receive_events)
 {
 #if IS_ENABLED(CONFIG_ERGODOX_SPLIT_UART)
-    return split_transport_init(receive_reports ? split_report_received : NULL,
+    return split_transport_init(receive_events ? split_events_received : NULL,
         NULL);
 #else
-    ARG_UNUSED(receive_reports);
+    ARG_UNUSED(receive_events);
     return 0;
 #endif
 }
@@ -500,10 +524,9 @@ int main(void)
     int ret;
 
     LOG_INF("Keyboard interrupt setup start");
-    k_work_init(&remote_report_work, remote_report_work_handler);
+    k_work_init(&split_events_work, split_events_work_handler);
 
-    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected(),
-        ERGODOX_KEYBOARD_HAND);
+    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected());
     LOG_INF("Keyboard layout: %s, hand: %s", keyboard.layout->name,
         ERGODOX_KEYBOARD_HAND_NAME);
 
@@ -511,6 +534,14 @@ int main(void)
     if (ret != 0) {
         LOG_ERR("Failed to initialize keyboard transport: %d", ret);
         return ret;
+    }
+
+    for (int i = 0; i < LEDS; i++) {
+        ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_INACTIVE);
+        if (ret < 0) {
+            LOG_ERR("Failed to configure LED %d: %d", i, ret);
+            return ret;
+        }
     }
 
     for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
@@ -536,21 +567,13 @@ int main(void)
             LOG_ERR("Failed to enable key %d interrupt: %d", i + 1, ret);
             return ret;
         }
-        keyboard_runtime_handle_key(&keyboard, i, gpio_pin_get_dt(&keys[i]));
-    }
-
-    update_local_report();
-    ret = publish_local_report();
-    if (ret != 0) {
-        LOG_WRN("Failed to publish initial report: %d", ret);
-    }
-
-    for (int i = 0; i < LEDS; i++) {
-        ret = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT_INACTIVE);
-        if (ret < 0) {
-            LOG_ERR("Failed to configure LED %d: %d", i, ret);
-            return ret;
+        if (gpio_pin_get_dt(&keys[i])) {
+            update_key(i, true);
         }
+    }
+
+    if (transport_mode == KEYBOARD_TRANSPORT_USB) {
+        submit_hid_report_from_runtime();
     }
 
     // Set initial LED states based on active layers

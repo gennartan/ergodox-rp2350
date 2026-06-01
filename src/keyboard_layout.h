@@ -48,9 +48,8 @@ struct keyboard_layout {
 
 struct keyboard_runtime {
     const struct keyboard_layout *layout;
-    struct keyboard_action pressed_actions[KEYBOARD_KEY_COUNT];
-    bool pressed[KEYBOARD_KEY_COUNT];
-    uint8_t current_hand;
+    struct keyboard_action pressed_actions[KEYBOARD_HAND_COUNT][KEYBOARD_KEY_COUNT];
+    bool pressed[KEYBOARD_HAND_COUNT][KEYBOARD_KEY_COUNT];
     uint32_t default_layer;
     uint32_t active_layers;
 };
@@ -73,13 +72,13 @@ struct keyboard_runtime {
 const struct keyboard_layout *keyboard_layout_get_selected(void);
 
 void keyboard_runtime_init(struct keyboard_runtime *runtime,
-    const struct keyboard_layout *layout, uint8_t current_hand);
+    const struct keyboard_layout *layout);
 bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
-    uint8_t key_index, bool pressed);
+    uint8_t hand, uint8_t key_index, bool pressed);
 void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
     uint8_t report[KEYBOARD_HID_REPORT_SIZE]);
 uint32_t keyboard_runtime_active_layers(const struct keyboard_runtime *runtime);
 const struct keyboard_action *keyboard_runtime_pressed_action(
-    const struct keyboard_runtime *runtime, uint8_t key_index);
+    const struct keyboard_runtime *runtime, uint8_t hand, uint8_t key_index);
 
 #endif /* KEYBOARD_LAYOUT_H */

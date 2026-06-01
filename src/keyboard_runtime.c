@@ -14,11 +14,12 @@ static uint32_t layer_bit(uint8_t layer)
 }
 
 static const struct keyboard_action *resolve_action(
-    const struct keyboard_runtime *runtime, uint8_t key_index)
+    const struct keyboard_runtime *runtime, uint8_t hand, uint8_t key_index)
 {
     uint32_t layers = runtime->default_layer | runtime->active_layers;
 
-    if (key_index >= KEYBOARD_KEY_COUNT || runtime->layout == NULL) {
+    if (hand >= KEYBOARD_HAND_COUNT || key_index >= KEYBOARD_KEY_COUNT ||
+        runtime->layout == NULL) {
         return &no_action;
     }
 
@@ -29,7 +30,7 @@ static const struct keyboard_action *resolve_action(
             continue;
         }
 
-        action = &(*runtime->layout->layers)[runtime->current_hand][layer][key_index];
+        action = &(*runtime->layout->layers)[hand][layer][key_index];
         if (action->type != KEYBOARD_ACTION_TRANSPARENT) {
             return action;
         }
@@ -38,33 +39,48 @@ static const struct keyboard_action *resolve_action(
     return &no_action;
 }
 
+static void append_report_key(uint8_t report[KEYBOARD_HID_REPORT_SIZE],
+    uint8_t *report_index, uint8_t keycode)
+{
+    if (keycode == 0 || *report_index >= KEYBOARD_HID_REPORT_SIZE) {
+        return;
+    }
+
+    for (uint8_t i = 2; i < *report_index; i++) {
+        if (report[i] == keycode) {
+            return;
+        }
+    }
+
+    report[(*report_index)++] = keycode;
+}
+
 void keyboard_runtime_init(struct keyboard_runtime *runtime,
-    const struct keyboard_layout *layout,
-    uint8_t current_hand)
+    const struct keyboard_layout *layout)
 {
     memset(runtime, 0, sizeof(*runtime));
     runtime->layout = layout;
     runtime->default_layer = BIT(KEYBOARD_LAYER_BASE);
-    runtime->current_hand = current_hand;
 }
 
 bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
-    uint8_t key_index, bool pressed)
+    uint8_t hand, uint8_t key_index, bool pressed)
 {
     const struct keyboard_action *action;
     bool report_changed = false;
 
-    if (key_index >= KEYBOARD_KEY_COUNT || pressed == runtime->pressed[key_index]) {
+    if (hand >= KEYBOARD_HAND_COUNT || key_index >= KEYBOARD_KEY_COUNT ||
+        pressed == runtime->pressed[hand][key_index]) {
         return false;
     }
 
-    runtime->pressed[key_index] = pressed;
+    runtime->pressed[hand][key_index] = pressed;
 
     if (pressed) {
-        action = resolve_action(runtime, key_index);
-        runtime->pressed_actions[key_index] = *action;
+        action = resolve_action(runtime, hand, key_index);
+        runtime->pressed_actions[hand][key_index] = *action;
     } else {
-        action = &runtime->pressed_actions[key_index];
+        action = &runtime->pressed_actions[hand][key_index];
     }
 
     switch (action->type) {
@@ -76,7 +92,7 @@ bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
             runtime->active_layers |= layer_bit(action->layer);
         } else {
             runtime->active_layers &= ~layer_bit(action->layer);
-            runtime->pressed_actions[key_index] = no_action;
+            runtime->pressed_actions[hand][key_index] = no_action;
         }
         break;
     case KEYBOARD_ACTION_LAYER_TOGGLE:
@@ -105,17 +121,19 @@ void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
 
     memset(report, 0, KEYBOARD_HID_REPORT_SIZE);
 
-    for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-        const struct keyboard_action *action = &runtime->pressed_actions[i];
+    for (int hand = 0; hand < KEYBOARD_HAND_COUNT; hand++) {
+        for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+            const struct keyboard_action *action =
+                &runtime->pressed_actions[hand][i];
 
-        if (!runtime->pressed[i] || action->type != KEYBOARD_ACTION_KEY) {
-            continue;
-        }
+            if (!runtime->pressed[hand][i] ||
+                action->type != KEYBOARD_ACTION_KEY) {
+                continue;
+            }
 
-        report[0] |= action->modifier;
+            report[0] |= action->modifier;
 
-        if (action->keycode != 0 && report_index < KEYBOARD_HID_REPORT_SIZE) {
-            report[report_index++] = action->keycode;
+            append_report_key(report, &report_index, action->keycode);
         }
     }
 }
@@ -126,11 +144,11 @@ uint32_t keyboard_runtime_active_layers(const struct keyboard_runtime *runtime)
 }
 
 const struct keyboard_action *keyboard_runtime_pressed_action(
-    const struct keyboard_runtime *runtime, uint8_t key_index)
+    const struct keyboard_runtime *runtime, uint8_t hand, uint8_t key_index)
 {
-    if (key_index >= KEYBOARD_KEY_COUNT) {
+    if (hand >= KEYBOARD_HAND_COUNT || key_index >= KEYBOARD_KEY_COUNT) {
         return &no_action;
     }
 
-    return &runtime->pressed_actions[key_index];
+    return &runtime->pressed_actions[hand][key_index];
 }
