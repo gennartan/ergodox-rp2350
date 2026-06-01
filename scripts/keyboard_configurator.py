@@ -1103,6 +1103,77 @@ def main() -> int:
         QLabel, QCheckBox, QRadioButton {
             color: #1f2937;
         }
+        QToolBar {
+            background: #f6f7f9;
+            color: #1f2937;
+            border-bottom: 1px solid #c8ced8;
+            spacing: 4px;
+        }
+        QToolButton {
+            background: transparent;
+            color: #1f2937;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 4px 6px;
+        }
+        QToolButton:hover {
+            background: #e8eef7;
+            border-color: #c8ced8;
+        }
+        QMenu {
+            background: #ffffff;
+            color: #111827;
+            border: 1px solid #aab3c1;
+            padding: 4px;
+        }
+        QMenu::item {
+            background: transparent;
+            color: #111827;
+            padding: 4px 18px;
+        }
+        QMenu::item:selected {
+            background: #dbe8ff;
+            color: #111827;
+        }
+        QCheckBox:disabled, QRadioButton:disabled {
+            color: #6b7280;
+        }
+        QCheckBox::indicator {
+            background: #ffffff;
+            border: 1px solid #6b7280;
+            border-radius: 3px;
+            width: 12px;
+            height: 12px;
+        }
+        QCheckBox::indicator:checked {
+            background: #2d6cdf;
+            border-color: #1d4ed8;
+        }
+        QCheckBox::indicator:disabled {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        QTabBar {
+            background: #f6f7f9;
+            color: #1f2937;
+        }
+        QTabBar::tab {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #aab3c1;
+            border-bottom-color: #c8ced8;
+            padding: 5px 12px;
+            margin-right: 2px;
+        }
+        QTabBar::tab:selected {
+            background: #dbe8ff;
+            color: #111827;
+            border-color: #2d6cdf;
+        }
+        QTabBar::tab:!selected {
+            background: #eef2f6;
+            color: #374151;
+        }
         QLineEdit, QComboBox, QPlainTextEdit {
             background: #ffffff;
             color: #111827;
