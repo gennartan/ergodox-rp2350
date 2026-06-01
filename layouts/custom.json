@@ -6,7 +6,9 @@
         {
           "type": "key",
           "keycode": "HID_KEY_RIGHTBRACE",
-          "modifiers": []
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "key",
@@ -57,13 +59,15 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_COMMA",
+          "keycode": "HID_KEY_M",
           "modifiers": []
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_RIGHTALT",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "key",
@@ -82,7 +86,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_SEMICOLON",
+          "keycode": "HID_KEY_COMMA",
           "modifiers": []
         },
         {
@@ -107,10 +111,8 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_SEMICOLON",
-          "modifiers": [
-            "HID_KBD_MODIFIER_LEFT_SHIFT"
-          ]
+          "keycode": "HID_KEY_DOT",
+          "modifiers": []
         },
         {
           "type": "key",
@@ -129,12 +131,12 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_M",
+          "keycode": "HID_KEY_SEMICOLON",
           "modifiers": []
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_DOT",
+          "keycode": "HID_KEY_SLASH",
           "modifiers": []
         },
         {
@@ -151,17 +153,17 @@
           "type": "key",
           "keycode": "0",
           "modifiers": [
-            "HID_KBD_MODIFIER_LEFT_SHIFT"
+            "HID_KBD_MODIFIER_RIGHT_SHIFT"
           ]
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_MINUS",
+          "keycode": "HID_KEY_EQUAL",
           "modifiers": []
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_RIGHTSHIFT",
+          "keycode": "HID_KEY_LEFTBRACE",
           "modifiers": []
         },
         {
@@ -173,14 +175,16 @@
           "type": "none"
         },
         {
-          "type": "none"
+          "type": "momentary_layer",
+          "layer": "SYMBOL"
         },
         {
-          "type": "none"
+          "type": "default_layer",
+          "layer": "NAV"
         },
         {
           "type": "toggle_layer",
-          "layer": "FN"
+          "layer": "NAV"
         },
         {
           "type": "momentary_layer",
@@ -203,13 +207,33 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_F6",
+          "modifiers": []
         },
         {
           "type": "transparent"
         },
         {
+          "type": "key",
+          "keycode": "HID_KEY_LEFT",
+          "modifiers": []
+        },
+        {
           "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_F7",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_DOWN",
+          "modifiers": []
         },
         {
           "type": "transparent"
@@ -219,7 +243,45 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_PAUSE",
+          "keycode": "HID_KEY_F8",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_UP",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_F9",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_RIGHT",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_F10",
           "modifiers": []
         },
         {
@@ -244,61 +306,26 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_F12",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_F11",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_A",
+          "modifiers": []
         },
         {
           "type": "transparent"
         },
         {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
+          "type": "default_layer",
+          "layer": "BASE"
         },
         {
           "type": "transparent"
@@ -339,7 +366,11 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_RIGHTBRACE",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
         },
         {
           "type": "transparent"
@@ -354,7 +385,11 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_6",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "transparent"
@@ -369,7 +404,9 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_RIGHTBRACE",
+          "modifiers": []
         },
         {
           "type": "transparent"
@@ -384,7 +421,11 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_APOSTROPHE",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
         },
         {
           "type": "transparent"
@@ -437,23 +478,7 @@
           "type": "transparent"
         },
         {
-          "type": "key",
-          "keycode": "HID_KEY_F6",
-          "modifiers": []
-        },
-        {
           "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "key",
-          "keycode": "HID_KEY_F7",
-          "modifiers": []
         },
         {
           "type": "transparent"
@@ -469,41 +494,67 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_F8",
+          "keycode": "HID_KEY_KP_7",
           "modifiers": []
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_F9",
+          "keycode": "HID_KEY_KP_4",
           "modifiers": []
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_F10",
+          "keycode": "HID_KEY_KP_1",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_0",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KPSLASH",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_8",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_5",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_2",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KPDOT",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KPASTERISK",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_9",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_6",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_KP_3",
           "modifiers": []
         },
         {
@@ -541,6 +592,13 @@
         },
         {
           "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "default_layer",
+          "layer": "BASE"
         },
         {
           "type": "transparent"
@@ -572,7 +630,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_Z",
+          "keycode": "HID_KEY_W",
           "modifiers": []
         },
         {
@@ -582,7 +640,7 @@
         },
         {
           "type": "momentary_layer",
-          "layer": "SYMBOL"
+          "layer": "NAV"
         },
         {
           "type": "key",
@@ -664,7 +722,11 @@
           ]
         },
         {
-          "type": "none"
+          "type": "key",
+          "keycode": "HID_KEY_LEFTBRACE",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "key",
@@ -675,11 +737,15 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTSHIFT",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
         },
         {
-          "type": "none"
+          "type": "key",
+          "keycode": "HID_KEY_GRAVE",
+          "modifiers": []
         },
         {
           "type": "key",
@@ -693,22 +759,24 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_BACKSLASH",
-          "modifiers": []
+          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_W",
-          "modifiers": []
-        },
-        {
-          "type": "key",
-          "keycode": "HID_KEY_Q",
+          "keycode": "HID_KEY_Z",
           "modifiers": []
         },
         {
           "type": "key",
           "keycode": "HID_KEY_A",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_Q",
           "modifiers": []
         },
         {
@@ -728,252 +796,27 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTMETA",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_UI"
+          ]
         },
         {
           "type": "none"
         },
         {
-          "type": "none"
+          "type": "default_layer",
+          "layer": "FN"
         },
         {
-          "type": "none"
+          "type": "key",
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_UI"
+          ]
         }
       ],
       "NAV": [
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        }
-      ],
-      "SYMBOL": [
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        },
-        {
-          "type": "transparent"
-        }
-      ],
-      "FN": [
         {
           "type": "transparent"
         },
@@ -1061,7 +904,9 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_GRAVE",
+          "modifiers": []
         },
         {
           "type": "transparent"
@@ -1079,6 +924,256 @@
           "type": "key",
           "keycode": "HID_KEY_F1",
           "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "SYMBOL": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_MINUS",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_END",
+          "modifiers": []
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_RIGHTBRACE",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "key",
+          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "modifiers": []
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        }
+      ],
+      "FN": [
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
+        },
+        {
+          "type": "transparent"
         },
         {
           "type": "transparent"
