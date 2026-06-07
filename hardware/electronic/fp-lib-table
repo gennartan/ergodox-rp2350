@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "ErgoDoxCustom-backups")(type "KiCad")(uri "${KIPRJMOD}/ErgoDoxCustom-backups.pretty")(options "")(descr ""))
+  (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/Library.pretty")(options "")(descr ""))
+)
