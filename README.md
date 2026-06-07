@@ -20,6 +20,8 @@ The keyboard is split into two hands. One half is connected to the computer over
 USB and acts as the HID keyboard. The other half sends its key events over UART
 to the USB-connected half.
 
+![Assembled split keyboard](docs/images/full_keyboard.jpeg)
+
 ## 2. Project Structure
 
 The repository contains the mechanical, electronic, and firmware parts of the
@@ -43,6 +45,10 @@ mirroring the right-hand design.
 The production files were prepared for JLCPCB assembly, and the BOM contains
 JLCPCB/LCSC component references. More hardware-specific notes are documented in
 `hardware/electronic/README.md`.
+
+![Left-hand PCB](docs/images/left_hand.jpeg)
+
+![Left-hand PCB in KiCad 3D viewer](docs/images/left_hand_kicad_3d_view.png)
 
 ### Zephyr firmware
 
@@ -105,6 +111,8 @@ Start with the layout. The firmware supports multiple hands and layers through
 `src/keyboard_layout.h`. You can edit the C layout files directly, or use the
 layout JSON files and `scripts/keyboard_configurator.py` to generate a custom
 layout.
+
+![Keyboard configurator](docs/images/keyboard_configurator.png)
 
 Useful places to change behavior:
 
