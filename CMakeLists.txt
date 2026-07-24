@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 set(BOARD rp2350b_core/rp2350b/m33)
+set(ERGODOX_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 find_package(Zephyr REQUIRED)
 project(ergodoxcustom)
 
-target_sources(app PRIVATE
-  src/main.c
-  src/keyboard_layouts.c
-  src/keyboard_runtime.c
-)
-
-target_sources_ifdef(CONFIG_ERGODOX_SPLIT_UART app PRIVATE
-  src/split_transport_uart.c
-)
+include(${ERGODOX_SOURCE_DIR}/cmake/ergodox_application.cmake)

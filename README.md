@@ -71,26 +71,25 @@ Install Zephyr and make sure `west` is available in your shell. This project is
 built as a Zephyr application, so it expects the usual Zephyr SDK and Python
 environment to be installed first.
 
-From the project directory, build the firmware:
+From the project directory, build both keyboard halves with sysbuild:
 
 ```sh
-west build -b rp2350b_core/rp2350b/m33
+west build --sysbuild -b rp2350b_core/rp2350b/m33
 ```
 
-The board is also set in `CMakeLists.txt`, so a plain build can work once the
-Zephyr workspace is configured:
+The board is also set in `CMakeLists.txt`, so the board argument can be omitted
+once the Zephyr workspace is configured:
 
 ```sh
-west build
+west build --sysbuild
 ```
 
-Select the hand and layout in `prj.conf` or through Zephyr configuration before
-building:
+Sysbuild compiles the application twice and selects the hand independently for
+each image. The resulting UF2 files are:
 
-```conf
-CONFIG_ERGODOX_KEYBOARD_HAND_LEFT=y
-CONFIG_ERGODOX_KEYBOARD_HAND_RIGHT=n
-CONFIG_ERGODOX_KEYBOARD_LAYOUT_CUSTOM=y
+```text
+build/ergodox_left/zephyr/ergodox_left.uf2
+build/ergodox_right/zephyr/ergodox_right.uf2
 ```
 
 Flash the generated firmware using your RP flash hardware tool. The exact
@@ -98,12 +97,17 @@ command depends on the probe and runner you use, but the usual Zephyr entry
 point is:
 
 ```sh
-west flash --openocd /usr/local/bin/openocd
+west flash --domain ergodox_left --openocd /usr/local/bin/openocd
 ```
 
-For a split keyboard, build and flash each side with the matching hand
-configuration. The USB-connected half will enumerate as the keyboard; the other
-half will fall back to UART and forward its key events.
+Flash the right half by selecting its sysbuild domain:
+
+```sh
+west flash --domain ergodox_right --openocd /usr/local/bin/openocd
+```
+
+The USB-connected half will enumerate as the keyboard; the other half will fall
+back to UART and forward its key events.
 
 ## 4. How To Create A Custom Design
 
