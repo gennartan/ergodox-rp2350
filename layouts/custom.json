@@ -534,7 +534,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_KPDOT",
+          "keycode": "ERGODOX_HID_KEY_KP_DOT",
           "modifiers": []
         },
         {
@@ -759,7 +759,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "keycode": "ERGODOX_HID_KEY_NON_US_BACKSLASH",
           "modifiers": [
             "HID_KBD_MODIFIER_RIGHT_ALT"
           ]
@@ -953,7 +953,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "keycode": "ERGODOX_HID_KEY_NON_US_BACKSLASH",
           "modifiers": [
             "HID_KBD_MODIFIER_LEFT_SHIFT"
           ]
@@ -972,7 +972,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "keycode": "ERGODOX_HID_KEY_NON_US_BACKSLASH",
           "modifiers": [
             "HID_KBD_MODIFIER_RIGHT_ALT"
           ]
@@ -990,7 +990,11 @@
           "type": "transparent"
         },
         {
-          "type": "transparent"
+          "type": "key",
+          "keycode": "HID_KEY_BACKSLASH",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_ALT"
+          ]
         },
         {
           "type": "transparent"
@@ -1050,7 +1054,7 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_NONUS_BACKSLASH",
+          "keycode": "ERGODOX_HID_KEY_NON_US_BACKSLASH",
           "modifiers": []
         },
         {

@@ -4,7 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/sys/util.h>
-#include <zephyr/usb/class/hid.h>
+
+#include "keyboard_hid.h"
 
 #define KEYBOARD_KEY_COUNT 38
 #define KEYBOARD_MAX_LAYERS 8

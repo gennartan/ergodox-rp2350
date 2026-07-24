@@ -151,8 +151,10 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_RIGHTSHIFT",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_RIGHT_SHIFT"
+          ]
         },
         {
           "type": "key",
@@ -594,8 +596,10 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTALT",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_ALT"
+          ]
         },
         {
           "type": "key",
@@ -681,8 +685,10 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTSHIFT",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_SHIFT"
+          ]
         },
         {
           "type": "none"
@@ -698,8 +704,10 @@
         },
         {
           "type": "key",
-          "keycode": "HID_KEY_LEFTMETA",
-          "modifiers": []
+          "keycode": "0",
+          "modifiers": [
+            "HID_KBD_MODIFIER_LEFT_UI"
+          ]
         },
         {
           "type": "none"
