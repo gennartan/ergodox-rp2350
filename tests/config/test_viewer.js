@@ -54,4 +54,22 @@ if (process.argv[2]) {
   assert.ok(parsed.layerCount>=1 && parsed.layerCount<=8);
   console.log(`Firmware record decoded: ${parsed.name}, ${parsed.layerCount} layers`);
 }
-console.log("Viewer decoder, all action labels, both physical geometries, and corrupt-input tests passed");
+// Exercise the live bitmap mapping independently of browser rendering.
+const keys = [0,1].map(() => Array.from({length:38}, (_,index) => ({
+  dataset:{index:String(index)},
+  classList:{pressed:false,toggle(name,value){ assert.equal(name,"pressed"); this.pressed=value; }}
+})));
+context.document = {querySelectorAll(selector){return selector.startsWith("#left") ? keys[0] : keys[1];}};
+const applyKeys = vm.runInContext("applyPressedKeys",context);
+const bitmap = new Uint8Array(10); bitmap[4]=0x60; bitmap[9]=8;
+applyKeys(bitmap);
+assert.equal(keys[0][37].classList.pressed,true);
+assert.equal(keys[1][0].classList.pressed,true);
+assert.equal(keys[1][37].classList.pressed,true);
+assert.equal(keys[0][0].classList.pressed,false);
+assert.throws(()=>applyKeys(new Uint8Array(9)),/Invalid/);
+const invalid = new Uint8Array(10); invalid[9]=0x80;
+assert.throws(()=>applyKeys(invalid),/Invalid/);
+applyKeys(new Uint8Array(10));
+assert.ok(keys.flat().every(key=>!key.classList.pressed));
+console.log("Viewer decoder, action labels, physical geometries, live bitmap, and corrupt-input tests passed");

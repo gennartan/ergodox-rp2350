@@ -11,6 +11,7 @@
 
 #include "configurator_network.h"
 #include "keyboard_config.h"
+#include "keyboard_input_state.h"
 
 LOG_MODULE_REGISTER(configurator_network);
 
@@ -59,11 +60,46 @@ static struct http_resource_detail_static layout_resource = {
     .static_data = layout_blob,
 };
 
+static int keys_handler(struct http_client_ctx *client,
+    enum http_transaction_status status,
+    const struct http_request_ctx *request,
+    struct http_response_ctx *response, void *user_data)
+{
+    /* The dynamic resource holder serializes transactions until completion. */
+    static uint8_t snapshot[KEYBOARD_INPUT_BITMAP_SIZE];
+    static const struct http_header headers[] = {
+        { .name = "Cache-Control", .value = "no-store" },
+    };
+
+    ARG_UNUSED(client);
+    ARG_UNUSED(request);
+    ARG_UNUSED(user_data);
+    if (status == HTTP_SERVER_REQUEST_DATA_FINAL) {
+        keyboard_input_state_snapshot(snapshot);
+        response->headers = headers;
+        response->header_count = ARRAY_SIZE(headers);
+        response->body = snapshot;
+        response->body_len = sizeof(snapshot);
+        response->final_chunk = true;
+    }
+    return 0;
+}
+
+static struct http_resource_detail_dynamic keys_resource = {
+    .common = {
+        .type = HTTP_RESOURCE_TYPE_DYNAMIC,
+        .bitmask_of_supported_http_methods = BIT(HTTP_GET),
+        .content_type = "application/octet-stream",
+    },
+    .cb = keys_handler,
+};
+
 static uint16_t http_port = 80;
 HTTP_SERVICE_DEFINE(configurator_http, CONFIGURATOR_ADDRESS, &http_port,
     CONFIG_HTTP_SERVER_MAX_CLIENTS, CONFIG_HTTP_SERVER_MAX_CLIENTS, NULL, NULL, NULL);
 HTTP_RESOURCE_DEFINE(configurator_index, configurator_http, "/", &index_resource);
 HTTP_RESOURCE_DEFINE(configurator_layout, configurator_http, "/api/layout", &layout_resource);
+HTTP_RESOURCE_DEFINE(configurator_keys, configurator_http, "/api/keys", &keys_resource);
 
 static void configurator_usb_message(struct usbd_context *const ctx,
     const struct usbd_msg *const msg)

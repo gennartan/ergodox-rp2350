@@ -124,8 +124,9 @@ resource, allowing concurrent reads without modifying configuration state.
 Only GET is enabled; there is no write endpoint.
 
 The maintained HTML, CSS, and JavaScript sources are bundled into a single gzip
-HTML response at build time. The firmware needs only the page request and the
-layout API request, so a missing stylesheet cannot leave the keyboard unstyled.
+HTML response at build time. The page and layout snapshot each need only one request, so a missing stylesheet
+cannot leave the keyboard unstyled. Live key polling then uses the separate
+small endpoint described below.
 A data-URI favicon avoids an extra automatic request. HTTP capacity supports six
 clients, with socket polling sized for all clients plus the listener and eventfd;
 network connection/context budgets also include DHCP. TCP windows are capped at
@@ -138,6 +139,30 @@ its action details. Transparent assignments remain explicitly transparent rather
 than pretending to resolve all possible combinations of active layers. Labels
 use HID key names; the host keyboard language determines the typed characters.
 The physical indices match the offline configurator's geometry.
+
+## Live physical key display
+
+Configuration mode starts the same debounced GPIO scanner as normal keyboard
+mode and receives slave events over UART. It routes both to a separate ISR-safe
+pressed-key bitmap, bypassing layer interpretation, lighting actions, and HID
+report submission. Initial local levels capture a boot chord that is still held.
+The slave continues its normal raw-event forwarding; it must not enter
+configuration mode itself.
+
+`GET /api/keys` returns a fresh 10-byte `application/octet-stream` snapshot with
+`Cache-Control: no-store`. Bit `hand * 38 + key_index` indicates a pressed key,
+least-significant bit first. Hand 0 is left; hand 1 is right. The last four bits
+are zero. A short spinlock protects updates and the snapshot copy; the HTTP
+response uses a separate buffer, so input interrupts cannot modify a response
+while it is being sent. No configuration or flash writes are involved.
+
+The browser updates only CSS classes and polls at up to 20 Hz, with at most one
+request outstanding. It keeps physical highlights when switching the displayed
+layer. Hidden tabs cancel polling and resume with a new snapshot when visible.
+Errors or malformed responses clear stale highlights and retry with a delay of
+250 ms, doubling up to 2 seconds. Snapshot polling can miss a tap shorter than
+the interval between successful samples. UART event loss and reconnect-state
+synchronization are not addressed by this HTTP snapshot API.
 
 ## Tests
 

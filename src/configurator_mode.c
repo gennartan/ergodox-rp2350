@@ -7,6 +7,7 @@
 #include "configurator_mode.h"
 #include "configurator_network.h"
 #include "keyboard_config.h"
+#include "keyboard_input_state.h"
 
 LOG_MODULE_REGISTER(configurator);
 
@@ -62,6 +63,9 @@ void configurator_mode_run(void)
 {
     int ret = keyboard_config_init(true);
 
+    if (ret == 0) {
+        ret = keyboard_inputs_start_configurator();
+    }
     if (ret == 0) {
         ret = configurator_network_start();
     }

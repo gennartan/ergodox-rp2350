@@ -10,6 +10,7 @@
 #include "configurator_mode.h"
 #include "keyboard_layout.h"
 #include "keyboard_config.h"
+#include "keyboard_input_state.h"
 #include "split_transport.h"
 
 LOG_MODULE_REGISTER(kbd);
@@ -104,6 +105,7 @@ K_MSGQ_DEFINE(split_event_msgq, sizeof(struct split_key_event), 32, 4);
 enum keyboard_transport_mode {
     KEYBOARD_TRANSPORT_USB,
     KEYBOARD_TRANSPORT_UART,
+    KEYBOARD_TRANSPORT_CONFIGURATOR,
 };
 
 static enum keyboard_transport_mode transport_mode = KEYBOARD_TRANSPORT_UART;
@@ -520,6 +522,14 @@ static void split_events_received(const struct split_key_event *events,
 {
     ARG_UNUSED(user_data);
 
+    if (transport_mode == KEYBOARD_TRANSPORT_CONFIGURATOR) {
+        /* UART callback runs in interrupt context: record bits, never send HID. */
+        for (uint8_t i = 0; i < count; i++) {
+            keyboard_input_state_handle(&events[i]);
+        }
+        return;
+    }
+
     for (uint8_t i = 0; i < count; i++) {
         if (k_msgq_put(&split_event_msgq, &events[i], K_NO_WAIT) != 0) {
             LOG_WRN("Dropped split key event");
@@ -575,6 +585,10 @@ static void update_key(uint8_t index, bool pressed)
 
     local_pressed[index] = pressed;
 
+    if (transport_mode == KEYBOARD_TRANSPORT_CONFIGURATOR) {
+        keyboard_input_state_handle(&event);
+        return;
+    }
     if (transport_mode == KEYBOARD_TRANSPORT_USB) {
         process_key_event(&event);
         return;
@@ -590,9 +604,13 @@ static void key_work_handler(struct k_work *work)
 {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct key_irq *key_irq = CONTAINER_OF(dwork, struct key_irq, work);
-    bool pressed = gpio_pin_get_dt(&keys[key_irq->index]);
+    int pressed = gpio_pin_get_dt(&keys[key_irq->index]);
 
-    update_key(key_irq->index, pressed);
+    if (pressed < 0) {
+        LOG_ERR("Failed to read key %u: %d", key_irq->index + 1, pressed);
+        return;
+    }
+    update_key(key_irq->index, pressed != 0);
 }
 
 static void key_gpio_callback(const struct device *port,
@@ -647,6 +665,56 @@ static int select_transport_mode(void)
     return init_split_transport(false);
 }
 
+static int init_key_scanning(void)
+{
+    int ret;
+
+    for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+        ret = gpio_pin_configure_dt(&keys[i], GPIO_INPUT | GPIO_PULL_UP);
+        if (ret < 0) {
+            LOG_ERR("Failed to configure key %d: %d", i + 1, ret);
+            return ret;
+        }
+
+        key_irqs[i].index = i;
+        k_work_init_delayable(&key_irqs[i].work, key_work_handler);
+        gpio_init_callback(&key_irqs[i].callback, key_gpio_callback,
+            BIT(keys[i].pin));
+
+        ret = gpio_add_callback(keys[i].port, &key_irqs[i].callback);
+        if (ret < 0) {
+            LOG_ERR("Failed to add key %d callback: %d", i + 1, ret);
+            return ret;
+        }
+
+        ret = gpio_pin_interrupt_configure_dt(&keys[i], GPIO_INT_EDGE_BOTH);
+        if (ret < 0) {
+            LOG_ERR("Failed to enable key %d interrupt: %d", i + 1, ret);
+            return ret;
+        }
+        ret = gpio_pin_get_dt(&keys[i]);
+        if (ret < 0) {
+            return ret;
+        }
+        update_key(i, ret != 0);
+    }
+
+    return 0;
+}
+
+int keyboard_inputs_start_configurator(void)
+{
+    int ret;
+
+    transport_mode = KEYBOARD_TRANSPORT_CONFIGURATOR;
+    keyboard_input_state_reset();
+    ret = init_split_transport(true);
+    if (ret != 0) {
+        return ret;
+    }
+    return init_key_scanning();
+}
+
 int main(void)
 {
     int ret;
@@ -680,32 +748,10 @@ int main(void)
         }
     }
 
-    for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-        ret = gpio_pin_configure_dt(&keys[i], GPIO_INPUT | GPIO_PULL_UP);
-        if (ret < 0) {
-            LOG_ERR("Failed to configure key %d: %d", i + 1, ret);
-            return ret;
-        }
-
-        key_irqs[i].index = i;
-        k_work_init_delayable(&key_irqs[i].work, key_work_handler);
-        gpio_init_callback(&key_irqs[i].callback, key_gpio_callback,
-            BIT(keys[i].pin));
-
-        ret = gpio_add_callback(keys[i].port, &key_irqs[i].callback);
-        if (ret < 0) {
-            LOG_ERR("Failed to add key %d callback: %d", i + 1, ret);
-            return ret;
-        }
-
-        ret = gpio_pin_interrupt_configure_dt(&keys[i], GPIO_INT_EDGE_BOTH);
-        if (ret < 0) {
-            LOG_ERR("Failed to enable key %d interrupt: %d", i + 1, ret);
-            return ret;
-        }
-        if (gpio_pin_get_dt(&keys[i])) {
-            update_key(i, true);
-        }
+    ret = init_key_scanning();
+    if (ret != 0) {
+        LOG_ERR("Failed to initialize key scanning: %d", ret);
+        return ret;
     }
 
     if (transport_mode == KEYBOARD_TRANSPORT_USB) {

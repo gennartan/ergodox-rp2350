@@ -5,6 +5,7 @@ set(ERGODOX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 target_include_directories(app PRIVATE ${ERGODOX_SOURCE_DIR}/src)
 target_sources(app PRIVATE
   test_config.c
+  ${ERGODOX_SOURCE_DIR}/src/keyboard_input_state.c
   ${ERGODOX_SOURCE_DIR}/src/keyboard_config.c
   ${ERGODOX_SOURCE_DIR}/src/keyboard_config_store.c
   ${ERGODOX_SOURCE_DIR}/src/keyboard_layouts.c

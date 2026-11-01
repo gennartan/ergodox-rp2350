@@ -38,3 +38,11 @@ svg { width: 100%; height: auto; display: block; }
 footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #dce3ec; }
 @media (max-width: 960px) { .keyboard { grid-template-columns: 1fr; } .half { max-width: 720px; width: 100%; margin: auto; } }
 @media (max-width: 520px) { main { padding: 22px 12px; } h1 { font-size: 1.6rem; } .toolbar { align-items: flex-start; flex-direction: column; gap: 14px; padding: 16px; } .half { padding: 12px 3px 0; } header { gap: 10px; } }
+
+.live-status { margin: 14px 4px 0; font-size: .85rem; color: #426352; }
+.live-status.offline { color: #9b6032; }
+.key.pressed rect { fill: #4567bd; stroke: #294998; stroke-width: 2.5; }
+.key.pressed text, .key.pressed .key-index { fill: #fff; }
+.key.pressed.selected rect { stroke: #10275b; stroke-width: 4; }
+
+.pressed-legend { color: #4567bd; }

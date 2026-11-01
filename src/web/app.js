@@ -116,6 +116,67 @@ function svgElement(tag, attrs, text) {
   return element;
 }
 let layout, selectedKey = null;
+let pressedKeys = new Uint8Array(10);
+let keyPollTimer = null, keyPollController = null, keyPollGeneration = 0;
+
+function applyPressedKeys(bitmap) {
+  if (bitmap.length !== 10 || (bitmap[9] & 0xf0)) throw new Error("Invalid key-state response.");
+  pressedKeys = bitmap;
+  for (const [hand, handIndex] of [["left",0],["right",1]]) {
+    for (const key of document.querySelectorAll(`#${hand} .key`)) {
+      const bit = handIndex * 38 + Number(key.dataset.index);
+      key.classList.toggle("pressed", Boolean(bitmap[bit >> 3] & (1 << (bit & 7))));
+    }
+  }
+}
+function stopKeyPolling() {
+  ++keyPollGeneration;
+  clearTimeout(keyPollTimer);
+  keyPollTimer = null;
+  if (keyPollController) keyPollController.abort();
+  keyPollController = null;
+  applyPressedKeys(new Uint8Array(10));
+}
+function startKeyPolling() {
+  stopKeyPolling();
+  if (document.hidden || !layout) return;
+  const generation = keyPollGeneration;
+  let failures = 0;
+  async function poll() {
+    if (generation !== keyPollGeneration) return;
+    const started = performance.now();
+    const controller = new AbortController();
+    keyPollController = controller;
+    const timeout = setTimeout(() => controller.abort(), 1500);
+    let delay = 50;
+    try {
+      const response = await fetch("/api/keys", {cache:"no-store", signal:controller.signal});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const bitmap = new Uint8Array(await response.arrayBuffer());
+      if (generation !== keyPollGeneration) return;
+      applyPressedKeys(bitmap);
+      failures = 0;
+      const status = document.getElementById("live-status");
+      const message = "Live key display · press keys on either half";
+      if (status.textContent !== message) status.textContent = message;
+      status.classList.remove("offline");
+      delay = Math.max(0, 50 - (performance.now() - started));
+    } catch (error) {
+      if (generation !== keyPollGeneration) return;
+      applyPressedKeys(new Uint8Array(10));
+      const status = document.getElementById("live-status");
+      const message = "Live key display disconnected · reconnecting…";
+      if (status.textContent !== message) status.textContent = message;
+      status.classList.add("offline");
+      delay = Math.min(2000, 250 * 2 ** Math.min(failures++, 3));
+    } finally {
+      clearTimeout(timeout);
+      if (generation === keyPollGeneration) keyPollController = null;
+    }
+    if (generation === keyPollGeneration) keyPollTimer = setTimeout(poll, delay);
+  }
+  poll();
+}
 function showDetails(hand, index) {
   selectedKey = {hand,index};
   document.querySelectorAll(".key.selected").forEach(key => key.classList.remove("selected"));
@@ -149,8 +210,10 @@ function render() {
     }
   }
   if (selectedKey) showDetails(selectedKey.hand, selectedKey.index);
+  applyPressedKeys(pressedKeys);
 }
 async function loadLayout() {
+  stopKeyPolling();
   const status = document.getElementById("status"), retry = document.getElementById("retry");
   status.hidden = false; status.className = ""; status.textContent = "Loading the keyboard’s layout…";
   retry.hidden = true;
@@ -170,6 +233,7 @@ async function loadLayout() {
     render();
     document.getElementById("layout").hidden = false;
     status.hidden = true;
+    startKeyPolling();
   } catch (error) {
     status.textContent = `Unable to load layout. ${error.message} Check the USB connection and try again.`;
     status.className = "error"; retry.hidden = false;
@@ -178,5 +242,17 @@ async function loadLayout() {
 if (typeof document !== "undefined") {
   document.getElementById("layer").addEventListener("change",render);
   document.getElementById("retry").addEventListener("click",loadLayout);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopKeyPolling();
+      document.getElementById("live-status").textContent = "Live key display paused";
+    } else if (!document.getElementById("layout").hidden) {
+      startKeyPolling();
+    }
+  });
+  window.addEventListener("pagehide", stopKeyPolling);
+  window.addEventListener("pageshow", event => {
+    if (event.persisted && !document.getElementById("layout").hidden) startKeyPolling();
+  });
   loadLayout();
 }

@@ -22,11 +22,12 @@
         <div><h2 id="layout-name"></h2><p id="summary"></p></div>
         <label>View layer <select id="layer"></select></label>
       </div>
+      <p id="live-status" class="live-status" role="status">Connecting live key display…</p>
       <div class="keyboard">
         <section class="half"><h3>Left hand</h3><svg id="left" viewBox="-8 0 710 510" aria-label="Left-hand keys"></svg></section>
         <section class="half"><h3>Right hand</h3><svg id="right" viewBox="-8 0 710 510" aria-label="Right-hand keys"></svg></section>
       </div>
-      <div class="legend"><span>↳ Transparent: falls through to a lower active layer</span><span>— No action</span></div>
+      <div class="legend"><span class="pressed-legend">● Pressed key</span><span>↳ Transparent: falls through to a lower active layer</span><span>— No action</span></div>
       <section class="details" aria-live="polite"><h3 id="detail-title">Key details</h3><p id="detail">Select a key to inspect its assigned action.</p></section>
       <p class="note">Key names use USB HID labels. Your computer’s keyboard language determines the characters typed.</p>
     </section>

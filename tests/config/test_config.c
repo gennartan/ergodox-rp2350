@@ -7,6 +7,7 @@
 
 #ifdef CONFIG_ZTEST
 #include <zephyr/ztest.h>
+#include "keyboard_input_state.h"
 #include <zephyr/kvss/nvs.h>
 #include <zephyr/storage/flash_map.h>
 #endif
@@ -164,6 +165,45 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     assert(keyboard_config_init(false) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
     flash_area_close(area);
+}
+
+ZTEST(config, test_physical_key_bitmap)
+{
+    uint8_t snapshot[KEYBOARD_INPUT_BITMAP_SIZE];
+    uint8_t retained[KEYBOARD_INPUT_BITMAP_SIZE];
+    struct split_key_event event = { .hand = 0, .key_index = 37, .type = SPLIT_KEY_EVENT_PRESS };
+
+    assert(sizeof(snapshot) == 10);
+    keyboard_input_state_reset();
+    keyboard_input_state_handle(&event);
+    event.hand = 1; event.key_index = 0;
+    keyboard_input_state_handle(&event);
+    event.key_index = 37;
+    keyboard_input_state_handle(&event);
+    keyboard_input_state_snapshot(snapshot);
+    assert(snapshot[4] == 0x60); /* left key 37 and right key 0 cross a byte */
+    assert(snapshot[9] == 0x08); /* final key, high four bits remain zero */
+    memcpy(retained, snapshot, sizeof(retained));
+    event.type = SPLIT_KEY_EVENT_RELEASE;
+    keyboard_input_state_handle(&event);
+    keyboard_input_state_snapshot(snapshot);
+    assert(snapshot[9] == 0 && retained[9] == 8);
+    event.hand = 2; event.key_index = 0; event.type = SPLIT_KEY_EVENT_PRESS;
+    keyboard_input_state_handle(&event);
+    event.hand = 0; event.key_index = 38;
+    keyboard_input_state_handle(&event);
+    event.key_index = 0; event.type = 255;
+    keyboard_input_state_handle(&event);
+    keyboard_input_state_handle(NULL);
+    keyboard_input_state_snapshot(snapshot);
+    assert(snapshot[0] == 0 && snapshot[4] == 0x60);
+    event.hand = 1; event.key_index = 0; event.type = SPLIT_KEY_EVENT_DOUBLE_TAP;
+    keyboard_input_state_handle(&event);
+    keyboard_input_state_snapshot(snapshot);
+    assert(snapshot[4] == 0x20);
+    keyboard_input_state_reset();
+    keyboard_input_state_snapshot(snapshot);
+    for (unsigned int i = 0; i < sizeof(snapshot); ++i) assert(snapshot[i] == 0);
 }
 
 ZTEST_SUITE(config, NULL, NULL, NULL, NULL, NULL);

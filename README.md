@@ -292,7 +292,9 @@ subnet during configuration. Other operating systems need a compatible CDC-NCM
 driver; compatibility has not yet been verified on hardware.
 
 Configuration mode exposes only USB networking and does not send keyboard
-reports or start the split UART transport. Normal keyboard boot excludes the USB
+reports. It scans the local keys and receives raw key events from the slave over
+UART so the viewer can highlight physical presses on both halves at up to 20 Hz.
+The slave must boot normally; hold the boot chord only on the USB-connected half. Normal keyboard boot excludes the USB
 network function and does not start DHCP or HTTP. Release the chord and reconnect
 USB to return to keyboard mode. RTT logs report service startup or failures.
 
