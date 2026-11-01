@@ -69,10 +69,11 @@ static const struct gpio_dt_spec keys[KEYBOARD_KEY_COUNT] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(key38), gpios),
 };
 
-const uint8_t hid_report_desc[] = HID_KEYBOARD_REPORT_DESC();
+const uint8_t keyboard_hid_report_desc[] = ERGODOX_HID_REPORT_DESC();
 
-static const struct device *hid_dev;
-static bool hid_ready;
+static const struct device *keyboard_hid_dev;
+static bool keyboard_hid_ready;
+static atomic_t hid_protocol = ATOMIC_INIT(HID_PROTOCOL_REPORT);
 static uint32_t hid_duration;
 
 USBD_DEVICE_DEFINE(ergodox_usbd,
@@ -113,15 +114,24 @@ static enum keyboard_transport_mode transport_mode = KEYBOARD_TRANSPORT_UART;
 #define ERGODOX_KEYBOARD_HAND_NAME "right"
 #endif
 
-// HID report buffer
-UDC_STATIC_BUF_DEFINE(hid_report, KEYBOARD_HID_REPORT_SIZE);
+UDC_STATIC_BUF_DEFINE(keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE + 1);
+UDC_STATIC_BUF_DEFINE(boot_keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE);
+UDC_STATIC_BUF_DEFINE(consumer_hid_report, ERGODOX_HID_CONSUMER_REPORT_SIZE);
+UDC_STATIC_BUF_DEFINE(system_hid_report, ERGODOX_HID_SYSTEM_REPORT_SIZE);
+UDC_STATIC_BUF_DEFINE(mouse_hid_report, ERGODOX_HID_MOUSE_REPORT_SIZE);
+
+static bool lighting_enabled = true;
 
 
 static void kb_iface_ready(const struct device *dev, const bool ready)
 {
 	LOG_INF("HID device %s interface is %s",
 		dev->name, ready ? "ready" : "not ready");
-	hid_ready = ready;
+
+    if (ready) {
+        atomic_set(&hid_protocol, HID_PROTOCOL_REPORT);
+    }
+    keyboard_hid_ready = ready;
 }
 
 static int kb_get_report(const struct device *dev,
@@ -157,6 +167,7 @@ static uint32_t kb_get_idle(const struct device *dev, const uint8_t id)
 
 static void kb_set_protocol(const struct device *dev, const uint8_t proto)
 {
+    atomic_set(&hid_protocol, proto);
 	LOG_INF("Protocol changed to %s",
 		proto == 0U ? "Boot Protocol" : "Report Protocol");
 }
@@ -195,7 +206,7 @@ static void usbd_msg_cb(struct usbd_context *const usbd_ctx,
         }
 
         if (msg->type == USBD_MSG_VBUS_REMOVED) {
-            hid_ready = false;
+            keyboard_hid_ready = false;
             if (usbd_disable(usbd_ctx)) {
                 LOG_ERR("Failed to disable USB device support");
             }
@@ -207,16 +218,16 @@ static int init_usb_device(void)
 {
     int ret;
 
-    hid_dev = DEVICE_DT_GET_ONE(zephyr_hid_device);
-    if (!device_is_ready(hid_dev)) {
-        LOG_ERR("HID device is not ready");
+    keyboard_hid_dev = DEVICE_DT_GET(DT_NODELABEL(hid_dev_0));
+    if (!device_is_ready(keyboard_hid_dev)) {
+        LOG_ERR("Keyboard HID device is not ready");
         return -ENODEV;
     }
 
-    ret = hid_device_register(hid_dev, hid_report_desc,
-        sizeof(hid_report_desc), &kb_ops);
+    ret = hid_device_register(keyboard_hid_dev, keyboard_hid_report_desc,
+        sizeof(keyboard_hid_report_desc), &kb_ops);
     if (ret != 0) {
-        LOG_ERR("Failed to register HID device: %d", ret);
+        LOG_ERR("Failed to register keyboard HID device: %d", ret);
         return ret;
     }
 
@@ -294,23 +305,30 @@ static void update_leds_for_layers(void)
     // Layer 3 (FN) = LED2 on
     for (int i = 0; i < LEDS; i++) {
         // Turn on LED if the corresponding layer (i+1) is active
-        int led_state = (active_layers & BIT(i + 1)) ? 1 : 0;
+        int led_state = lighting_enabled &&
+            (active_layers & BIT(i + 1)) ? 1 : 0;
         gpio_pin_set_dt(&leds[i], led_state);
         LOG_INF("LED %d %s for layer %d", i, led_state ? "ON" : "OFF", i + 1);
     }
 }
 
-static void send_hid_report(void)
+static void send_hid_report(const struct device *dev, bool ready,
+    const uint8_t *report, size_t size)
 {
     int ret;
 
-    if (!hid_ready) {
-        LOG_DBG("USB HID interface is not ready");
+    if (!ready) {
+        LOG_DBG("USB HID interface %s is not ready", dev->name);
         return;
     }
 
-    ret = hid_device_submit_report(hid_dev, KEYBOARD_HID_REPORT_SIZE,
-        hid_report);
+    /* Boot hosts understand only the unnumbered eight-byte keyboard report. */
+    if (atomic_get(&hid_protocol) == HID_PROTOCOL_BOOT &&
+        report != boot_keyboard_hid_report) {
+        return;
+    }
+
+    ret = hid_device_submit_report(dev, size, report);
     if (ret != 0) {
         LOG_ERR("Failed to submit HID report: %d", ret);
     }
@@ -320,10 +338,81 @@ static void submit_hid_report_from_runtime(void)
 {
     k_spinlock_key_t key = k_spin_lock(&runtime_lock);
 
-    keyboard_runtime_build_hid_report(&keyboard, hid_report);
+    keyboard_hid_report[0] = ERGODOX_HID_REPORT_ID_KEYBOARD;
+    keyboard_runtime_build_hid_report(&keyboard, &keyboard_hid_report[1]);
+    memcpy(boot_keyboard_hid_report, &keyboard_hid_report[1],
+        KEYBOARD_HID_REPORT_SIZE);
 
     k_spin_unlock(&runtime_lock, key);
-    send_hid_report();
+    if (atomic_get(&hid_protocol) == HID_PROTOCOL_BOOT) {
+        send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+            boot_keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE);
+    } else {
+        send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+            keyboard_hid_report, sizeof(keyboard_hid_report));
+    }
+}
+
+static void submit_consumer_report_from_runtime(void)
+{
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+    uint16_t usage = keyboard_runtime_consumer_usage(&keyboard);
+
+    consumer_hid_report[0] = ERGODOX_HID_REPORT_ID_CONSUMER;
+    consumer_hid_report[1] = usage & 0xff;
+    consumer_hid_report[2] = usage >> 8;
+    k_spin_unlock(&runtime_lock, key);
+
+    send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+        consumer_hid_report, ERGODOX_HID_CONSUMER_REPORT_SIZE);
+}
+
+static void submit_system_report_from_runtime(void)
+{
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+
+    system_hid_report[0] = ERGODOX_HID_REPORT_ID_SYSTEM;
+    system_hid_report[1] = keyboard_runtime_system_usage(&keyboard);
+    k_spin_unlock(&runtime_lock, key);
+
+    send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+        system_hid_report, ERGODOX_HID_SYSTEM_REPORT_SIZE);
+}
+
+static void submit_mouse_report_from_runtime(int8_t x, int8_t y, int8_t wheel)
+{
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+
+    mouse_hid_report[0] = ERGODOX_HID_REPORT_ID_MOUSE;
+    mouse_hid_report[1] = keyboard_runtime_mouse_buttons(&keyboard);
+    mouse_hid_report[2] = (uint8_t)x;
+    mouse_hid_report[3] = (uint8_t)y;
+    mouse_hid_report[4] = (uint8_t)wheel;
+    k_spin_unlock(&runtime_lock, key);
+
+    send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+        mouse_hid_report, ERGODOX_HID_MOUSE_REPORT_SIZE);
+}
+
+static void apply_lighting_action(uint16_t command)
+{
+    switch (command) {
+    case KEYBOARD_LIGHTING_TOGGLE:
+        lighting_enabled = !lighting_enabled;
+        break;
+    case KEYBOARD_LIGHTING_ON:
+    case KEYBOARD_LIGHTING_BRIGHTNESS_UP:
+        lighting_enabled = true;
+        break;
+    case KEYBOARD_LIGHTING_OFF:
+    case KEYBOARD_LIGHTING_BRIGHTNESS_DOWN:
+        lighting_enabled = false;
+        break;
+    default:
+        return;
+    }
+
+    update_leds_for_layers();
 }
 
 static void process_key_event(const struct split_key_event *event)
@@ -373,10 +462,35 @@ static void process_key_event(const struct split_key_event *event)
 
     k_spin_unlock(&runtime_lock, key);
 
-    update_leds_for_layers();
+    if (pressed && action.type == KEYBOARD_ACTION_LIGHTING) {
+        apply_lighting_action(action.usage);
+    } else {
+        update_leds_for_layers();
+    }
 
     if (report_changed) {
-        submit_hid_report_from_runtime();
+        switch (action.type) {
+        case KEYBOARD_ACTION_KEY:
+            submit_hid_report_from_runtime();
+            break;
+        case KEYBOARD_ACTION_CONSUMER:
+            submit_consumer_report_from_runtime();
+            break;
+        case KEYBOARD_ACTION_SYSTEM:
+            submit_system_report_from_runtime();
+            break;
+        case KEYBOARD_ACTION_MOUSE_BUTTON:
+            submit_mouse_report_from_runtime(0, 0, 0);
+            break;
+        case KEYBOARD_ACTION_MOUSE_MOVE:
+            submit_mouse_report_from_runtime(action.x, action.y, 0);
+            break;
+        case KEYBOARD_ACTION_MOUSE_WHEEL:
+            submit_mouse_report_from_runtime(0, 0, action.y);
+            break;
+        default:
+            break;
+        }
     }
 
     LOG_INF("Key %s: hand %u, index %d, keycode 0x%02x, layers 0x%08x",
@@ -414,14 +528,14 @@ static bool wait_for_usb_ready(void)
     int64_t deadline = k_uptime_get() + CONFIG_ERGODOX_USB_READY_TIMEOUT_MS;
 
     while (k_uptime_get() < deadline) {
-        if (hid_ready) {
+        if (keyboard_hid_ready) {
             return true;
         }
 
         k_msleep(10);
     }
 
-    return hid_ready;
+    return keyboard_hid_ready;
 }
 
 static int publish_key_event(uint8_t index, bool pressed)

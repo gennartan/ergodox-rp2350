@@ -11,6 +11,7 @@
 #define KEYBOARD_MAX_LAYERS 8
 #define KEYBOARD_HID_REPORT_SIZE 8
 #define KEYBOARD_MAX_REPORT_KEYS 6
+#define KEYBOARD_MOUSE_MOVE_STEP 16
 
 enum keyboard_hand {
     KEYBOARD_HAND_LEFT,
@@ -30,6 +31,12 @@ enum keyboard_action_type {
     KEYBOARD_ACTION_TRANSPARENT,
     KEYBOARD_ACTION_NONE,
     KEYBOARD_ACTION_KEY,
+    KEYBOARD_ACTION_CONSUMER,
+    KEYBOARD_ACTION_SYSTEM,
+    KEYBOARD_ACTION_MOUSE_BUTTON,
+    KEYBOARD_ACTION_MOUSE_MOVE,
+    KEYBOARD_ACTION_MOUSE_WHEEL,
+    KEYBOARD_ACTION_LIGHTING,
     KEYBOARD_ACTION_LAYER_MOMENTARY,
     KEYBOARD_ACTION_LAYER_TOGGLE,
     KEYBOARD_ACTION_LAYER_DEFAULT,
@@ -40,6 +47,17 @@ struct keyboard_action {
     uint8_t keycode;
     uint8_t modifier;
     uint8_t layer;
+    uint16_t usage;
+    int8_t x;
+    int8_t y;
+};
+
+enum keyboard_lighting_action {
+    KEYBOARD_LIGHTING_TOGGLE,
+    KEYBOARD_LIGHTING_ON,
+    KEYBOARD_LIGHTING_OFF,
+    KEYBOARD_LIGHTING_BRIGHTNESS_UP,
+    KEYBOARD_LIGHTING_BRIGHTNESS_DOWN,
 };
 
 struct keyboard_layout {
@@ -63,6 +81,18 @@ struct keyboard_runtime {
     { .type = KEYBOARD_ACTION_KEY, .keycode = (key), .modifier = HID_KBD_MODIFIER_NONE }
 #define KB_MOD(mod, key) \
     { .type = KEYBOARD_ACTION_KEY, .keycode = (key), .modifier = (mod) }
+#define KB_CONSUMER(consumer_usage) \
+    { .type = KEYBOARD_ACTION_CONSUMER, .usage = (consumer_usage) }
+#define KB_SYSTEM(system_usage) \
+    { .type = KEYBOARD_ACTION_SYSTEM, .usage = (system_usage) }
+#define KB_MOUSE_BUTTON(button_mask) \
+    { .type = KEYBOARD_ACTION_MOUSE_BUTTON, .usage = (button_mask) }
+#define KB_MOUSE_MOVE(delta_x, delta_y) \
+    { .type = KEYBOARD_ACTION_MOUSE_MOVE, .x = (delta_x), .y = (delta_y) }
+#define KB_MOUSE_WHEEL(delta) \
+    { .type = KEYBOARD_ACTION_MOUSE_WHEEL, .y = (delta) }
+#define KB_LIGHTING(command) \
+    { .type = KEYBOARD_ACTION_LIGHTING, .usage = (command) }
 #define KB_MO(target_layer) \
     { .type = KEYBOARD_ACTION_LAYER_MOMENTARY, .layer = (target_layer) }
 #define KB_TG(target_layer) \
@@ -78,6 +108,9 @@ bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
     uint8_t hand, uint8_t key_index, bool pressed);
 void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
     uint8_t report[KEYBOARD_HID_REPORT_SIZE]);
+uint16_t keyboard_runtime_consumer_usage(const struct keyboard_runtime *runtime);
+uint8_t keyboard_runtime_system_usage(const struct keyboard_runtime *runtime);
+uint8_t keyboard_runtime_mouse_buttons(const struct keyboard_runtime *runtime);
 uint32_t keyboard_runtime_active_layers(const struct keyboard_runtime *runtime);
 const struct keyboard_action *keyboard_runtime_pressed_action(
     const struct keyboard_runtime *runtime, uint8_t hand, uint8_t key_index);

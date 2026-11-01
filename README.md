@@ -126,6 +126,29 @@ Useful places to change behavior:
 - `prj.conf`: selected hand and selected layout;
 - `app.overlay`: GPIO mapping, LED pins, USB HID device, and split UART pins.
 
+The configurator separates localized keyboard keys from special actions. Select
+one of the dedicated action types for:
+
+- consumer controls such as volume, playback, display brightness, browser,
+  mail, and calculator;
+- system power, sleep, and wake controls;
+- mouse buttons, cursor movement, and vertical scrolling;
+- keyboard lighting toggle, on/off, and brightness controls.
+
+The generated layout uses `KB_CONSUMER`, `KB_SYSTEM`, `KB_MOUSE_*`, and
+`KB_LIGHTING` macros. Keyboard, consumer, system, and mouse reports share one
+HID interface and use report IDs to distinguish them. In boot protocol, only the standard eight-byte
+keyboard report is sent, without a report ID. The current board drives its four
+indicator LEDs as binary GPIOs, so lighting brightness up/down maps to enabled/disabled rather
+than PWM dimming.
+
+For example, exported volume keys now look like:
+
+```c
+KB_CONSUMER(HID_CONSUMER_VOLUME_INCREMENT)
+KB_CONSUMER(HID_CONSUMER_VOLUME_DECREMENT)
+```
+
 For electronic changes, open the KiCad projects in `hardware/electronic`. The
 left and right hands are separate projects, so changes that affect both halves
 should be applied and checked on both PCBs.

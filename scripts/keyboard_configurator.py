@@ -40,6 +40,12 @@ ACTION_TYPES = [
     "transparent",
     "none",
     "key",
+    "consumer",
+    "system",
+    "mouse_button",
+    "mouse_move",
+    "mouse_wheel",
+    "lighting",
     "momentary_layer",
     "toggle_layer",
     "default_layer",
@@ -152,6 +158,71 @@ HID_KEYS = [
 	"ERGODOX_HID_KEY_NON_US_BACKSLASH",
 ]
 
+SPECIAL_ACTIONS = {
+    "consumer": [
+        "HID_CONSUMER_VOLUME_INCREMENT",
+        "HID_CONSUMER_VOLUME_DECREMENT",
+        "HID_CONSUMER_MUTE",
+        "HID_CONSUMER_PLAY_PAUSE",
+        "HID_CONSUMER_STOP",
+        "HID_CONSUMER_SCAN_NEXT_TRACK",
+        "HID_CONSUMER_SCAN_PREVIOUS_TRACK",
+        "HID_CONSUMER_FAST_FORWARD",
+        "HID_CONSUMER_REWIND",
+        "HID_CONSUMER_RECORD",
+        "HID_CONSUMER_EJECT",
+        "HID_CONSUMER_BRIGHTNESS_UP",
+        "HID_CONSUMER_BRIGHTNESS_DOWN",
+        "HID_CONSUMER_AL_EMAIL_READER",
+        "HID_CONSUMER_AL_CALCULATOR",
+        "HID_CONSUMER_AC_SEARCH",
+        "HID_CONSUMER_AC_HOME",
+        "HID_CONSUMER_AC_BACK",
+        "HID_CONSUMER_AC_FORWARD",
+        "HID_CONSUMER_AC_STOP",
+        "HID_CONSUMER_AC_REFRESH",
+        "HID_CONSUMER_AC_BOOKMARKS",
+    ],
+    "system": [
+        "HID_SYSTEM_POWER_DOWN",
+        "HID_SYSTEM_SLEEP",
+        "HID_SYSTEM_WAKE_UP",
+    ],
+    "mouse_button": [
+        "HID_MOUSE_BUTTON_LEFT",
+        "HID_MOUSE_BUTTON_RIGHT",
+        "HID_MOUSE_BUTTON_MIDDLE",
+        "HID_MOUSE_BUTTON_BACK",
+        "HID_MOUSE_BUTTON_FORWARD",
+    ],
+    "mouse_move": [
+        "MOUSE_MOVE_UP",
+        "MOUSE_MOVE_DOWN",
+        "MOUSE_MOVE_LEFT",
+        "MOUSE_MOVE_RIGHT",
+    ],
+    "mouse_wheel": [
+        "MOUSE_WHEEL_UP",
+        "MOUSE_WHEEL_DOWN",
+    ],
+    "lighting": [
+        "KEYBOARD_LIGHTING_TOGGLE",
+        "KEYBOARD_LIGHTING_ON",
+        "KEYBOARD_LIGHTING_OFF",
+        "KEYBOARD_LIGHTING_BRIGHTNESS_UP",
+        "KEYBOARD_LIGHTING_BRIGHTNESS_DOWN",
+    ],
+}
+
+MOUSE_ACTION_C = {
+    "MOUSE_MOVE_UP": "KB_MOUSE_MOVE(0, -KEYBOARD_MOUSE_MOVE_STEP)",
+    "MOUSE_MOVE_DOWN": "KB_MOUSE_MOVE(0, KEYBOARD_MOUSE_MOVE_STEP)",
+    "MOUSE_MOVE_LEFT": "KB_MOUSE_MOVE(-KEYBOARD_MOUSE_MOVE_STEP, 0)",
+    "MOUSE_MOVE_RIGHT": "KB_MOUSE_MOVE(KEYBOARD_MOUSE_MOVE_STEP, 0)",
+    "MOUSE_WHEEL_UP": "KB_MOUSE_WHEEL(1)",
+    "MOUSE_WHEEL_DOWN": "KB_MOUSE_WHEEL(-1)",
+}
+
 MODIFIERS = [
     ("Left Ctrl", "HID_KBD_MODIFIER_LEFT_CTRL"),
     ("Left Shift", "HID_KBD_MODIFIER_LEFT_SHIFT"),
@@ -249,6 +320,39 @@ QT_KEY_TO_HID = {
     qt_key_value(QtCore.Qt.Key.Key_Down): "HID_KEY_DOWN",
     qt_key_value(QtCore.Qt.Key.Key_Up): "HID_KEY_UP",
 }
+
+QT_SPECIAL_KEY_TO_ACTION: dict[int, dict[str, Any]] = {}
+for qt_name, action_type, code in [
+    ("Key_VolumeUp", "consumer", "HID_CONSUMER_VOLUME_INCREMENT"),
+    ("Key_VolumeDown", "consumer", "HID_CONSUMER_VOLUME_DECREMENT"),
+    ("Key_VolumeMute", "consumer", "HID_CONSUMER_MUTE"),
+    ("Key_MediaPlay", "consumer", "HID_CONSUMER_PLAY_PAUSE"),
+    ("Key_MediaPause", "consumer", "HID_CONSUMER_PLAY_PAUSE"),
+    ("Key_MediaTogglePlayPause", "consumer", "HID_CONSUMER_PLAY_PAUSE"),
+    ("Key_MediaStop", "consumer", "HID_CONSUMER_STOP"),
+    ("Key_MediaNext", "consumer", "HID_CONSUMER_SCAN_NEXT_TRACK"),
+    ("Key_MediaPrevious", "consumer", "HID_CONSUMER_SCAN_PREVIOUS_TRACK"),
+    ("Key_MonBrightnessUp", "consumer", "HID_CONSUMER_BRIGHTNESS_UP"),
+    ("Key_MonBrightnessDown", "consumer", "HID_CONSUMER_BRIGHTNESS_DOWN"),
+    ("Key_LaunchMail", "consumer", "HID_CONSUMER_AL_EMAIL_READER"),
+    ("Key_Calculator", "consumer", "HID_CONSUMER_AL_CALCULATOR"),
+    ("Key_Search", "consumer", "HID_CONSUMER_AC_SEARCH"),
+    ("Key_HomePage", "consumer", "HID_CONSUMER_AC_HOME"),
+    ("Key_Back", "consumer", "HID_CONSUMER_AC_BACK"),
+    ("Key_Forward", "consumer", "HID_CONSUMER_AC_FORWARD"),
+    ("Key_Stop", "consumer", "HID_CONSUMER_AC_STOP"),
+    ("Key_Refresh", "consumer", "HID_CONSUMER_AC_REFRESH"),
+    ("Key_Favorites", "consumer", "HID_CONSUMER_AC_BOOKMARKS"),
+    ("Key_PowerOff", "system", "HID_SYSTEM_POWER_DOWN"),
+    ("Key_Sleep", "system", "HID_SYSTEM_SLEEP"),
+    ("Key_WakeUp", "system", "HID_SYSTEM_WAKE_UP"),
+]:
+    qt_key = getattr(QtCore.Qt.Key, qt_name, None)
+    if qt_key is not None:
+        QT_SPECIAL_KEY_TO_ACTION[qt_key_value(qt_key)] = {
+            "type": action_type,
+            "code": code,
+        }
 
 QT_MODIFIER_KEY_TO_HID_MODIFIER = {
     qt_key_value(QtCore.Qt.Key.Key_Control): "HID_KBD_MODIFIER_LEFT_CTRL",
@@ -556,6 +660,10 @@ def normalize_action(action: dict[str, Any], layer: str) -> dict[str, Any]:
     if action_type == "key":
         normalized["keycode"] = action.get("keycode", "HID_KEY_A")
         normalized["modifiers"] = list(action.get("modifiers", []))
+    elif action_type in SPECIAL_ACTIONS:
+        valid_codes = SPECIAL_ACTIONS[action_type]
+        code = action.get("code", valid_codes[0])
+        normalized["code"] = code if code in valid_codes else valid_codes[0]
     elif action_type in {"momentary_layer", "toggle_layer", "default_layer"}:
         normalized["layer"] = action.get("layer", "NAV")
 
@@ -566,6 +674,9 @@ def event_to_key_action(event: QtGui.QKeyEvent) -> dict[str, Any] | None:
     key = event.key()
     modifiers = []
     event_modifiers = qt_modifier_value(event.modifiers())
+
+    if key in QT_SPECIAL_KEY_TO_ACTION:
+        return dict(QT_SPECIAL_KEY_TO_ACTION[key])
 
     for qt_modifier, hid_modifier in QT_MODIFIERS_TO_HID_MODIFIERS:
         if event_modifiers & qt_modifier:
@@ -598,6 +709,8 @@ def action_label(action: dict[str, Any]) -> str:
         if mods:
             return "+".join([short_modifier(mod) for mod in mods] + [short_key(key)])
         return short_key(key)
+    if action_type in SPECIAL_ACTIONS:
+        return short_special(action.get("code", ""))
     if action_type == "momentary_layer":
         return f"MO({action.get('layer', '')})"
     if action_type == "toggle_layer":
@@ -609,6 +722,19 @@ def action_label(action: dict[str, Any]) -> str:
 
 def short_key(key: str) -> str:
     return key.removeprefix("HID_KEY_")
+
+def short_special(code: str) -> str:
+    prefixes = (
+        "HID_CONSUMER_",
+        "HID_SYSTEM_",
+        "HID_MOUSE_BUTTON_",
+        "KEYBOARD_LIGHTING_",
+        "MOUSE_",
+    )
+    for prefix in prefixes:
+        if code.startswith(prefix):
+            return code.removeprefix(prefix)
+    return code
 
 
 def short_modifier(modifier: str) -> str:
@@ -656,6 +782,17 @@ def action_to_c(action: dict[str, Any]) -> str:
         if not modifiers:
             return f"KB_KEY({keycode})"
         return f"KB_MOD({' | '.join(modifiers)}, {keycode})"
+    if action_type == "consumer":
+        return f"KB_CONSUMER({action.get('code', SPECIAL_ACTIONS['consumer'][0])})"
+    if action_type == "system":
+        return f"KB_SYSTEM({action.get('code', SPECIAL_ACTIONS['system'][0])})"
+    if action_type == "mouse_button":
+        return f"KB_MOUSE_BUTTON({action.get('code', SPECIAL_ACTIONS['mouse_button'][0])})"
+    if action_type in {"mouse_move", "mouse_wheel"}:
+        code = action.get("code", SPECIAL_ACTIONS[action_type][0])
+        return MOUSE_ACTION_C.get(code, "KB_NONE")
+    if action_type == "lighting":
+        return f"KB_LIGHTING({action.get('code', SPECIAL_ACTIONS['lighting'][0])})"
     return "KB_NONE"
 
 
@@ -808,6 +945,10 @@ class Configurator(QtWidgets.QMainWindow):
         self.keycode.currentTextChanged.connect(self.on_action_changed)
         form.addRow("Key", self.keycode)
 
+        self.special_code = QtWidgets.QComboBox()
+        self.special_code.currentTextChanged.connect(self.on_action_changed)
+        form.addRow("Special", self.special_code)
+
         self.modifier_checks: list[QtWidgets.QCheckBox] = []
         modifiers = QtWidgets.QWidget()
         modifier_layout = QtWidgets.QGridLayout(modifiers)
@@ -932,8 +1073,10 @@ class Configurator(QtWidgets.QMainWindow):
 
     def load_action_to_editor(self, action: dict[str, Any]) -> None:
         self.block_editor_signals(True)
-        self.action_type.setCurrentText(action.get("type", empty_action(self.current_layer)["type"]))
+        action_type = action.get("type", empty_action(self.current_layer)["type"])
+        self.action_type.setCurrentText(action_type)
         self.keycode.setCurrentText(action.get("keycode", "HID_KEY_A"))
+        self.populate_special_codes(action_type, action.get("code"))
         self.target_layer.setCurrentText(action.get("layer", "NAV"))
         modifiers = set(action.get("modifiers", []))
         for checkbox in self.modifier_checks:
@@ -943,12 +1086,35 @@ class Configurator(QtWidgets.QMainWindow):
         self.refresh_preview()
 
     def block_editor_signals(self, block: bool) -> None:
-        widgets = [self.action_type, self.keycode, self.target_layer, *self.modifier_checks]
+        widgets = [
+            self.action_type,
+            self.keycode,
+            self.special_code,
+            self.target_layer,
+            *self.modifier_checks,
+        ]
         for widget in widgets:
             widget.blockSignals(block)
 
+    def populate_special_codes(self, action_type: str, selected: str | None = None) -> None:
+        codes = SPECIAL_ACTIONS.get(action_type, [])
+        previous = self.special_code.blockSignals(True)
+        self.special_code.clear()
+        self.special_code.addItems(codes)
+        if selected in codes:
+            self.special_code.setCurrentText(selected)
+        self.special_code.blockSignals(previous)
+
     def on_action_changed(self, *_args: Any) -> None:
         action_type = self.action_type.currentText()
+        if action_type in SPECIAL_ACTIONS:
+            current_codes = [
+                self.special_code.itemText(index)
+                for index in range(self.special_code.count())
+            ]
+            if current_codes != SPECIAL_ACTIONS[action_type]:
+                self.populate_special_codes(action_type)
+
         action: dict[str, Any] = {"type": action_type}
         if action_type == "key":
             action["keycode"] = self.keycode.currentText()
@@ -957,6 +1123,8 @@ class Configurator(QtWidgets.QMainWindow):
                 for checkbox in self.modifier_checks
                 if checkbox.isChecked()
             ]
+        elif action_type in SPECIAL_ACTIONS:
+            action["code"] = self.special_code.currentText()
         elif action_type in {"momentary_layer", "toggle_layer", "default_layer"}:
             action["layer"] = self.target_layer.currentText()
         self.set_current_action(action)
@@ -965,8 +1133,10 @@ class Configurator(QtWidgets.QMainWindow):
     def update_editor_visibility(self) -> None:
         action_type = self.action_type.currentText()
         key_visible = action_type == "key"
+        special_visible = action_type in SPECIAL_ACTIONS
         layer_visible = action_type in {"momentary_layer", "toggle_layer", "default_layer"}
         self.keycode.setEnabled(key_visible)
+        self.special_code.setEnabled(special_visible)
         for checkbox in self.modifier_checks:
             checkbox.setEnabled(key_visible)
         self.target_layer.setEnabled(layer_visible)

@@ -85,7 +85,14 @@ bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
 
     switch (action->type) {
     case KEYBOARD_ACTION_KEY:
+    case KEYBOARD_ACTION_CONSUMER:
+    case KEYBOARD_ACTION_SYSTEM:
+    case KEYBOARD_ACTION_MOUSE_BUTTON:
         report_changed = true;
+        break;
+    case KEYBOARD_ACTION_MOUSE_MOVE:
+    case KEYBOARD_ACTION_MOUSE_WHEEL:
+        report_changed = pressed;
         break;
     case KEYBOARD_ACTION_LAYER_MOMENTARY:
         if (pressed) {
@@ -107,11 +114,65 @@ bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
         break;
     case KEYBOARD_ACTION_NONE:
     case KEYBOARD_ACTION_TRANSPARENT:
+    case KEYBOARD_ACTION_LIGHTING:
     default:
         break;
     }
 
     return report_changed;
+}
+
+uint16_t keyboard_runtime_consumer_usage(const struct keyboard_runtime *runtime)
+{
+    for (int hand = 0; hand < KEYBOARD_HAND_COUNT; hand++) {
+        for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+            const struct keyboard_action *action =
+                &runtime->pressed_actions[hand][i];
+
+            if (runtime->pressed[hand][i] &&
+                action->type == KEYBOARD_ACTION_CONSUMER) {
+                return action->usage;
+            }
+        }
+    }
+
+    return 0;
+}
+
+uint8_t keyboard_runtime_system_usage(const struct keyboard_runtime *runtime)
+{
+    for (int hand = 0; hand < KEYBOARD_HAND_COUNT; hand++) {
+        for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+            const struct keyboard_action *action =
+                &runtime->pressed_actions[hand][i];
+
+            if (runtime->pressed[hand][i] &&
+                action->type == KEYBOARD_ACTION_SYSTEM) {
+                return (uint8_t)action->usage;
+            }
+        }
+    }
+
+    return 0;
+}
+
+uint8_t keyboard_runtime_mouse_buttons(const struct keyboard_runtime *runtime)
+{
+    uint8_t buttons = 0;
+
+    for (int hand = 0; hand < KEYBOARD_HAND_COUNT; hand++) {
+        for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+            const struct keyboard_action *action =
+                &runtime->pressed_actions[hand][i];
+
+            if (runtime->pressed[hand][i] &&
+                action->type == KEYBOARD_ACTION_MOUSE_BUTTON) {
+                buttons |= (uint8_t)action->usage;
+            }
+        }
+    }
+
+    return buttons;
 }
 
 void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
