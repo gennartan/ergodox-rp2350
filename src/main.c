@@ -257,7 +257,10 @@ static int init_usb_device(void)
         return ret;
     }
 
-    ret = usbd_register_all_classes(&ergodox_usbd, USBD_SPEED_FS, 1, NULL);
+    /* The network function belongs exclusively to configurator boot mode. */
+    static const char *const blocklist[] = { "cdc_ncm_0", NULL };
+
+    ret = usbd_register_all_classes(&ergodox_usbd, USBD_SPEED_FS, 1, blocklist);
     if (ret != 0) {
         LOG_ERR("Failed to register USB classes: %d", ret);
         return ret;

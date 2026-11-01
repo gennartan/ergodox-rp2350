@@ -1,4 +1,10 @@
 / {
+    configurator_eth: configurator_eth {
+        compatible = "zephyr,cdc-ncm-ethernet";
+        local-mac-address = [02 00 00 07 00 01];
+        remote-mac-address = "020000070002";
+    };
+
     configurator {
         compatible = "ergodox,configurator";
         // Hold physical keys 1 and 2 on this half while powering up.

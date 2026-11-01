@@ -254,7 +254,7 @@ Python `__pycache__` folders, KiCad lock files, or editor-specific files.
 Production files are useful to commit when they represent a real hardware
 revision that was ordered or is ready to order.
 
-### Configurator boot chord (prototype)
+### USB web configurator (prototype)
 
 The `ergodox,configurator` node in `app.overlay` defines the local boot chord:
 
@@ -274,9 +274,24 @@ boot rather than treating a failed read as a pressed key. Set `status = "disable
 or remove the node to disable this feature. Only one enabled node is supported.
 Chords spanning both halves are not supported.
 
-This prototype selects a dedicated configuration mode and waits there; it does
-not yet enumerate a USB network interface or serve a web page. Release the chord
-and reboot to return to keyboard mode.
+When the chord is held on the USB-connected half at boot, the keyboard enumerates
+as **Ergodox Configurator**, a USB CDC-NCM Ethernet device. Its address is
+`192.168.7.1/24`; a DHCP server offers the computer `192.168.7.2/24`, without a
+default gateway or DNS server. Open **http://192.168.7.1/** to see the embedded
+static placeholder page. No internet connection or additional web server is
+needed. The editor and persistent configuration are not implemented yet.
+
+On Linux, the host uses the `cdc_ncm` driver. Allow the new Ethernet connection
+to obtain an IPv4 address automatically. If the host does not run DHCP on the
+new interface, assign it `192.168.7.2` with subnet mask `255.255.255.0` manually,
+leaving the gateway and DNS empty. Avoid using another network with the same
+subnet during configuration. Other operating systems need a compatible CDC-NCM
+driver; compatibility has not yet been verified on hardware.
+
+Configuration mode exposes only USB networking and does not send keyboard
+reports or start the split UART transport. Normal keyboard boot excludes the USB
+network function and does not start DHCP or HTTP. Release the chord and reconnect
+USB to return to keyboard mode. RTT logs report service startup or failures.
 
 ### Logs through the SWD debug port (RTT)
 

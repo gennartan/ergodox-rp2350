@@ -1,0 +1,10 @@
+description: Boot chord for entering the ErgoDox configurator
+compatible: "ergodox,configurator"
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: |
+      Local GPIO inputs which must all be logically active throughout the boot
+      sampling interval. Specify polarity and pull resistors in each GPIO entry.
+      These may share pins with keyboard keys. An empty list is not permitted.

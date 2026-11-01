@@ -5,6 +5,7 @@
 #include <zephyr/logging/log.h>
 
 #include "configurator_mode.h"
+#include "configurator_network.h"
 
 LOG_MODULE_REGISTER(configurator);
 
@@ -58,7 +59,11 @@ int configurator_mode_requested(bool *requested)
 
 void configurator_mode_run(void)
 {
-    LOG_INF("Configurator mode selected; USB web server is not implemented yet");
+    int ret = configurator_network_start();
+
+    if (ret != 0) {
+        LOG_ERR("Configurator startup failed: %d; reboot to retry", ret);
+    }
     for (;;) {
         k_sleep(K_FOREVER);
     }
