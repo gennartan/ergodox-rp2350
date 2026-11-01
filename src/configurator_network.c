@@ -10,6 +10,7 @@
 #include <zephyr/usb/usbd.h>
 
 #include "configurator_network.h"
+#include "keyboard_config.h"
 
 LOG_MODULE_REGISTER(configurator_network);
 
@@ -33,15 +34,36 @@ static struct http_resource_detail_static index_resource = {
         .type = HTTP_RESOURCE_TYPE_STATIC,
         .bitmask_of_supported_http_methods = BIT(HTTP_GET),
         .content_type = "text/html; charset=utf-8",
+        .content_encoding = "gzip",
     },
     .static_data = index_html,
     .static_data_len = sizeof(index_html),
 };
 
+static uint8_t layout_blob[KEYBOARD_CONFIG_MAX_BLOB_SIZE];
+
+/* HTTP polls an eventfd, a listener, and one descriptor per accepted client. */
+BUILD_ASSERT(CONFIG_ZVFS_POLL_MAX >= CONFIG_HTTP_SERVER_MAX_CLIENTS + 2,
+    "Socket poll capacity must cover the complete HTTP descriptor set");
+BUILD_ASSERT(CONFIG_NET_MAX_CONTEXTS >= CONFIG_HTTP_SERVER_MAX_CLIENTS + 2,
+    "Network contexts must cover HTTP clients, listener, and DHCP");
+BUILD_ASSERT(CONFIG_NET_MAX_CONN >= CONFIG_HTTP_SERVER_MAX_CLIENTS + 2,
+    "Network connection capacity must cover HTTP and DHCP");
+
+static struct http_resource_detail_static layout_resource = {
+    .common = {
+        .type = HTTP_RESOURCE_TYPE_STATIC,
+        .bitmask_of_supported_http_methods = BIT(HTTP_GET),
+        .content_type = "application/octet-stream",
+    },
+    .static_data = layout_blob,
+};
+
 static uint16_t http_port = 80;
 HTTP_SERVICE_DEFINE(configurator_http, CONFIGURATOR_ADDRESS, &http_port,
-    2, 2, NULL, NULL, NULL);
+    CONFIG_HTTP_SERVER_MAX_CLIENTS, CONFIG_HTTP_SERVER_MAX_CLIENTS, NULL, NULL, NULL);
 HTTP_RESOURCE_DEFINE(configurator_index, configurator_http, "/", &index_resource);
+HTTP_RESOURCE_DEFINE(configurator_layout, configurator_http, "/api/layout", &layout_resource);
 
 static void configurator_usb_message(struct usbd_context *const ctx,
     const struct usbd_msg *const msg)
@@ -95,6 +117,13 @@ int configurator_network_start(void)
 {
     int ret;
 
+    /* Configuration is immutable until reboot; all clients share this snapshot. */
+    ret = keyboard_config_export(layout_blob, sizeof(layout_blob),
+        &layout_resource.static_data_len);
+    if (ret != 0) {
+        LOG_ERR("Failed to export current layout: %d", ret);
+        return ret;
+    }
     ret = configure_ipv4();
     if (ret != 0) {
         LOG_ERR("Configurator IPv4/DHCP initialization failed: %d", ret);

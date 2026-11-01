@@ -277,9 +277,10 @@ Chords spanning both halves are not supported.
 When the chord is held on the USB-connected half at boot, the keyboard enumerates
 as **Ergodox Configurator**, a USB CDC-NCM Ethernet device. Its address is
 `192.168.7.1/24`; a DHCP server offers the computer `192.168.7.2/24`, without a
-default gateway or DNS server. Open **http://192.168.7.1/** to see the embedded
-static placeholder page. No internet connection or additional web server is
-needed. The editor is not implemented yet. The firmware loads a validated RAM layout
+default gateway or DNS server. Open **http://192.168.7.1/** to view the current layout, both physical keyboard
+halves, and their layers. Select a key to inspect its action. The viewer is
+read-only; no internet connection or additional web server is needed.
+The firmware loads a validated RAM layout
 from NVM, with compiled factory defaults as fallback; the save API is not yet
 connected to the web interface. See [configuration formats](docs/keyboard-configuration.md).
 

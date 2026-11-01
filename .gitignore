@@ -1,4 +1,5 @@
 build
+__pycache__
 
 # Local Docker Compose user IDs
 .env

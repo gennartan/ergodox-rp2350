@@ -93,6 +93,11 @@ const struct keyboard_layout *keyboard_config_layout(void)
     return &active_layout;
 }
 
+int keyboard_config_export(uint8_t *output, size_t capacity, size_t *length)
+{
+    return keyboard_config_encode(&active, output, capacity, length);
+}
+
 int keyboard_config_save(const struct keyboard_config *config)
 {
     size_t length;

@@ -3,19 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ErgoDox Configurator</title>
-  <style>
-    body { font: 1.1rem system-ui, sans-serif; margin: 4rem auto; padding: 0 1.5rem; max-width: 40rem; color: #243247; background: #f4f6fa; }
-    main { background: white; padding: 2rem; border-radius: 1rem; }
-    h1 { margin-top: 0; }
-  </style>
+  <link rel="icon" href="data:,">
+  <title>ErgoDox · Current layout</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
   <main>
-    <h1>ErgoDox Configurator</h1>
-    <p>Your keyboard is connected in configuration mode.</p>
-    <p>The configuration editor is coming soon.</p>
-    <p>To return to keyboard mode, release the boot chord and reconnect USB.</p>
+    <header>
+      <div><p class="eyebrow">ERGODOX CONFIGURATOR</p><h1>Current layout</h1></div>
+      <span class="badge">Read only</span>
+    </header>
+    <p id="status" role="status" aria-live="polite">Loading the keyboard’s layout…</p>
+    <button id="retry" type="button" hidden>Try again</button>
+    <noscript><p>Enable JavaScript to view the keyboard layout.</p></noscript>
+    <section id="layout" hidden>
+      <div class="toolbar">
+        <div><h2 id="layout-name"></h2><p id="summary"></p></div>
+        <label>View layer <select id="layer"></select></label>
+      </div>
+      <div class="keyboard">
+        <section class="half"><h3>Left hand</h3><svg id="left" viewBox="-8 0 710 510" aria-label="Left-hand keys"></svg></section>
+        <section class="half"><h3>Right hand</h3><svg id="right" viewBox="-8 0 710 510" aria-label="Right-hand keys"></svg></section>
+      </div>
+      <div class="legend"><span>↳ Transparent: falls through to a lower active layer</span><span>— No action</span></div>
+      <section class="details" aria-live="polite"><h3 id="detail-title">Key details</h3><p id="detail">Select a key to inspect its assigned action.</p></section>
+      <p class="note">Key names use USB HID labels. Your computer’s keyboard language determines the characters typed.</p>
+    </section>
+    <footer>To return to keyboard mode, release the boot chord and reconnect USB.</footer>
   </main>
 </body>
 </html>

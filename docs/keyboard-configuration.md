@@ -104,7 +104,7 @@ On master boot or configuration-mode entry:
 
 `keyboard_config_save()` validates and persists a complete candidate for the
 next boot. It is permitted only in configuration mode. It does not replace the
-live RAM table, and no HTTP write endpoint or editor is added in this change.
+live RAM table, and no HTTP write endpoint or editor is available.
 A save that is interrupted before NVS commits can leave the previous committed
 record available; malformed committed records fall back to factory defaults.
 Power interruption on physical RP2350 flash still needs hardware testing.
@@ -113,6 +113,31 @@ A regular UF2 image does not include the reserved configuration partition, so
 reflashing can preserve saved data. A chip erase clears it. Firmware changes
 that alter the binary meaning should bump the version and use the fallback;
 there is no compatibility/migration layer.
+
+## Read-only web viewer
+
+The configurator serves `GET /api/layout` as `application/octet-stream`, using
+exactly the binary format above. The response is a snapshot of the active RAM
+configuration, not a freshly read NVM record or a saved candidate awaiting
+reboot. It is encoded once when configuration mode starts and served as a static
+resource, allowing concurrent reads without modifying configuration state.
+Only GET is enabled; there is no write endpoint.
+
+The maintained HTML, CSS, and JavaScript sources are bundled into a single gzip
+HTML response at build time. The firmware needs only the page request and the
+layout API request, so a missing stylesheet cannot leave the keyboard unstyled.
+A data-URI favicon avoids an extra automatic request. HTTP capacity supports six
+clients, with socket polling sized for all clients plus the listener and eventfd;
+network connection/context budgets also include DHCP. TCP windows are capped at
+2 KiB per connection within the shared packet-buffer budget.
+
+The embedded HTML/CSS/JavaScript viewer validates the record length, version,
+dimensions, and CRC before displaying it. It shows the layout name, default layer,
+all available layers, and both physical keyboard halves. Selecting a key displays
+its action details. Transparent assignments remain explicitly transparent rather
+than pretending to resolve all possible combinations of active layers. Labels
+use HID key names; the host keyboard language determines the typed characters.
+The physical indices match the offline configurator's geometry.
 
 ## Tests
 
@@ -129,3 +154,17 @@ Tests cover round trips, every single-byte corruption, truncation, invalid
 configuration values, all eight layers, cross-hand layer resolution, release
 semantics, saves/reloads, repeated writes that force NVS sector recycling,
 write rejection during normal keyboard mode, and corrupt-record fallback.
+
+With Node.js installed, test the browser decoder, action labels, physical key
+indices, and invalid responses:
+
+```sh
+node tests/config/test_viewer.js
+```
+
+Verify that the firmware page includes all its assets and runs its inline script
+after the document is ready:
+
+```sh
+python3 tests/config/test_web_bundle.py
+```

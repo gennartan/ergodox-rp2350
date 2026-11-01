@@ -28,6 +28,8 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
 /* Initialize before accepting key events. Only configuration mode may save. */
 int keyboard_config_init(bool configuration_mode);
 const struct keyboard_layout *keyboard_config_layout(void);
+/* Read-only snapshot of the active RAM configuration, in the versioned format. */
+int keyboard_config_export(uint8_t *blob, size_t capacity, size_t *length);
 /* Persists a candidate for next boot; never modifies the live runtime table. */
 int keyboard_config_save(const struct keyboard_config *config);
 
