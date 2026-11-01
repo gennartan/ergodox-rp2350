@@ -254,6 +254,30 @@ Python `__pycache__` folders, KiCad lock files, or editor-specific files.
 Production files are useful to commit when they represent a real hardware
 revision that was ordered or is ready to order.
 
+### Configurator boot chord (prototype)
+
+The `ergodox,configurator` node in `app.overlay` defines the local boot chord:
+
+```dts
+configurator {
+    compatible = "ergodox,configurator";
+    gpios = <&gpio0 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+            <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+};
+```
+
+Hold every listed input active while powering up. The default is physical keys
+1 and 2 on the same half. Polarity and pulls come from each GPIO specifier.
+The firmware samples the entire chord repeatedly over 20 ms before starting USB,
+UART, or key interrupts. Partial chords continue normal boot. GPIO errors stop
+boot rather than treating a failed read as a pressed key. Set `status = "disabled"`
+or remove the node to disable this feature. Only one enabled node is supported.
+Chords spanning both halves are not supported.
+
+This prototype selects a dedicated configuration mode and waits there; it does
+not yet enumerate a USB network interface or serve a web page. Release the chord
+and reboot to return to keyboard mode.
+
 ### Logs through the SWD debug port (RTT)
 
 Both halves send Zephyr logs on RTT channel 0. Connect the Raspberry Pi Debug

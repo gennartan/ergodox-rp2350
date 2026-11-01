@@ -1,4 +1,11 @@
 / {
+    configurator {
+        compatible = "ergodox,configurator";
+        // Hold physical keys 1 and 2 on this half while powering up.
+        gpios = <&gpio0 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+                <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+    };
+
     aliases {
         led0 = &led0;
         led1 = &led1;

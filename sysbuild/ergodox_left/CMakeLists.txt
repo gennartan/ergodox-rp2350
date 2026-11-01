@@ -8,6 +8,9 @@ get_filename_component(ERGODOX_SOURCE_DIR
 set(APPLICATION_CONFIG_DIR "${ERGODOX_SOURCE_DIR}")
 set(KCONFIG_ROOT "${ERGODOX_SOURCE_DIR}/Kconfig")
 
+# Discover application bindings even when sysbuild uses its image directory.
+list(APPEND DTS_ROOT "${ERGODOX_SOURCE_DIR}")
+
 find_package(Zephyr REQUIRED)
 project(ergodoxcustom)
 

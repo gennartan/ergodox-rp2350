@@ -7,6 +7,7 @@
 #include <zephyr/usb/class/usbd_hid.h>
 #include <zephyr/logging/log.h>
 
+#include "configurator_mode.h"
 #include "keyboard_layout.h"
 #include "split_transport.h"
 
@@ -114,7 +115,7 @@ static enum keyboard_transport_mode transport_mode = KEYBOARD_TRANSPORT_UART;
 #define ERGODOX_KEYBOARD_HAND_NAME "right"
 #endif
 
-UDC_STATIC_BUF_DEFINE(keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE + 1);
+UDC_STATIC_BUF_DEFINE(keyboard_hid_report, ERGODOX_HID_KEYBOARD_REPORT_SIZE);
 UDC_STATIC_BUF_DEFINE(boot_keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE);
 UDC_STATIC_BUF_DEFINE(consumer_hid_report, ERGODOX_HID_CONSUMER_REPORT_SIZE);
 UDC_STATIC_BUF_DEFINE(system_hid_report, ERGODOX_HID_SYSTEM_REPORT_SIZE);
@@ -349,7 +350,8 @@ static void submit_hid_report_from_runtime(void)
             boot_keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE);
     } else {
         send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
-            keyboard_hid_report, sizeof(keyboard_hid_report));
+            /* UDC buffers are padded for alignment; send only report bytes. */
+            keyboard_hid_report, ERGODOX_HID_KEYBOARD_REPORT_SIZE);
     }
 }
 
@@ -636,6 +638,18 @@ static int select_transport_mode(void)
 int main(void)
 {
     int ret;
+
+    bool configure;
+
+    ret = configurator_mode_requested(&configure);
+    if (ret < 0) {
+        LOG_ERR("Failed to sample configurator boot chord: %d", ret);
+        return ret;
+    }
+    if (configure) {
+        configurator_mode_run();
+        return 0;
+    }
 
     LOG_INF("Keyboard interrupt setup start");
     k_work_init(&split_events_work, split_events_work_handler);
