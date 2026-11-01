@@ -1,1 +1,4 @@
 build
+
+# Local Docker Compose user IDs
+.env

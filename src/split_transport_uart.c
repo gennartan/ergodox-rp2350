@@ -176,7 +176,12 @@ static void split_uart_irq_callback(const struct device *dev, void *user_data)
 {
     ARG_UNUSED(user_data);
 
-    while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
+    for (;;) {
+        uart_irq_update(dev);
+        if (!uart_irq_is_pending(dev)) {
+            break;
+        }
+
         if (uart_irq_rx_ready(dev)) {
             uint8_t byte;
 

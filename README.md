@@ -67,6 +67,73 @@ The root of the repository is a Zephyr application for the RP2350:
 
 ## 3. How To Get Started
 
+### Build with Docker (Linux, macOS, or Windows)
+
+Install Docker Engine on Linux, or Docker Desktop with Linux containers on
+macOS/Windows. No host Zephyr, Python, CMake, or compiler installation is needed.
+Run this command from the repository root (the same command works in PowerShell):
+
+```sh
+docker compose run --build --rm build
+```
+
+Compose builds the dependency image, mounts the repository at `/workspace`, and
+builds both keyboard halves. Image layers are cached. After the first build,
+you can skip the image-build check with `docker compose run --rm build`.
+Firmware builds run with networking disabled; image creation can access the
+internet to download dependencies.
+
+The container runs as UID/GID `1000:1000` by default. If your Linux account uses
+different IDs, set `BUILD_UID` and `BUILD_GID` in a local `.env` file, using the
+values printed by `id -u` and `id -g`. For a single invocation, you can use:
+
+```sh
+BUILD_UID=$(id -u) BUILD_GID=$(id -g) docker compose run --rm build
+```
+
+The Ubuntu 26.04 image contains the official Zephyr v4.5.0 stable release, its
+RP2350 modules, Python build dependencies, and Zephyr SDK 1.0.1 with the ARM GNU
+toolchain. The first image build needs internet access; subsequent firmware
+builds use the installed dependencies and can run offline. Docker selects the native Linux architecture
+on x86-64 and ARM64 hosts, including Apple Silicon.
+
+Zephyr v4.5.0 is a stable release, not an LTS release. The current 3.7 LTS
+series predates RP2350 support and cannot build this board without backports.
+
+Both halves are built together. Outputs are written back to the mounted repository:
+
+- `build/docker/ergodox_left/zephyr/ergodox_left.uf2`
+- `build/docker/ergodox_right/zephyr/ergodox_right.uf2`
+
+The separate `build/docker` directory avoids reusing a host build's CMake cache.
+Use these commands for a clean build or an interactive development shell:
+
+```sh
+docker compose run --rm build build -p always
+docker compose run --rm build bash
+```
+
+Inside that shell, the repository is `/workspace`, and the installed west
+workspace is `/opt/zephyr-workspace`.
+
+To move to another machine, clone the repository and repeat the commands above.
+You can also transfer the built image without rebuilding its dependencies:
+
+```sh
+docker save -o ergodox-build.tar ergodox-build
+# On another machine with the same CPU architecture:
+docker load -i ergodox-build.tar
+```
+
+The Zephyr release tag and SDK version are defined by build arguments in `Dockerfile`.
+Rebuild the image when changing dependencies; application source edits only need
+another `docker compose run --rm build`. The Python packages and Ubuntu packages are resolved when
+the image is built, so transferring the image also preserves those exact versions.
+Flashing remains a host operation: copy each UF2 to the corresponding half in
+BOOTSEL mode.
+
+### Build with a host Zephyr installation
+
 Install Zephyr and make sure `west` is available in your shell. This project is
 built as a Zephyr application, so it expects the usual Zephyr SDK and Python
 environment to be installed first.
