@@ -1,0 +1,5 @@
+# The image contains dependencies; application sources are mounted at runtime.
+**
+!Dockerfile
+!docker/
+!docker/entrypoint.sh

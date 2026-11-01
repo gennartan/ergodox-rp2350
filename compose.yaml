@@ -1,0 +1,15 @@
+services:
+  build:
+    image: ergodox-build
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Override these in .env if your Linux account uses different IDs.
+    user: "${BUILD_UID:-1000}:${BUILD_GID:-1000}"
+    init: true
+    network_mode: none
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+    command: ["build"]
