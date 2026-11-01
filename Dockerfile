@@ -37,6 +37,9 @@ RUN west update --narrow cmsis cmsis_6 hal_rpi_pico picolibc \
             git config --system --add safe.directory "${git_dir%/.git}"; \
         done
 
+# RTT logging uses the SEGGER module at the Zephyr manifest-pinned revision.
+RUN west update --narrow segger
+
 # Zephyr may fall back to a source-tree cache during sysbuild configuration.
 # Keep that fallback writable when Docker runs with an arbitrary host UID.
 RUN rm -rf /tmp/ergodox-home /tmp/ergodox-cache \

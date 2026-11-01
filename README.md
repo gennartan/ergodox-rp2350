@@ -253,3 +253,45 @@ When contributing, avoid committing local generated noise such as `build/`,
 Python `__pycache__` folders, KiCad lock files, or editor-specific files.
 Production files are useful to commit when they represent a real hardware
 revision that was ordered or is ready to order.
+
+### Logs through the SWD debug port (RTT)
+
+Both halves send Zephyr logs on RTT channel 0. Connect the Raspberry Pi Debug
+Probe's **D** port to the target's SWD debug connector (SWCLK, SWDIO, GND) and
+power the keyboard normally. UART wiring is not needed.
+
+Rebuild the Docker image once to download the manifest-pinned SEGGER module,
+then flash the new firmware on the half you want to inspect:
+
+```sh
+docker compose run --build --rm build
+```
+
+For a host Zephyr installation, run `west update segger` before rebuilding.
+Use a host OpenOCD installation with RP2350 and RTT support. Start it with:
+
+```sh
+openocd -f interface/cmsis-dap.cfg -f target/rp2350.cfg \
+  -c "adapter speed 5000" \
+  -c "init" \
+  -c "targets rp2350.cm0" \
+  -c "rtt setup 0x20000000 0x82000 {SEGGER RTT}" \
+  -c "rtt start" \
+  -c "rtt server start 19021 0"
+```
+
+In another terminal, read the logs:
+
+```sh
+nc localhost 19021
+```
+
+The search range covers the RP2350's 520 KiB SRAM. OpenOCD attaches to the
+running firmware without deliberately resetting it. The 4 KiB RTT buffer holds
+recent logs; messages are dropped when full so an absent debugger does not block
+normal operation. Only the half connected to the probe is visible. To repeat
+startup messages, reset the target and restart the OpenOCD RTT session if needed.
+
+If OpenOCD reports that no RTT control block is found, verify that the flashed
+firmware contains RTT and that the target is running. A shared-library error
+before OpenOCD starts indicates a host OpenOCD installation problem.
