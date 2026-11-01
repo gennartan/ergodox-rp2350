@@ -100,10 +100,12 @@ on x86-64 and ARM64 hosts, including Apple Silicon.
 Zephyr v4.5.0 is a stable release, not an LTS release. The current 3.7 LTS
 series predates RP2350 support and cannot build this board without backports.
 
-Both halves are built together. Outputs are written back to the mounted repository:
+Both halves are built together. The final build step exports both UF2 files to
+the build directory root, written back to the mounted repository. The exports
+are refreshed on every successful build, even when their content is unchanged:
 
-- `build/docker/ergodox_left/zephyr/ergodox_left.uf2`
-- `build/docker/ergodox_right/zephyr/ergodox_right.uf2`
+- `build/docker/ergodox_left.uf2`
+- `build/docker/ergodox_right.uf2`
 
 The separate `build/docker` directory avoids reusing a host build's CMake cache.
 Use these commands for a clean build or an interactive development shell:
@@ -155,8 +157,8 @@ Sysbuild compiles the application twice and selects the hand independently for
 each image. The resulting UF2 files are:
 
 ```text
-build/ergodox_left/zephyr/ergodox_left.uf2
-build/ergodox_right/zephyr/ergodox_right.uf2
+build/ergodox_left.uf2
+build/ergodox_right.uf2
 ```
 
 Flash the generated firmware using your RP flash hardware tool. The exact
