@@ -23,7 +23,7 @@ static const struct keyboard_action *resolve_action(
         return &no_action;
     }
 
-    for (int layer = KEYBOARD_LAYER_COUNT - 1; layer >= 0; layer--) {
+    for (int layer = runtime->layout->layer_count - 1; layer >= 0; layer--) {
         const struct keyboard_action *action;
 
         if ((layers & BIT(layer)) == 0) {
@@ -60,7 +60,7 @@ void keyboard_runtime_init(struct keyboard_runtime *runtime,
 {
     memset(runtime, 0, sizeof(*runtime));
     runtime->layout = layout;
-    runtime->default_layer = BIT(KEYBOARD_LAYER_BASE);
+    runtime->default_layer = layout != NULL ? layer_bit(layout->default_layer) : 0;
 }
 
 bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,

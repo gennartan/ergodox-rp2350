@@ -1,4 +1,6 @@
 target_sources(app PRIVATE
+  ${ERGODOX_SOURCE_DIR}/src/keyboard_config.c
+  ${ERGODOX_SOURCE_DIR}/src/keyboard_config_store.c
   ${ERGODOX_SOURCE_DIR}/src/configurator_network.c
   ${ERGODOX_SOURCE_DIR}/src/configurator_mode.c
   ${ERGODOX_SOURCE_DIR}/src/main.c

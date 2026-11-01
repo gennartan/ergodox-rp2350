@@ -39,18 +39,19 @@ config ERGODOX_USB_READY_TIMEOUT_MS
       the firmware acts as the UART-sender half.
 
 choice ERGODOX_KEYBOARD_LAYOUT
-    prompt "Keyboard layout"
+    prompt "Factory fallback keyboard layout"
     default ERGODOX_KEYBOARD_LAYOUT_SIMPLE
 
 config ERGODOX_KEYBOARD_LAYOUT_SIMPLE
     bool "Simple layered layout"
     help
-      Default QWERTY-style layout with navigation, symbol, and function layers.
+      Factory fallback used when NVM has no valid configuration.
+      QWERTY-style layout with navigation, symbol, and function layers.
 
 config ERGODOX_KEYBOARD_LAYOUT_CUSTOM
     bool "My custom layout"
     help
-      Custom layout
+      Compiled custom factory fallback used when NVM has no valid configuration.
 
 endchoice
 

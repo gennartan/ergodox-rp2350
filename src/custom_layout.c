@@ -1,7 +1,7 @@
 #include "keyboard_layout.h"
 
 /* Generated layout: custom - 38 keys per half). */
-static const struct keyboard_action custom_layers[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {
+static const struct keyboard_action custom_layers[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT] = {
     [KEYBOARD_HAND_RIGHT] = {
         [KEYBOARD_LAYER_BASE] = {
             [0] = KB_MOD(HID_KBD_MODIFIER_RIGHT_ALT, HID_KEY_RIGHTBRACE),
@@ -145,5 +145,7 @@ static const struct keyboard_action custom_layers[KEYBOARD_HAND_COUNT][KEYBOARD_
 
 static const struct keyboard_layout custom_layout = {
     .name = "custom",
+    .layer_count = KEYBOARD_LAYER_COUNT,
+    .default_layer = KEYBOARD_LAYER_BASE,
     .layers = &custom_layers,
 };

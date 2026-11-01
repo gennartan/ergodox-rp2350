@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <zephyr/sys/util.h>
+#include <zephyr/sys/util_macro.h>
 
 #include "keyboard_hid.h"
 
@@ -28,29 +28,32 @@ enum keyboard_layer {
 };
 
 enum keyboard_action_type {
-    KEYBOARD_ACTION_TRANSPARENT,
-    KEYBOARD_ACTION_NONE,
-    KEYBOARD_ACTION_KEY,
-    KEYBOARD_ACTION_CONSUMER,
-    KEYBOARD_ACTION_SYSTEM,
-    KEYBOARD_ACTION_MOUSE_BUTTON,
-    KEYBOARD_ACTION_MOUSE_MOVE,
-    KEYBOARD_ACTION_MOUSE_WHEEL,
-    KEYBOARD_ACTION_LIGHTING,
-    KEYBOARD_ACTION_LAYER_MOMENTARY,
-    KEYBOARD_ACTION_LAYER_TOGGLE,
-    KEYBOARD_ACTION_LAYER_DEFAULT,
+    KEYBOARD_ACTION_TRANSPARENT = 0,
+    KEYBOARD_ACTION_NONE = 1,
+    KEYBOARD_ACTION_KEY = 2,
+    KEYBOARD_ACTION_CONSUMER = 3,
+    KEYBOARD_ACTION_SYSTEM = 4,
+    KEYBOARD_ACTION_MOUSE_BUTTON = 5,
+    KEYBOARD_ACTION_MOUSE_MOVE = 6,
+    KEYBOARD_ACTION_MOUSE_WHEEL = 7,
+    KEYBOARD_ACTION_LIGHTING = 8,
+    KEYBOARD_ACTION_LAYER_MOMENTARY = 9,
+    KEYBOARD_ACTION_LAYER_TOGGLE = 10,
+    KEYBOARD_ACTION_LAYER_DEFAULT = 11,
 };
 
+/* Four bytes, naturally aligned: tag, modifiers, and a two-byte payload. */
 struct keyboard_action {
-    enum keyboard_action_type type;
-    uint8_t keycode;
+    uint8_t type;
     uint8_t modifier;
-    uint8_t layer;
-    uint16_t usage;
-    int8_t x;
-    int8_t y;
+    union {
+        uint16_t usage;
+        struct { uint8_t keycode; uint8_t layer; };
+        struct { int8_t x; int8_t y; };
+    };
 };
+
+_Static_assert(sizeof(struct keyboard_action) == 4, "Actions must occupy four bytes");
 
 enum keyboard_lighting_action {
     KEYBOARD_LIGHTING_TOGGLE,
@@ -62,7 +65,9 @@ enum keyboard_lighting_action {
 
 struct keyboard_layout {
     const char *name;
-    const struct keyboard_action (*layers)[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT];
+    uint8_t layer_count;
+    uint8_t default_layer;
+    const struct keyboard_action (*layers)[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT];
 };
 
 struct keyboard_runtime {

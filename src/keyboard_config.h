@@ -1,0 +1,34 @@
+#ifndef ERGODOX_KEYBOARD_CONFIG_H
+#define ERGODOX_KEYBOARD_CONFIG_H
+
+#include <stddef.h>
+#include "keyboard_layout.h"
+
+#define KEYBOARD_CONFIG_NAME_SIZE 32
+#define KEYBOARD_CONFIG_HEADER_SIZE 64
+#define KEYBOARD_CONFIG_VERSION 1
+#define KEYBOARD_CONFIG_MAX_BLOB_SIZE (KEYBOARD_CONFIG_HEADER_SIZE + \
+    KEYBOARD_HAND_COUNT * KEYBOARD_MAX_LAYERS * KEYBOARD_KEY_COUNT * 4)
+
+/* Owned RAM data; keyboard_layout is a read-only view of these arrays. */
+struct keyboard_config {
+    char name[KEYBOARD_CONFIG_NAME_SIZE];
+    uint8_t layer_count;
+    uint8_t default_layer;
+    struct keyboard_action actions[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT];
+};
+
+int keyboard_config_validate(const struct keyboard_config *config);
+int keyboard_config_encode(const struct keyboard_config *config,
+    uint8_t *blob, size_t capacity, size_t *length);
+/* Failure leaves the destination unchanged. Unknown versions are rejected. */
+int keyboard_config_decode(const uint8_t *blob, size_t length,
+    struct keyboard_config *config);
+
+/* Initialize before accepting key events. Only configuration mode may save. */
+int keyboard_config_init(bool configuration_mode);
+const struct keyboard_layout *keyboard_config_layout(void);
+/* Persists a candidate for next boot; never modifies the live runtime table. */
+int keyboard_config_save(const struct keyboard_config *config);
+
+#endif

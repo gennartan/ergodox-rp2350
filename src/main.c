@@ -9,6 +9,7 @@
 
 #include "configurator_mode.h"
 #include "keyboard_layout.h"
+#include "keyboard_config.h"
 #include "split_transport.h"
 
 LOG_MODULE_REGISTER(kbd);
@@ -622,6 +623,14 @@ static int select_transport_mode(void)
 
     if (ret == 0 && wait_for_usb_ready()) {
         transport_mode = KEYBOARD_TRANSPORT_USB;
+        /* Load once before enabling local scans or processing slave events. */
+        ret = keyboard_config_init(false);
+        if (ret != 0) {
+            return ret;
+        }
+        keyboard_runtime_init(&keyboard, keyboard_config_layout());
+        LOG_INF("Master layout: %s, hand: %s", keyboard.layout->name,
+            ERGODOX_KEYBOARD_HAND_NAME);
         LOG_INF("Using USB HID to host and UART for split RX");
         return init_split_transport(true);
     }
@@ -656,10 +665,6 @@ int main(void)
 
     LOG_INF("Keyboard interrupt setup start");
     k_work_init(&split_events_work, split_events_work_handler);
-
-    keyboard_runtime_init(&keyboard, keyboard_layout_get_selected());
-    LOG_INF("Keyboard layout: %s, hand: %s", keyboard.layout->name,
-        ERGODOX_KEYBOARD_HAND_NAME);
 
     ret = select_transport_mode();
     if (ret != 0) {

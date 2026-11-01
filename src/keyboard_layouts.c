@@ -1,6 +1,6 @@
 #include "keyboard_layout.h"
 
-static const struct keyboard_action simple_layers[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {
+static const struct keyboard_action simple_layers[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT] = {
     [KEYBOARD_HAND_LEFT] = {
         [KEYBOARD_LAYER_BASE] = {
             [0] = KB_KEY(HID_KEY_Q),
@@ -162,6 +162,8 @@ static const struct keyboard_action simple_layers[KEYBOARD_HAND_COUNT][KEYBOARD_
 #pragma GCC diagnostic ignored "-Wunused-const-variable="
 static const struct keyboard_layout simple_layout = {
     .name = "simple",
+    .layer_count = KEYBOARD_LAYER_COUNT,
+    .default_layer = KEYBOARD_LAYER_BASE,
     .layers = &simple_layers,
 };
 #pragma GCC diagnostic pop

@@ -804,7 +804,7 @@ def export_c(layout: dict[str, Any]) -> str:
         f"/* Generated layout: {layout['name']} - {KEY_COUNT} keys per half). */",
     ]
 
-    lines.append(f"static const struct keyboard_action {c_name}_layers[KEYBOARD_HAND_COUNT][KEYBOARD_LAYER_COUNT][KEYBOARD_KEY_COUNT] = {{")
+    lines.append(f"static const struct keyboard_action {c_name}_layers[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT] = {{")
     for hand in HANDS:
         lines.append(f"    [{keyboard_hand_enum(hand)}] = {{")
         for layer in LAYERS:
@@ -823,6 +823,8 @@ def export_c(layout: dict[str, Any]) -> str:
         "",
         f"static const struct keyboard_layout {c_name}_layout = {{",
         f"    .name = \"{layout['name']}\",",
+        "    .layer_count = KEYBOARD_LAYER_COUNT,",
+        "    .default_layer = KEYBOARD_LAYER_BASE,",
         f"    .layers = &{c_name}_layers,",
         "};",
         "",

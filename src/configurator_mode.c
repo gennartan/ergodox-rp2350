@@ -6,6 +6,7 @@
 
 #include "configurator_mode.h"
 #include "configurator_network.h"
+#include "keyboard_config.h"
 
 LOG_MODULE_REGISTER(configurator);
 
@@ -59,7 +60,11 @@ int configurator_mode_requested(bool *requested)
 
 void configurator_mode_run(void)
 {
-    int ret = configurator_network_start();
+    int ret = keyboard_config_init(true);
+
+    if (ret == 0) {
+        ret = configurator_network_start();
+    }
 
     if (ret != 0) {
         LOG_ERR("Configurator startup failed: %d; reboot to retry", ret);

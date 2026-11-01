@@ -279,7 +279,9 @@ as **Ergodox Configurator**, a USB CDC-NCM Ethernet device. Its address is
 `192.168.7.1/24`; a DHCP server offers the computer `192.168.7.2/24`, without a
 default gateway or DNS server. Open **http://192.168.7.1/** to see the embedded
 static placeholder page. No internet connection or additional web server is
-needed. The editor and persistent configuration are not implemented yet.
+needed. The editor is not implemented yet. The firmware loads a validated RAM layout
+from NVM, with compiled factory defaults as fallback; the save API is not yet
+connected to the web interface. See [configuration formats](docs/keyboard-configuration.md).
 
 On Linux, the host uses the `cdc_ncm` driver. Allow the new Ethernet connection
 to obtain an IPv4 address automatically. If the host does not run DHCP on the
