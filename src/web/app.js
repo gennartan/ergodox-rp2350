@@ -277,6 +277,12 @@ async function loadDisplayLabels() {
 function displayKeyName(code) {
   return displayLabels?.[code] ?? keyName(code);
 }
+function keyIdentity(code) {
+  const id = layout?.displayLayout ?? "qwerty";
+  const hid = `0x${code.toString(16).padStart(2,"0")} HID_KEY_${keyTokens[code] ?? code}`;
+  if (displayLabels) return `${hid} ${id} ${displayKeyName(code)}`;
+  return `${hid} qwerty ${keyName(code)} (${id} unavailable)`;
+}
 function standardKeyLegends(action) {
   if (action.type !== 2 || action.modifier || !displayLegends) return null;
   // Printable keyboard keys only. Navigation, keypad, function and action keys
@@ -328,7 +334,7 @@ function describe(action) {
       const legend = standardKeyLegends(action);
       const key = action.keycode ? displayKeyName(action.keycode) : "";
       const text = [...mods, key].filter(Boolean).join(" + ") || "No key";
-      return {lines: mods.length && key ? [mods.join("+"), key] : [text], detail:`${legend ? legendDescription(legend) : text} · HID keycode 0x${action.keycode.toString(16).padStart(2,"0")}`, kind:""};
+      return {lines: mods.length && key ? [mods.join("+"), key] : [text], detail:`${legend ? legendDescription(legend) : text} · ${keyIdentity(action.keycode)}`, kind:""};
     }
     case 3: { const text = consumerNames[action.usage] || `Consumer 0x${action.usage.toString(16)}`; return {lines:[text], detail:`${text} · consumer usage 0x${action.usage.toString(16)}`, kind:"special"}; }
     case 4: { const text = ({0:"System release",0x81:"Power",0x82:"Sleep",0x83:"Wake"})[action.usage] || "System"; return {lines:[text], detail:text, kind:"special"}; }
@@ -571,7 +577,11 @@ function renderActionFields(action = {}) {
   const tokens = map => Object.entries(map).map(([code, name]) => [code, name.replaceAll("_", " ")]);
   switch (type) {
     case 2:
-      editorSelect("keycode", "Key", Object.keys(keyTokens).map(code => [code, `${displayKeyName(Number(code))} (${keyTokens[code]})`]), action.keycode ?? 4);
+      editorSelect("keycode", "HID key / locale character", Object.keys(keyTokens).map(code => [code, keyIdentity(Number(code))]), action.keycode ?? 4);
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "HID value and HID key identify the USB assignment. Locale shows its label in the selected display layout; your computer’s keyboard language determines what is typed.";
+      document.getElementById("action-fields").append(note);
       editorMask("modifier", "Modifiers", modifierTokens, action.modifier ?? 0); break;
     case 3:
       editorSelect("usage", "Consumer action", [...tokens(consumerTokens), ...range(0,1023,n => `Usage ${n}`).filter(([n]) => !Object.hasOwn(consumerTokens,n))], action.usage ?? 0xcd); break;
@@ -630,6 +640,8 @@ function applyKeyEdit(event) {
   } catch (error) { document.getElementById("editor-error").textContent = error.message; }
 }
 function render() {
+  const keyChoices = document.getElementById("edit-keycode");
+  if (keyChoices) for (const option of keyChoices.options) option.textContent = keyIdentity(Number(option.value));
   const layer = Number(document.getElementById("layer").value);
   for (const [hand, handIndex] of [["left",0],["right",1]]) {
     const svg = document.getElementById(hand);
