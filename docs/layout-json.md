@@ -17,8 +17,10 @@ an import preview.
 
 The display-layout preference is included in downloads and saved to NVM.
 Older JSON files without this field use `qwerty`. It does not change key
-assignments or the computer’s settings. Additional label mappings are not yet
-implemented.
+assignments or the computer’s settings. The UI offers `qwerty` (default),
+`azerty`, `qwertz`, `colemak`, `en_us`, `fr_fr`, and `de_de`. Their display labels
+are downloaded from hid-io/layouts and cached in the browser. Unknown identifiers
+are retained on import/export and shown with QWERTY fallback labels.
 
 The browser uses native JSON parsing and named action values. The firmware does
 not parse JSON: the browser converts the validated file to the existing binary

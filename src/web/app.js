@@ -90,6 +90,114 @@ function keyName(code) {
   if (code >= 89 && code <= 97) return `KP ${code - 88}`;
   return keyNames[code] || `Key 0x${code.toString(16).padStart(2,"0")}`;
 }
+// Only identifiers are stored on the keyboard. Locale data is fetched by the
+// browser from a fixed revision so saved preferences render consistently.
+const hidIoRevision = "9fa4d76ecfd9bb23a10e6b32d79fc3ccb13ab69f";
+const displayLayouts = {
+  qwerty: {name:"QWERTY", path:"base/qwerty.json"},
+  azerty: {name:"AZERTY", path:"base/azerty.json"},
+  qwertz: {name:"QWERTZ", path:"base/qwertz.json"},
+  colemak: {name:"Colemak", path:"keyboards/colemak.json"},
+  en_us: {name:"English (US)", path:"keyboards/en_US.json"},
+  fr_fr: {name:"French (France)", path:"keyboards/fr_FR.json"},
+  de_de: {name:"German (Germany)", path:"keyboards/de_DE.json"}
+};
+const hidIoPaths = new Set(["base/base.json", "base/default.json", ...Object.values(displayLayouts).map(item => item.path)]);
+const labelRequests = new Map();
+let displayLabels = null, labelGeneration = 0;
+function validateLabelMap(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || !Object.keys(value).length) throw new Error("Invalid label mapping.");
+  const labels = Object.create(null);
+  for (const [code, label] of Object.entries(value)) {
+    if (!/^(0|[1-9][0-9]*)$/.test(code) || Number(code) > 101 ||
+        typeof label !== "string" || !label.length || label.length > 100 || /[\u0000-\u001f\u007f]/.test(label)) throw new Error("Invalid key label.");
+    labels[code] = label;
+  }
+  return labels;
+}
+function mergeHidIoLabels(labels, data) {
+  if (!data || typeof data !== "object" || !Array.isArray(data.name) || !data.name.length ||
+      !(data.parent === null || hidIoPaths.has(data.parent))) throw new Error("Invalid hid-io layout.");
+  for (const field of ["to_hid_keyboard", "from_hid_keyboard"]) {
+    if (data[field] !== undefined && (!data[field] || typeof data[field] !== "object" || Array.isArray(data[field]))) throw new Error("Invalid HID mapping table.");
+  }
+  const own = Object.create(null), namedKeys = new Set();
+  for (const [code, name] of Object.entries(data.to_hid_keyboard ?? {})) {
+    if (!/^0x[0-9a-f]{2,4}$/i.test(code) || typeof name !== "string" || !name.length || name.length > 100 || /[\u0000-\u001f\u007f]/.test(name)) throw new Error("Invalid HID mapping.");
+    if (Number(code) <= 101) {
+      own[Number(code)] = name;
+      if ([...name].length > 1) namedKeys.add(Number(code));
+    }
+  }
+  // Canonical names may be prose (e.g. "Acute E"). Prefer a one-character
+  // alias from the same file, preserving child overrides over parent aliases.
+  for (const [name, code] of Object.entries(data.from_hid_keyboard ?? {})) {
+    if (typeof code !== "string" || !/^0x[0-9a-f]{2,4}$/i.test(code)) throw new Error("Invalid HID alias.");
+    if (Number(code) <= 101 && [...name].length === 1 && !/[\u0000-\u001f\u007f]/.test(name) &&
+        (own[Number(code)] === undefined || namedKeys.has(Number(code)))) own[Number(code)] = name;
+  }
+  Object.assign(labels, own);
+}
+async function fetchHidIoLabels(id) {
+  const choice = Object.hasOwn(displayLayouts, id) && displayLayouts[id];
+  if (!choice) throw new Error(`Unknown display layout: ${id}.`);
+  const cacheKey = `ergodox-labels-v1:${hidIoRevision}:${id}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return validateLabelMap(JSON.parse(cached));
+  } catch (_) { /* Storage may be disabled, full, or contain invalid data. */ }
+  const labels = Object.create(null), seen = new Set();
+  const signal = AbortSignal.timeout(10000);
+  async function load(path) {
+    if (!hidIoPaths.has(path) || seen.has(path) || seen.size >= 5) throw new Error("Invalid hid-io parent chain.");
+    seen.add(path);
+    const response = await fetch(`https://raw.githubusercontent.com/hid-io/layouts/${hidIoRevision}/${path}`, {
+      mode:"cors", credentials:"omit", referrerPolicy:"no-referrer", signal
+    });
+    if (!response.ok) throw new Error(`Layout download returned HTTP ${response.status}.`);
+    const text = await response.text();
+    if (text.length > 256 * 1024) throw new Error("Layout download is too large.");
+    const data = JSON.parse(text);
+    // Validate before following any remote-supplied parent path.
+    mergeHidIoLabels(Object.create(null), data);
+    if (data.parent !== null) await load(data.parent);
+    mergeHidIoLabels(labels, data);
+  }
+  await load(choice.path);
+  const result = validateLabelMap(labels);
+  try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch (_) { /* Memory cache still works. */ }
+  return result;
+}
+function getHidIoLabels(id) {
+  if (!labelRequests.has(id)) {
+    const request = fetchHidIoLabels(id).catch(error => { labelRequests.delete(id); throw error; });
+    labelRequests.set(id, request);
+  }
+  return labelRequests.get(id);
+}
+async function loadDisplayLabels() {
+  const generation = ++labelGeneration, id = layout.displayLayout ?? "qwerty";
+  const status = document.getElementById("display-layout-status");
+  const retry = document.getElementById("retry-labels");
+  displayLabels = null;
+  status.textContent = "Loading display labels…";
+  retry.hidden = true;
+  render();
+  try {
+    const labels = await getHidIoLabels(id);
+    if (generation !== labelGeneration) return;
+    displayLabels = labels;
+    status.textContent = `${displayLayouts[id].name} labels`;
+  } catch (error) {
+    if (generation !== labelGeneration) return;
+    status.textContent = `Using QWERTY labels. ${error.message}`;
+    retry.hidden = !Object.hasOwn(displayLayouts, id);
+  }
+  render();
+}
+function displayKeyName(code) {
+  return displayLabels?.[code] ?? keyName(code);
+}
 const consumerNames = {
   0x6f:"Brightness +",0x70:"Brightness −",0xb2:"Record",0xb3:"Fast forward",0xb4:"Rewind",0xb5:"Next track",0xb6:"Previous track",
   0xb7:"Stop",0xb8:"Eject",0xcd:"Play / pause",0xe2:"Mute",0xe9:"Volume +",0xea:"Volume −",0x18a:"Mail",0x192:"Calculator",
@@ -101,7 +209,7 @@ function describe(action) {
     case 0: return {lines:["↳"], detail:"Transparent — falls through to a lower active layer.", kind:"empty"};
     case 1: return {lines:["—"], detail:"No action — this key is disabled on this layer.", kind:"empty"};
     case 2: {
-      const key = action.keycode ? keyName(action.keycode) : "";
+      const key = action.keycode ? displayKeyName(action.keycode) : "";
       const text = [...mods, key].filter(Boolean).join(" + ") || "No key";
       return {lines: mods.length && key ? [mods.join("+"), key] : [text], detail:`${text} · HID keycode 0x${action.keycode.toString(16).padStart(2,"0")}`, kind:""};
     }
@@ -353,14 +461,18 @@ function updateTransferControls() {
 }
 function displayLayout(current) {
   layout=current;selectedKey=null;
-  document.getElementById("display-layout").value=current.displayLayout ?? "qwerty";
+  const displaySelector = document.getElementById("display-layout");
+  const id = current.displayLayout ?? "qwerty";
+  displaySelector.replaceChildren(...Object.entries(displayLayouts).map(([value, item]) => new Option(item.name, value)));
+  if (!Object.hasOwn(displayLayouts, id)) displaySelector.append(new Option(`Unavailable (${id})`, id));
+  displaySelector.value = id;
   document.getElementById("detail-title").textContent="Key details";
   document.getElementById("detail").textContent="Select a key to inspect its assigned action.";
   document.getElementById("layout-name").textContent=layout.name || "Unnamed layout";
   document.getElementById("summary").textContent=`${layout.layerCount} layers · 38 keys per hand · Default: layer ${layout.defaultLayer}`;
   const selector=document.getElementById("layer");
   selector.replaceChildren(...Array.from({length:layout.layerCount},(_,i)=>new Option(`Layer ${i}${i===layout.defaultLayer ? " (default)" : ""}`,i)));
-  selector.value=String(layout.defaultLayer);render();updateTransferControls();
+  selector.value=String(layout.defaultLayer);updateTransferControls();loadDisplayLabels();
 }
 function changeDisplayLayout() {
   if (!layout || layoutTransferBusy) return;
@@ -375,7 +487,7 @@ function changeDisplayLayout() {
     document.getElementById("preview-message").textContent = "Display layout preference changed. Save to keyboard to keep it after reboot.";
     document.getElementById("save-layout").textContent = "Save to keyboard";
     document.getElementById("discard-import").textContent = "Discard preview";
-    transferMessage(value === "qwerty" ? "" : "Preference stored in this preview. Additional label mappings are not available yet; labels use QWERTY.");
+    transferMessage("");
   } catch (error) {
     input.value = layout.displayLayout ?? "qwerty";
     transferMessage(error.message, true);
@@ -465,6 +577,7 @@ async function loadLayout() {
   }
 }
 if (typeof document !== "undefined") {
+  document.getElementById("retry-labels").addEventListener("click",loadDisplayLabels);
   document.getElementById("display-layout").addEventListener("change",changeDisplayLayout);
   document.getElementById("download-json").addEventListener("click",downloadLayout);
   document.getElementById("upload-json").addEventListener("click",()=>document.getElementById("layout-file").click());

@@ -131,7 +131,8 @@ endpoint described in [the JSON format documentation](layout-json.md).
 
 The maintained HTML, CSS, and JavaScript sources are bundled into a single gzip
 HTML response at build time. The page and layout snapshot each need only one request, so a missing stylesheet
-cannot leave the keyboard unstyled. Live key polling then uses the separate
+cannot leave the keyboard unstyled. Display-label downloads are optional external
+requests and do not block loading the saved configuration or live key display. Live key polling then uses the separate
 small endpoint described below.
 A data-URI favicon avoids an extra automatic request. HTTP capacity supports six
 clients, with socket polling sized for all clients plus the listener and eventfd;
@@ -144,8 +145,21 @@ all available layers, and both physical keyboard halves. Selecting a key display
 its action details. Transparent assignments remain explicitly transparent rather
 than pretending to resolve all possible combinations of active layers.
 The display-layout identifier is saved with each configuration, independently
-of host settings, and can be edited without importing a file. Current labels
-use QWERTY/HID names; loading other label mappings is not implemented yet.
+of host settings, and can be edited without importing a file. The browser downloads labels from a pinned revision of
+[hid-io/layouts](https://github.com/hid-io/layouts), resolving its parent files.
+Choices are QWERTY, AZERTY, QWERTZ, Colemak, US English, French (France), and
+German (Germany). Only the selected layout's identifier is stored in NVM.
+Downloads go directly from the browser to GitHub over HTTPS; the keyboard needs
+no Internet connection, TLS, or locale database. GitHub permits cross-origin
+requests, so this also works from the keyboard's HTTP page in Firefox/Chromium.
+A first download requires Internet access on the computer. Validated labels are
+cached in browser storage for subsequent/offline visits; blocked or full storage
+still allows downloads and reuse within the page. The cache is specific to the
+page origin and repository revision. Missing/unknown mappings or failed downloads
+fall back to QWERTY labels with an explicit status and a retry button for known
+layouts. Unknown saved identifiers remain intact until the user changes them.
+Labels describe base keys with explicit modifiers, rather than emulating
+Shift/AltGr composition, dead keys, or IMEs.
 The host keyboard language still determines the typed characters.
 The physical indices match the offline configurator's geometry.
 
@@ -194,6 +208,7 @@ indices, and invalid responses:
 
 ```sh
 node tests/config/test_viewer.js
+node tests/config/test_display_layouts.js
 ```
 
 Verify that the firmware page includes all its assets and runs its inline script

@@ -20,10 +20,11 @@
     <section id="layout" hidden>
       <div class="toolbar">
         <div><h2 id="layout-name"></h2><p id="summary"></p></div>
-        <label>Display layout <input id="display-layout" type="text" value="qwerty" maxlength="11" pattern="[a-z0-9][a-z0-9_-]{0,10}" spellcheck="false" autocapitalize="none" aria-describedby="display-layout-note"></label>
+        <label>Display layout <select id="display-layout" aria-describedby="display-layout-note"></select></label>
         <label>View layer <select id="layer"></select></label>
       </div>
-      <p id="display-layout-note" class="note">Saved with your configuration. QWERTY labels are currently available; other mapping identifiers are retained for future support.</p>
+      <p id="display-layout-note" class="note">Saved with your configuration. Labels download once per layout and are cached in this browser.</p>
+      <p><span id="display-layout-status" role="status" aria-live="polite"></span> <button id="retry-labels" type="button" hidden>Retry label download</button></p>
       <div class="transfers">
         <button id="download-json" type="button">Download JSON</button>
         <button id="upload-json" type="button">Upload JSON…</button>
@@ -42,9 +43,9 @@
       </div>
       <div class="legend"><span class="pressed-legend">● Pressed key</span><span>↳ Transparent: falls through to a lower active layer</span><span>— No action</span></div>
       <section class="details" aria-live="polite"><h3 id="detail-title">Key details</h3><p id="detail">Select a key to inspect its assigned action.</p></section>
-      <p class="note">Key names use USB HID labels. Your computer’s keyboard language determines the characters typed.</p>
+      <p class="note">Labels follow your selected display layout; modifier keys are shown explicitly. Your computer’s keyboard language determines the characters typed.</p>
     </section>
-    <footer>To return to keyboard mode, release the boot chord and reconnect USB.</footer>
+    <footer>To return to keyboard mode, release the boot chord and reconnect USB. Display mappings: <a href="https://github.com/hid-io/layouts" target="_blank" rel="noopener noreferrer">hid-io/layouts</a> (MIT).</footer>
   </main>
 </body>
 </html>
