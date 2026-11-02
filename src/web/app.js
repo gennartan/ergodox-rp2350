@@ -104,7 +104,7 @@ const displayLayouts = {
 };
 const hidIoPaths = new Set(["base/base.json", "base/default.json", ...Object.values(displayLayouts).map(item => item.path)]);
 const labelRequests = new Map();
-let displayLabels = null, labelGeneration = 0;
+let displayLabels = null, displayLegends = null, labelGeneration = 0;
 function validateLabelMap(value) {
   if (!value || typeof value !== "object" || Array.isArray(value) || !Object.keys(value).length) throw new Error("Invalid label mapping.");
   const labels = Object.create(null);
@@ -118,8 +118,12 @@ function validateLabelMap(value) {
 function mergeHidIoLabels(labels, data) {
   if (!data || typeof data !== "object" || !Array.isArray(data.name) || !data.name.length ||
       !(data.parent === null || hidIoPaths.has(data.parent))) throw new Error("Invalid hid-io layout.");
-  for (const field of ["to_hid_keyboard", "from_hid_keyboard"]) {
+  for (const field of ["to_hid_keyboard", "from_hid_keyboard", "composition"]) {
     if (data[field] !== undefined && (!data[field] || typeof data[field] !== "object" || Array.isArray(data[field]))) throw new Error("Invalid HID mapping table.");
+  }
+  for (const sequence of Object.values(data.composition ?? {})) {
+    if (!Array.isArray(sequence) || sequence.length < 1 || sequence.length > 16 || sequence.some(chord =>
+        !Array.isArray(chord) || chord.length < 1 || chord.length > 8 || chord.some(name => typeof name !== "string" || !name.length || name.length > 100))) throw new Error("Invalid character composition.");
   }
   const own = Object.create(null), namedKeys = new Set();
   for (const [code, name] of Object.entries(data.to_hid_keyboard ?? {})) {
@@ -138,15 +142,87 @@ function mergeHidIoLabels(labels, data) {
   }
   Object.assign(labels, own);
 }
-async function fetchHidIoLabels(id) {
+const legendLevels = ["base", "shift", "altgr", "shiftAltgr"];
+function isLegendCharacter(text) {
+  return typeof text === "string" && [...text].length === 1 && !/[\s\u0000-\u001f\u007f]/u.test(text);
+}
+function validateLegends(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid key legends.");
+  const result = Object.create(null);
+  for (const [code, entry] of Object.entries(value)) {
+    if (!/^(0|[1-9][0-9]*)$/.test(code) || Number(code) > 101 || !entry || typeof entry !== "object" || Array.isArray(entry) ||
+        Object.keys(entry).some(field => ![...legendLevels, "dead"].includes(field))) throw new Error("Invalid key legends.");
+    const legend = Object.create(null);
+    for (const level of legendLevels) {
+      if (entry[level] !== undefined) {
+        if (!isLegendCharacter(entry[level])) throw new Error("Invalid legend character.");
+        legend[level] = entry[level];
+      }
+    }
+    if (!Array.isArray(entry.dead) || entry.dead.some(level => !legendLevels.includes(level) || !legend[level])) throw new Error("Invalid dead-key legend.");
+    legend.dead = [...new Set(entry.dead)];
+    result[code] = legend;
+  }
+  return result;
+}
+function compileHidIoLegends(documents, labels) {
+  const symbols = new Map(), legends = Object.create(null);
+  for (const data of documents) {
+    // A remapped position invalidates its old aliases. Otherwise an inherited
+    // US "Shift+Backtick" would invent a tilde on AZERTY's superscript-2 key.
+    const replaced = new Set(Object.keys(data.to_hid_keyboard ?? {}).map(Number));
+    for (const [name, code] of symbols) if (replaced.has(code)) symbols.delete(name);
+    for (const [code, name] of Object.entries(data.to_hid_keyboard ?? {})) symbols.set(name.toLowerCase(), Number(code));
+    for (const [name, code] of Object.entries(data.from_hid_keyboard ?? {})) symbols.set(name.toLowerCase(), Number(code));
+  }
+  for (const [code, text] of Object.entries(labels)) {
+    if (isLegendCharacter(text)) legends[code] = {base:text, dead:[]};
+  }
+  // Resolve every document against the final aliases so inherited letters follow
+  // layouts such as AZERTY/Colemak. Process parents first: child compositions win.
+  for (const data of documents) {
+    for (const [text, sequence] of Object.entries(data.composition ?? {})) {
+      if (!isLegendCharacter(text)) continue;
+      const dead = sequence.length === 2 && sequence[1].length === 1 && sequence[1][0].toLowerCase() === "space";
+      let modifiers = 0, code = null, supported = true;
+      for (const name of sequence[0]) {
+        const token = name.toLowerCase();
+        if (token === "shift") modifiers |= 1;
+        else if (token === "altgr") modifiers |= 2;
+        else if (code === null) code = symbols.get(token === "^" && !symbols.has(token) ? "ˆ" : token);
+        else supported = false;
+      }
+      if (!supported || !Number.isInteger(code) || code < 4 || code > 101) continue;
+      const level = legendLevels[modifiers];
+      const legend = legends[code] ??= {dead:[]};
+      // For an accent followed by another key, show the accent key itself,
+      // never the final composed character (e.g. show ˆ, not â).
+      if (sequence.length > 1 && !dead) {
+        const accent = sequence[0].find(name => !["shift", "altgr"].includes(name.toLowerCase()));
+        if (!isLegendCharacter(accent)) continue;
+        if (modifiers === 0) legend[level] = accent;
+        if (legend[level] && !legend.dead.includes(level)) legend.dead.push(level);
+      } else {
+        legend[level] = text;
+        legend.dead = legend.dead.filter(item => item !== level);
+        if (dead) legend.dead.push(level);
+      }
+    }
+  }
+  return validateLegends(legends);
+}
+function validateDisplayMapping(value) {
+  return {labels:validateLabelMap(value?.labels), legends:validateLegends(value?.legends)};
+}
+async function fetchHidIoMapping(id) {
   const choice = Object.hasOwn(displayLayouts, id) && displayLayouts[id];
   if (!choice) throw new Error(`Unknown display layout: ${id}.`);
-  const cacheKey = `ergodox-labels-v1:${hidIoRevision}:${id}`;
+  const cacheKey = `ergodox-labels-v2:${hidIoRevision}:${id}`;
   try {
     const cached = localStorage.getItem(cacheKey);
-    if (cached) return validateLabelMap(JSON.parse(cached));
+    if (cached) return validateDisplayMapping(JSON.parse(cached));
   } catch (_) { /* Storage may be disabled, full, or contain invalid data. */ }
-  const labels = Object.create(null), seen = new Set();
+  const labels = Object.create(null), seen = new Set(), documents = [];
   const signal = AbortSignal.timeout(10000);
   async function load(path) {
     if (!hidIoPaths.has(path) || seen.has(path) || seen.size >= 5) throw new Error("Invalid hid-io parent chain.");
@@ -162,15 +238,16 @@ async function fetchHidIoLabels(id) {
     mergeHidIoLabels(Object.create(null), data);
     if (data.parent !== null) await load(data.parent);
     mergeHidIoLabels(labels, data);
+    documents.push(data);
   }
   await load(choice.path);
-  const result = validateLabelMap(labels);
+  const result = {labels:validateLabelMap(labels), legends:compileHidIoLegends(documents, labels)};
   try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch (_) { /* Memory cache still works. */ }
   return result;
 }
-function getHidIoLabels(id) {
+function getHidIoMapping(id) {
   if (!labelRequests.has(id)) {
-    const request = fetchHidIoLabels(id).catch(error => { labelRequests.delete(id); throw error; });
+    const request = fetchHidIoMapping(id).catch(error => { labelRequests.delete(id); throw error; });
     labelRequests.set(id, request);
   }
   return labelRequests.get(id);
@@ -180,13 +257,15 @@ async function loadDisplayLabels() {
   const status = document.getElementById("display-layout-status");
   const retry = document.getElementById("retry-labels");
   displayLabels = null;
+  displayLegends = null;
   status.textContent = "Loading display labels…";
   retry.hidden = true;
   render();
   try {
-    const labels = await getHidIoLabels(id);
+    const mapping = await getHidIoMapping(id);
     if (generation !== labelGeneration) return;
-    displayLabels = labels;
+    displayLabels = mapping.labels;
+    displayLegends = mapping.legends;
     status.textContent = `${displayLayouts[id].name} labels`;
   } catch (error) {
     if (generation !== labelGeneration) return;
@@ -197,6 +276,43 @@ async function loadDisplayLabels() {
 }
 function displayKeyName(code) {
   return displayLabels?.[code] ?? keyName(code);
+}
+function standardKeyLegends(action) {
+  if (action.type !== 2 || action.modifier || !displayLegends) return null;
+  // Printable keyboard keys only. Navigation, keypad, function and action keys
+  // keep their centered labels, including keys remapped to a special action.
+  if (!((action.keycode >= 4 && action.keycode <= 39) ||
+        (action.keycode >= 45 && action.keycode <= 56) || action.keycode === 100)) return null;
+  const legend = displayLegends[action.keycode];
+  return legend?.base ? legend : null;
+}
+function legendDescription(legend) {
+  return legendLevels.filter(level => legend[level]).map(level => {
+    const name = {base:"Base", shift:"Shift", altgr:"AltGr", shiftAltgr:"Shift+AltGr"}[level];
+    return `${name}: ${legend[level]}${legend.dead.includes(level) ? " (dead key)" : ""}`;
+  }).join(" · ");
+}
+function appendKeyLabels(group, key, description, legend) {
+  if (legend) {
+    for (const level of legendLevels) {
+      if (!legend[level]) continue;
+      const right = level === "altgr" || level === "shiftAltgr";
+      const top = level === "shift" || level === "shiftAltgr";
+      const text = svgElement("text", {
+        x:right ? key.x + key.w - 10 : key.x + 10,
+        y:top ? key.y + 23 : key.y + key.h - 10,
+        class:`key-glyph ${level}${right ? " right" : ""}${legend.dead.includes(level) ? " dead-key" : ""}`
+      }, legend[level]);
+      text.append(svgElement("title", {}, legendDescription({[level]:legend[level], dead:legend.dead})));
+      group.append(text);
+    }
+  } else {
+    description.lines.forEach((line,i) => {
+      const text = svgElement("text", {x:key.x+key.w/2,y:key.y+key.h/2+4+(i-(description.lines.length-1)/2)*13}, line);
+      if (line.length > 9) { text.setAttribute("textLength", key.w-10); text.setAttribute("lengthAdjust","spacingAndGlyphs"); }
+      group.append(text);
+    });
+  }
 }
 const consumerNames = {
   0x6f:"Brightness +",0x70:"Brightness −",0xb2:"Record",0xb3:"Fast forward",0xb4:"Rewind",0xb5:"Next track",0xb6:"Previous track",
@@ -209,9 +325,10 @@ function describe(action) {
     case 0: return {lines:["↳"], detail:"Transparent — falls through to a lower active layer.", kind:"empty"};
     case 1: return {lines:["—"], detail:"No action — this key is disabled on this layer.", kind:"empty"};
     case 2: {
+      const legend = standardKeyLegends(action);
       const key = action.keycode ? displayKeyName(action.keycode) : "";
       const text = [...mods, key].filter(Boolean).join(" + ") || "No key";
-      return {lines: mods.length && key ? [mods.join("+"), key] : [text], detail:`${text} · HID keycode 0x${action.keycode.toString(16).padStart(2,"0")}`, kind:""};
+      return {lines: mods.length && key ? [mods.join("+"), key] : [text], detail:`${legend ? legendDescription(legend) : text} · HID keycode 0x${action.keycode.toString(16).padStart(2,"0")}`, kind:""};
     }
     case 3: { const text = consumerNames[action.usage] || `Consumer 0x${action.usage.toString(16)}`; return {lines:[text], detail:`${text} · consumer usage 0x${action.usage.toString(16)}`, kind:"special"}; }
     case 4: { const text = ({0:"System release",0x81:"Power",0x82:"Sleep",0x83:"Wake"})[action.usage] || "System"; return {lines:[text], detail:text, kind:"special"}; }
@@ -432,11 +549,7 @@ function render() {
       group.append(svgElement("rect", {x:key.x,y:key.y,width:key.w,height:key.h,rx:7}));
       group.append(svgElement("title", {}, description.detail));
       group.append(svgElement("text", {x:key.x+key.w/2,y:key.y+11,class:"key-index"}, String(key.index+1)));
-      description.lines.forEach((line,i) => {
-        const text = svgElement("text", {x:key.x+key.w/2,y:key.y+key.h/2+4+(i-(description.lines.length-1)/2)*13}, line);
-        if (line.length > 9) { text.setAttribute("textLength", key.w-10); text.setAttribute("lengthAdjust","spacingAndGlyphs"); }
-        group.append(text);
-      });
+      appendKeyLabels(group, key, description, standardKeyLegends(action));
       group.addEventListener("click", () => showDetails(hand,key.index));
       group.addEventListener("keydown", event => {
         if (event.key === "Enter" || event.key === " ") { event.preventDefault(); showDetails(hand,key.index); }

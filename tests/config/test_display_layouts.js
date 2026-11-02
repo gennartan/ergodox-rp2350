@@ -33,39 +33,39 @@ async function main() {
     en_us:{4:"A",30:"1"}, fr_fr:{4:"Q",31:"é"}, de_de:{28:"Z",47:"Ü"}
   };
   for (const [id, keys] of Object.entries(expected)) {
-    const labels = await env.run(`getHidIoLabels("${id}")`);
+    const {labels} = await env.run(`getHidIoMapping("${id}")`);
     for (const [code,label] of Object.entries(keys)) assert.equal(labels[code],label,`${id} HID ${code}`);
     env.context.testLabels = labels;
     assert.equal(env.run("(displayLabels = testLabels, describe({type:2,keycode:4,modifier:0}).lines[0])"),labels[4]);
   }
   const count = env.calls.length;
-  await env.run('getHidIoLabels("fr_fr")');
+  await env.run('getHidIoMapping("fr_fr")');
   assert.equal(env.calls.length,count,"same-page reuse should not redownload");
   const cached = environment(env.storage);
-  assert.equal((await cached.run('getHidIoLabels("fr_fr")'))[31],"é");
+  assert.equal((await cached.run('getHidIoMapping("fr_fr")')).labels[31],"é");
   assert.equal(cached.calls.length,0,"new page should use persistent browser cache");
   cached.run('displayLabels = null');
   assert.equal(cached.run('describe({type:2,keycode:4,modifier:2}).lines.join(" ")'),"Shift A");
-  await assert.rejects(env.run('getHidIoLabels("be-azerty")'),/Unknown/);
-  await assert.rejects(env.run('getHidIoLabels("constructor")'),/Unknown/);
+  await assert.rejects(env.run('getHidIoMapping("be-azerty")'),/Unknown/);
+  await assert.rejects(env.run('getHidIoMapping("constructor")'),/Unknown/);
   assert.throws(()=>env.run('validateLabelMap({4:"bad\\u0000label"})'),/Invalid/);
   assert.throws(()=>env.run('validateLabelMap({102:"invalid usage"})'),/Invalid/);
   assert.throws(()=>env.run('mergeHidIoLabels({}, {name:["bad"],parent:"https://example.com/evil.json"})'),/Invalid/);
   // A broken cache is ignored. Failed downloads can be retried.
-  const broken = environment(new Map([[`ergodox-labels-v1:${revision}:azerty`,"invalid json"]]));
+  const broken = environment(new Map([[`ergodox-labels-v2:${revision}:azerty`,"invalid json"]]));
   const realFetch = broken.context.fetch;
   broken.context.fetch = async()=>{throw new Error("offline")};
-  await assert.rejects(broken.run('getHidIoLabels("azerty")'),/offline/);
+  await assert.rejects(broken.run('getHidIoMapping("azerty")'),/offline/);
   broken.context.fetch = realFetch;
-  assert.equal((await broken.run('getHidIoLabels("azerty")'))[31],"é");
+  assert.equal((await broken.run('getHidIoMapping("azerty")')).labels[31],"é");
   broken.context.localStorage = {getItem(){throw new Error("blocked")},setItem(){throw new Error("blocked")}};
-  assert.equal((await broken.run('getHidIoLabels("qwertz")'))[28],"Z");
+  assert.equal((await broken.run('getHidIoMapping("qwertz")')).labels[28],"Z");
   const cycle = environment();
   cycle.context.fetch = async()=>({ok:true,text:async()=>JSON.stringify({name:["cycle"],parent:"base/qwerty.json"})});
-  await assert.rejects(cycle.run('getHidIoLabels("qwerty")'),/parent chain/);
+  await assert.rejects(cycle.run('getHidIoMapping("qwerty")'),/parent chain/);
   const malformed = environment();
   malformed.context.fetch = async()=>({ok:true,text:async()=>'{"name":["bad"],"parent":null,"to_hid_keyboard":{"oops":"A"}}'});
-  await assert.rejects(malformed.run('getHidIoLabels("qwerty")'),/Invalid HID/);
+  await assert.rejects(malformed.run('getHidIoMapping("qwerty")'),/Invalid HID/);
   // A slow result for a previous selection must not replace the new labels.
   const racing = environment();
   const elements = new Map();
@@ -76,15 +76,15 @@ async function main() {
   racing.run('render = () => {}; layout = {displayLayout:"azerty"};');
   let releaseOld;
   racing.context.oldLabels = new Promise(resolve=>{releaseOld=resolve});
-  racing.run('getHidIoLabels = id => id === "azerty" ? oldLabels : Promise.resolve({4:"A"});');
+  racing.run('getHidIoMapping = id => id === "azerty" ? oldLabels : Promise.resolve({labels:{4:"A"},legends:{}});');
   const oldRequest = racing.run('loadDisplayLabels()');
   racing.run('layout = {displayLayout:"qwerty"}');
   await racing.run('loadDisplayLabels()');
-  releaseOld({4:"Q"});
+  releaseOld({labels:{4:"Q"},legends:{}});
   await oldRequest;
   assert.equal(racing.run('displayKeyName(4)'),"A");
   assert.equal(elements.get("display-layout-status").textContent,"QWERTY labels");
-  racing.run('getHidIoLabels = async () => { throw new Error("offline"); }; layout = {displayLayout:"azerty"}');
+  racing.run('getHidIoMapping = async () => { throw new Error("offline"); }; layout = {displayLayout:"azerty"}');
   await racing.run('loadDisplayLabels()');
   assert.equal(racing.run('displayKeyName(4)'),"A");
   assert.match(elements.get("display-layout-status").textContent,/Using QWERTY labels.*offline/);

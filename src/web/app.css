@@ -25,6 +25,10 @@ svg { width: 100%; height: auto; display: block; }
 .key { cursor: pointer; outline: none; }
 .key rect { fill: #f4f6fa; stroke: #cbd4e2; stroke-width: 1.2; }
 .key text { pointer-events: none; fill: #25334b; font: 12px system-ui, sans-serif; text-anchor: middle; }
+.key .key-glyph { font-size: 15px; text-anchor: start; }
+.key .key-glyph.base { font-size: 19px; font-weight: 600; }
+.key .key-glyph.right { text-anchor: end; fill: #506ca6; }
+.key .key-glyph.dead-key { text-decoration: underline dotted; text-underline-offset: 3px; }
 .key .key-index { fill: #8290a5; font-size: 8px; }
 .key.layer rect { fill: #eeeafb; stroke: #c5b9e5; }
 .key.special rect { fill: #e8f3f2; stroke: #b8d7d3; }
@@ -42,7 +46,7 @@ footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #dce3ec; }
 .live-status { margin: 14px 4px 0; font-size: .85rem; color: #426352; }
 .live-status.offline { color: #9b6032; }
 .key.pressed rect { fill: #4567bd; stroke: #294998; stroke-width: 2.5; }
-.key.pressed text, .key.pressed .key-index { fill: #fff; }
+.key.pressed text, .key.pressed .key-index, .key.pressed .key-glyph { fill: #fff; }
 .key.pressed.selected rect { stroke: #10275b; stroke-width: 4; }
 
 .pressed-legend { color: #4567bd; }

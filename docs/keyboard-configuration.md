@@ -158,8 +158,17 @@ still allows downloads and reuse within the page. The cache is specific to the
 page origin and repository revision. Missing/unknown mappings or failed downloads
 fall back to QWERTY labels with an explicit status and a retry button for known
 layouts. Unknown saved identifiers remain intact until the user changes them.
-Labels describe base keys with explicit modifiers, rather than emulating
-Shift/AltGr composition, dead keys, or IMEs.
+Unmodified printable keyboard actions show keycap legends from hid-io's
+character compositions: base at lower left, Shift at upper left, AltGr at lower
+right, and Shift+AltGr at upper right. Parent aliases for remapped positions are
+removed before resolving inherited compositions, so an obsolete US symbol is
+not shown on a locale-specific key. Only available mappings are drawn; a dotted
+underline identifies dead-key accents. Multi-key composed characters and IME
+output are not treated as single-key glyphs. Assigned modifier combinations,
+modifier-only keys, and special actions keep centered action labels. Tooltips,
+key details, and accessible names include the available character levels.
+The browser cache includes legends and uses a new schema key, so existing
+base-label-only caches are downloaded again once.
 The host keyboard language still determines the typed characters.
 The physical indices match the offline configurator's geometry.
 
@@ -209,6 +218,7 @@ indices, and invalid responses:
 ```sh
 node tests/config/test_viewer.js
 node tests/config/test_display_layouts.js
+node tests/config/test_key_legends.js
 ```
 
 Verify that the firmware page includes all its assets and runs its inline script
