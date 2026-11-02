@@ -52,15 +52,16 @@ function decodeLayout(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer);
   if (bytes.length < 64 || String.fromCharCode(...bytes.slice(0,4)) !== "EKCF") throw new Error("Invalid layout response.");
   const version = view.getUint16(4,true);
-  if (![1,2,3].includes(version) || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
+  if (![1,2,3,4,5].includes(version) || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
   const layerCount = bytes[12], defaultLayer = bytes[13];
   if (layerCount < 1 || layerCount > 8 || defaultLayer >= layerCount || bytes[14] !== 2 || bytes[15] !== 38 ||
-      bytes.length !== 64 + 2 * layerCount * 38 * 4 + (version === 3 ? 544 : 0) || view.getUint32(8,true) !== bytes.length ||
-      (version === 1 && bytes.slice(48,60).some(byte => byte !== 0)) || view.getUint32(60,true) !== crc32(bytes)) throw new Error("The layout response is incomplete or corrupt.");
+      bytes.length !== 64 + 2 * layerCount * 38 * 4 + (version >= 3 ? 544 : 0) + (version >= 5 ? 128 : 0) || view.getUint32(8,true) !== bytes.length ||
+      ((version === 1 || version >= 4) && bytes.slice(48,60).some(byte => byte !== 0)) || view.getUint32(60,true) !== crc32(bytes)) throw new Error("The layout response is incomplete or corrupt.");
   let displayLayout = "qwerty";
-  if (version >= 2) {
-    const field = bytes.slice(48,60), end = field.indexOf(0);
-    if (end < 0) throw new Error("Invalid display layout identifier.");
+  if (version >= 5 || version === 2 || version === 3) {
+    const field = version >= 5 ? bytes.slice(-128) : bytes.slice(48,60);
+    const end = field.indexOf(0);
+    if (end < 0) throw new Error("Invalid saved display layout.");
     displayLayout = validateDisplayLayout(String.fromCharCode(...field.slice(0,end)));
   }
   const nameBytes = bytes.slice(16,48), terminator = nameBytes.indexOf(0);
@@ -71,11 +72,11 @@ function decodeLayout(buffer) {
     const action = {type: bytes[offset], modifier: bytes[offset+1], keycode: bytes[offset+2], layer: bytes[offset+3],
       usage: view.getUint16(offset+2,true), x: view.getInt8(offset+2), y: view.getInt8(offset+3)};
     offset += 4;
-    if (action.type > (version === 3 ? 12 : 11)) throw new Error("Unknown key action in layout.");
+    if (action.type > (version >= 3 ? 12 : 11)) throw new Error("Unknown key action in layout.");
     return action;
   })));
   const macros = Array.from({length:8}, () => []);
-  if (version === 3) {
+  if (version >= 3) {
     for (const macro of macros) {
       const count = bytes[offset];
       if (count > 16 || bytes[offset+1] || bytes[offset+2] || bytes[offset+3]) throw new Error("Invalid macro header.");
@@ -108,22 +109,84 @@ function keyName(code) {
   if (code >= 89 && code <= 97) return `KP ${code - 88}`;
   return keyNames[code] || `Key 0x${code.toString(16).padStart(2,"0")}`;
 }
-// Only identifiers are stored on the keyboard. Locale data is fetched by the
-// browser from a fixed revision so saved preferences render consistently.
-const hidIoRevision = "9fa4d76ecfd9bb23a10e6b32d79fc3ccb13ab69f";
-const displayLayouts = {
-  qwerty: {name:"en_US — English (US)", locale:"en_US", path:"base/qwerty.json"},
-  azerty: {name:"fr_FR — French (legacy)", locale:"fr_FR", path:"base/azerty.json"},
-  qwertz: {name:"de_DE — German (legacy)", locale:"de_DE", path:"base/qwertz.json"},
-  colemak: {name:"en_US — Colemak", locale:"en_US (Colemak)", path:"keyboards/colemak.json"},
-  en_us: {name:"en_US — English (US)", locale:"en_US", path:"keyboards/en_US.json"},
-  fr_fr: {name:"fr_FR — French (France)", locale:"fr_FR", path:"keyboards/fr_FR.json"},
-  fr_be: {name:"fr_BE — Belgian", locale:"fr_BE", path:"keyboards/fr_BE.json"},
-  de_de: {name:"de_DE — German (Germany)", locale:"de_DE", path:"keyboards/de_DE.json"}
-};
-// Belgian mapping is bundled because it is newer than the pinned upstream revision.
-const bundledLocaleDocuments = {"keyboards/fr_BE.json": {"name":["fr_BE","nl_BE","BE","Belgian"],"parent":"base/azerty.json","to_hid_keyboard":{"0x23":"Section","0x25":"Exclamation Mark","0x2E":"Minus","0x32":"Micro","0x34":"Grave U","0x38":"Equal","0x31":"Micro"},"from_hid_keyboard":{",":"0x10","Section":"0x23","§":"0x23","Exclamation Mark":"0x25","!":"0x25","Minus":"0x2E","-":"0x2E","Micro":"0x32","Equal":"0x38","=":"0x38","Dash":"0x2E","Equals":"0x38","Exclamation Point":"0x25","µ":"0x32"},"composition":{"µ":[["Micro"]],"<":[["Less Than"]],"§":[["Section"]],"³":[["Shift","Superscript 2"]],"£":[["Shift","Micro"]],"6":[["Shift","Section"]],"_":[["Shift","Minus"]],"*":[["Shift","Dollar"]],"¬":[["AltGr","Superscript 2"]],"\\":[["AltGr","Less Than"]],"|":[["AltGr","Ampersand"]],"@":[["AltGr","Acute E"]],"¼":[["AltGr","Quote"]],"½":[["AltGr","Left Parenthesis"]],"^":[["AltGr","Section"]],"{":[["AltGr","Grave E"]],"[":[["AltGr","Exclamation Mark"]],"}":[["AltGr","Grave A"]],"ſ":[["AltGr","Z"]],"¶":[["AltGr","R"]],"ŧ":[["AltGr","T"]],"←":[["AltGr","Y"]],"↓":[["AltGr","U"]],"→":[["AltGr","I"]],"œ":[["AltGr","O"]],"þ":[["AltGr","P"]],"]":[["AltGr","Dollar"]],"æ":[["AltGr","Q"]],"ß":[["AltGr","S"]],"ð":[["AltGr","D"]],"đ":[["AltGr","F"]],"ŋ":[["AltGr","G"]],"ħ":[["AltGr","H"]],"ĸ":[["AltGr","K"]],"ł":[["AltGr","L"]],"«":[["AltGr","W"]],"»":[["AltGr","X"]],"¢":[["AltGr","C"]],"„":[["AltGr","V"]],"“":[["AltGr","B"]],"”":[["AltGr","N"]],"•":[["AltGr","Semicolon"]],"·":[["AltGr","Colon"]],"¡":[["Shift","AltGr","Ampersand"]],"⅛":[["Shift","AltGr","Acute E"]],"⅜":[["Shift","AltGr","Left Parenthesis"]],"⅝":[["Shift","AltGr","Section"]],"⅞":[["Shift","AltGr","Grave E"]],"™":[["Shift","AltGr","Exclamation Mark"]],"±":[["Shift","AltGr","Cedilla"]],"¿":[["Shift","AltGr","Right Parenthesis"]],"Ω":[["Shift","AltGr","A"]],"®":[["Shift","AltGr","R"]],"Ŧ":[["Shift","AltGr","T"]],"¥":[["Shift","AltGr","Y"]],"↑":[["Shift","AltGr","U"]],"ı":[["Shift","AltGr","I"]],"Œ":[["Shift","AltGr","O"]],"Þ":[["Shift","AltGr","P"]],"Æ":[["Shift","AltGr","Q"]],"ẞ":[["Shift","AltGr","S"]],"Ð":[["Shift","AltGr","D"]],"ª":[["Shift","AltGr","F"]],"Ŋ":[["Shift","AltGr","G"]],"Ħ":[["Shift","AltGr","H"]],"Ł":[["Shift","AltGr","L"]],"©":[["Shift","AltGr","C"]],"‚":[["Shift","AltGr","V"]],"‘":[["Shift","AltGr","B"]],"’":[["Shift","AltGr","N"]],"º":[["Shift","AltGr","Comma"]],"×":[["Shift","AltGr","Semicolon"]],"÷":[["Shift","AltGr","Colon"]],"ĉ":[["Circumflex"],["C"]],"ĝ":[["Circumflex"],["G"]],"ĥ":[["Circumflex"],["H"]],"ĵ":[["Circumflex"],["J"]],"ŝ":[["Circumflex"],["S"]],"ŵ":[["Circumflex"],["W"]],"ŷ":[["Circumflex"],["Y"]],"ẑ":[["Circumflex"],["Z"]],"Ĉ":[["Circumflex"],["Shift","C"]],"Ĝ":[["Circumflex"],["Shift","G"]],"Ĥ":[["Circumflex"],["Shift","H"]],"Ĵ":[["Circumflex"],["Shift","J"]],"Ŝ":[["Circumflex"],["Shift","S"]],"Ŵ":[["Circumflex"],["Shift","W"]],"Ŷ":[["Circumflex"],["Shift","Y"]],"Ẑ":[["Circumflex"],["Shift","Z"]],"ḧ":[["Shift","Circumflex"],["H"]],"ẗ":[["Shift","Circumflex"],["T"]],"ẅ":[["Shift","Circumflex"],["W"]],"ẍ":[["Shift","Circumflex"],["X"]],"Ḧ":[["Shift","Circumflex"],["Shift","H"]],"Ẅ":[["Shift","Circumflex"],["Shift","W"]],"Ẍ":[["Shift","Circumflex"],["Shift","X"]],"Ÿ":[["Shift","Circumflex"],["Shift","Y"]],"á":[["AltGr","M"],["A"]],"ć":[["AltGr","M"],["C"]],"ǵ":[["AltGr","M"],["G"]],"í":[["AltGr","M"],["I"]],"ḱ":[["AltGr","M"],["K"]],"ĺ":[["AltGr","M"],["L"]],"ḿ":[["AltGr","M"],["M"]],"ń":[["AltGr","M"],["N"]],"ó":[["AltGr","M"],["O"]],"ṕ":[["AltGr","M"],["P"]],"ŕ":[["AltGr","M"],["R"]],"ś":[["AltGr","M"],["S"]],"ú":[["AltGr","M"],["U"]],"ẃ":[["AltGr","M"],["W"]],"ý":[["AltGr","M"],["Y"]],"ź":[["AltGr","M"],["Z"]],"Á":[["AltGr","M"],["Shift","A"]],"Ć":[["AltGr","M"],["Shift","C"]],"É":[["AltGr","M"],["Shift","E"]],"Ǵ":[["AltGr","M"],["Shift","G"]],"Í":[["AltGr","M"],["Shift","I"]],"Ḱ":[["AltGr","M"],["Shift","K"]],"Ĺ":[["AltGr","M"],["Shift","L"]],"Ḿ":[["AltGr","M"],["Shift","M"]],"Ń":[["AltGr","M"],["Shift","N"]],"Ó":[["AltGr","M"],["Shift","O"]],"Ṕ":[["AltGr","M"],["Shift","P"]],"Ŕ":[["AltGr","M"],["Shift","R"]],"Ś":[["AltGr","M"],["Shift","S"]],"Ú":[["AltGr","M"],["Shift","U"]],"Ẃ":[["AltGr","M"],["Shift","W"]],"Ý":[["AltGr","M"],["Shift","Y"]],"Ź":[["AltGr","M"],["Shift","Z"]],"`":[["AltGr","Micro"],["Space"]],"ì":[["AltGr","Micro"],["I"]],"ǹ":[["AltGr","Micro"],["N"]],"ò":[["AltGr","Micro"],["O"]],"ẁ":[["AltGr","Micro"],["W"]],"ỳ":[["AltGr","Micro"],["Y"]],"À":[["AltGr","Micro"],["Shift","A"]],"È":[["AltGr","Micro"],["Shift","E"]],"Ì":[["AltGr","Micro"],["Shift","I"]],"Ǹ":[["AltGr","Micro"],["Shift","N"]],"Ò":[["AltGr","Micro"],["Shift","O"]],"Ù":[["AltGr","Micro"],["Shift","U"]],"Ẁ":[["AltGr","Micro"],["Shift","W"]],"Ỳ":[["AltGr","Micro"],["Shift","Y"]],"~":[["AltGr","Equal"],["Space"]],"ã":[["AltGr","Equal"],["A"]],"ẽ":[["AltGr","Equal"],["E"]],"ĩ":[["AltGr","Equal"],["I"]],"ñ":[["AltGr","Equal"],["N"]],"õ":[["AltGr","Equal"],["O"]],"ũ":[["AltGr","Equal"],["U"]],"ṽ":[["AltGr","Equal"],["V"]],"ỹ":[["AltGr","Equal"],["Y"]],"Ã":[["AltGr","Equal"],["Shift","A"]],"Ẽ":[["AltGr","Equal"],["Shift","E"]],"Ĩ":[["AltGr","Equal"],["Shift","I"]],"Ñ":[["AltGr","Equal"],["Shift","N"]],"Õ":[["AltGr","Equal"],["Shift","O"]],"Ũ":[["AltGr","Equal"],["Shift","U"]],"Ṽ":[["AltGr","Equal"],["Shift","V"]],"Ỹ":[["AltGr","Equal"],["Shift","Y"]],"¸":[["AltGr","Minus"],["Space"]],"ḑ":[["AltGr","Minus"],["D"]],"ȩ":[["AltGr","Minus"],["E"]],"ģ":[["AltGr","Minus"],["G"]],"ḩ":[["AltGr","Minus"],["H"]],"ķ":[["AltGr","Minus"],["K"]],"ļ":[["AltGr","Minus"],["L"]],"ņ":[["AltGr","Minus"],["N"]],"ŗ":[["AltGr","Minus"],["R"]],"ş":[["AltGr","Minus"],["S"]],"ţ":[["AltGr","Minus"],["T"]],"Ç":[["AltGr","Minus"],["Shift","C"]],"Ḑ":[["AltGr","Minus"],["Shift","D"]],"Ȩ":[["AltGr","Minus"],["Shift","E"]],"Ģ":[["AltGr","Minus"],["Shift","G"]],"Ḩ":[["AltGr","Minus"],["Shift","H"]],"Ķ":[["AltGr","Minus"],["Shift","K"]],"Ļ":[["AltGr","Minus"],["Shift","L"]],"Ņ":[["AltGr","Minus"],["Shift","N"]],"Ŗ":[["AltGr","Minus"],["Shift","R"]],"Ş":[["AltGr","Minus"],["Shift","S"]],"Ţ":[["AltGr","Minus"],["Shift","T"]],"˛":[["Shift","AltGr","Minus"],["Space"]],"ą":[["Shift","AltGr","Minus"],["A"]],"ę":[["Shift","AltGr","Minus"],["E"]],"į":[["Shift","AltGr","Minus"],["I"]],"ǫ":[["Shift","AltGr","Minus"],["O"]],"ų":[["Shift","AltGr","Minus"],["U"]],"Ą":[["Shift","AltGr","Minus"],["Shift","A"]],"Ę":[["Shift","AltGr","Minus"],["Shift","E"]],"Į":[["Shift","AltGr","Minus"],["Shift","I"]],"Ǫ":[["Shift","AltGr","Minus"],["Shift","O"]],"Ų":[["Shift","AltGr","Minus"],["Shift","U"]],"å":[["Shift","AltGr","Circumflex"],["A"]],"ů":[["Shift","AltGr","Circumflex"],["U"]],"ẘ":[["Shift","AltGr","Circumflex"],["W"]],"ẙ":[["Shift","AltGr","Circumflex"],["Y"]],"Å":[["Shift","AltGr","Circumflex"],["Shift","A"]],"Ů":[["Shift","AltGr","Circumflex"],["Shift","U"]],"¯":[["Shift","AltGr","Dollar"],["Space"]],"ā":[["Shift","AltGr","Dollar"],["A"]],"ē":[["Shift","AltGr","Dollar"],["E"]],"ḡ":[["Shift","AltGr","Dollar"],["G"]],"ī":[["Shift","AltGr","Dollar"],["I"]],"ō":[["Shift","AltGr","Dollar"],["O"]],"ū":[["Shift","AltGr","Dollar"],["U"]],"ȳ":[["Shift","AltGr","Dollar"],["Y"]],"Ā":[["Shift","AltGr","Dollar"],["Shift","A"]],"Ē":[["Shift","AltGr","Dollar"],["Shift","E"]],"Ḡ":[["Shift","AltGr","Dollar"],["Shift","G"]],"Ī":[["Shift","AltGr","Dollar"],["Shift","I"]],"Ō":[["Shift","AltGr","Dollar"],["Shift","O"]],"Ū":[["Shift","AltGr","Dollar"],["Shift","U"]],"Ȳ":[["Shift","AltGr","Dollar"],["Shift","Y"]],"˝":[["Shift","AltGr","M"],["Space"]],"ő":[["Shift","AltGr","M"],["O"]],"ű":[["Shift","AltGr","M"],["U"]],"Ő":[["Shift","AltGr","M"],["Shift","O"]],"Ű":[["Shift","AltGr","M"],["Shift","U"]],"ˇ":[["Shift","AltGr","Grave U"],["Space"]],"ǎ":[["Shift","AltGr","Grave U"],["A"]],"č":[["Shift","AltGr","Grave U"],["C"]],"ď":[["Shift","AltGr","Grave U"],["D"]],"ě":[["Shift","AltGr","Grave U"],["E"]],"ǧ":[["Shift","AltGr","Grave U"],["G"]],"ȟ":[["Shift","AltGr","Grave U"],["H"]],"ǐ":[["Shift","AltGr","Grave U"],["I"]],"ǰ":[["Shift","AltGr","Grave U"],["J"]],"ǩ":[["Shift","AltGr","Grave U"],["K"]],"ľ":[["Shift","AltGr","Grave U"],["L"]],"ň":[["Shift","AltGr","Grave U"],["N"]],"ǒ":[["Shift","AltGr","Grave U"],["O"]],"ř":[["Shift","AltGr","Grave U"],["R"]],"š":[["Shift","AltGr","Grave U"],["S"]],"ť":[["Shift","AltGr","Grave U"],["T"]],"ǔ":[["Shift","AltGr","Grave U"],["U"]],"ž":[["Shift","AltGr","Grave U"],["Z"]],"Ǎ":[["Shift","AltGr","Grave U"],["Shift","A"]],"Č":[["Shift","AltGr","Grave U"],["Shift","C"]],"Ď":[["Shift","AltGr","Grave U"],["Shift","D"]],"Ě":[["Shift","AltGr","Grave U"],["Shift","E"]],"Ǧ":[["Shift","AltGr","Grave U"],["Shift","G"]],"Ȟ":[["Shift","AltGr","Grave U"],["Shift","H"]],"Ǐ":[["Shift","AltGr","Grave U"],["Shift","I"]],"Ǩ":[["Shift","AltGr","Grave U"],["Shift","K"]],"Ľ":[["Shift","AltGr","Grave U"],["Shift","L"]],"Ň":[["Shift","AltGr","Grave U"],["Shift","N"]],"Ǒ":[["Shift","AltGr","Grave U"],["Shift","O"]],"Ř":[["Shift","AltGr","Grave U"],["Shift","R"]],"Š":[["Shift","AltGr","Grave U"],["Shift","S"]],"Ť":[["Shift","AltGr","Grave U"],["Shift","T"]],"Ǔ":[["Shift","AltGr","Grave U"],["Shift","U"]],"Ž":[["Shift","AltGr","Grave U"],["Shift","Z"]],"˘":[["Shift","AltGr","Micro"],["Space"]],"ă":[["Shift","AltGr","Micro"],["A"]],"ĕ":[["Shift","AltGr","Micro"],["E"]],"ğ":[["Shift","AltGr","Micro"],["G"]],"ĭ":[["Shift","AltGr","Micro"],["I"]],"ŏ":[["Shift","AltGr","Micro"],["O"]],"ŭ":[["Shift","AltGr","Micro"],["U"]],"Ă":[["Shift","AltGr","Micro"],["Shift","A"]],"Ĕ":[["Shift","AltGr","Micro"],["Shift","E"]],"Ğ":[["Shift","AltGr","Micro"],["Shift","G"]],"Ĭ":[["Shift","AltGr","Micro"],["Shift","I"]],"Ŏ":[["Shift","AltGr","Micro"],["Shift","O"]],"Ŭ":[["Shift","AltGr","Micro"],["Shift","U"]],"˙":[["Shift","AltGr","Equal"],["Space"]],"ȧ":[["Shift","AltGr","Equal"],["A"]],"ḃ":[["Shift","AltGr","Equal"],["B"]],"ċ":[["Shift","AltGr","Equal"],["C"]],"ḋ":[["Shift","AltGr","Equal"],["D"]],"ė":[["Shift","AltGr","Equal"],["E"]],"ḟ":[["Shift","AltGr","Equal"],["F"]],"ġ":[["Shift","AltGr","Equal"],["G"]],"ḣ":[["Shift","AltGr","Equal"],["H"]],"ṁ":[["Shift","AltGr","Equal"],["M"]],"ṅ":[["Shift","AltGr","Equal"],["N"]],"ȯ":[["Shift","AltGr","Equal"],["O"]],"ṗ":[["Shift","AltGr","Equal"],["P"]],"ṙ":[["Shift","AltGr","Equal"],["R"]],"ṡ":[["Shift","AltGr","Equal"],["S"]],"ṫ":[["Shift","AltGr","Equal"],["T"]],"ẇ":[["Shift","AltGr","Equal"],["W"]],"ẋ":[["Shift","AltGr","Equal"],["X"]],"ẏ":[["Shift","AltGr","Equal"],["Y"]],"ż":[["Shift","AltGr","Equal"],["Z"]],"Ȧ":[["Shift","AltGr","Equal"],["Shift","A"]],"Ḃ":[["Shift","AltGr","Equal"],["Shift","B"]],"Ċ":[["Shift","AltGr","Equal"],["Shift","C"]],"Ḋ":[["Shift","AltGr","Equal"],["Shift","D"]],"Ė":[["Shift","AltGr","Equal"],["Shift","E"]],"Ḟ":[["Shift","AltGr","Equal"],["Shift","F"]],"Ġ":[["Shift","AltGr","Equal"],["Shift","G"]],"Ḣ":[["Shift","AltGr","Equal"],["Shift","H"]],"İ":[["Shift","AltGr","Equal"],["Shift","I"]],"Ṁ":[["Shift","AltGr","Equal"],["Shift","M"]],"Ṅ":[["Shift","AltGr","Equal"],["Shift","N"]],"Ȯ":[["Shift","AltGr","Equal"],["Shift","O"]],"Ṗ":[["Shift","AltGr","Equal"],["Shift","P"]],"Ṙ":[["Shift","AltGr","Equal"],["Shift","R"]],"Ṡ":[["Shift","AltGr","Equal"],["Shift","S"]],"Ṫ":[["Shift","AltGr","Equal"],["Shift","T"]],"Ẇ":[["Shift","AltGr","Equal"],["Shift","W"]],"Ẋ":[["Shift","AltGr","Equal"],["Shift","X"]],"Ẏ":[["Shift","AltGr","Equal"],["Shift","Y"]],"Ż":[["Shift","AltGr","Equal"],["Shift","Z"]]}}};
-const hidIoPaths = new Set(["base/base.json", "base/default.json", ...Object.values(displayLayouts).map(item => item.path)]);
+// The repository catalog and mappings live online. Only the locale identifier
+// is included in the keyboard configuration; browsers cache downloaded data.
+const hidIoRevision = "8a391fd41a2b2b77cfab16d7f2e53da09bfe747a";
+const hidIoRepository = "gennartan/layouts";
+const hidIoRaw = `https://raw.githubusercontent.com/${hidIoRepository}/${hidIoRevision}/`;
+let selectedDisplayLayout = "qwerty";
+let displayLayouts = Object.create(null), hidIoPaths = new Set(), catalogPromise = null;
+function validateLocalePath(path) {
+  return typeof path === "string" && /^(base|keyboards)\/[A-Za-z0-9][A-Za-z0-9_-]{0,126}\.json$/.test(path);
+}
+function installDisplayCatalog(value) {
+  if (!value || !Array.isArray(value.paths) || !value.paths.length || value.paths.length > 10000 ||
+      !value.names || typeof value.names !== "object" || Array.isArray(value.names)) throw new Error("Invalid locale catalog.");
+  const paths = new Set(), choices = Object.create(null);
+  for (const path of value.paths) {
+    if (!validateLocalePath(path) || paths.has(path)) throw new Error("Invalid locale catalog path.");
+    paths.add(path);
+    const file = path.split("/")[1].slice(0,-5);
+    // Base/default and *-keys documents are inheritance helpers, not locales.
+    if (path.startsWith("base/") && (file === "base" || file === "default" || file.endsWith("-keys"))) continue;
+    const id = validateDisplayLayout(file.toLowerCase());
+    if (Object.hasOwn(choices,id)) throw new Error("Duplicate locale identifier.");
+    const metadata = value.names[path];
+    if (metadata !== undefined && (typeof metadata !== "string" || metadata.length > 240 || /[\u0000-\u001f\u007f]/.test(metadata))) throw new Error("Invalid locale name.");
+    const locale = file.startsWith("xkb_") ? `xkb:${file.slice(4).replace("__"," (")}${file.includes("__") ? ")" : ""}` : file;
+    choices[id] = {name:metadata ?? locale, locale, path};
+  }
+  if (!Object.keys(choices).length) throw new Error("No locales in the repository catalog.");
+  displayLayouts = choices;
+  hidIoPaths = paths;
+}
+async function fetchDisplayCatalog() {
+  const cacheKey = `ergodox-catalog-v1:${hidIoRepository}:${hidIoRevision}`;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) { installDisplayCatalog(JSON.parse(cached)); return; }
+  } catch (_) { /* A missing or invalid cache triggers a fresh download. */ }
+  const options = {mode:"cors",credentials:"omit",referrerPolicy:"no-referrer",signal:AbortSignal.timeout(15000)};
+  const response = await fetch(`https://api.github.com/repos/${hidIoRepository}/git/trees/${hidIoRevision}?recursive=1`,options);
+  if (!response.ok) throw new Error(`Locale catalog download returned HTTP ${response.status}.`);
+  const text = await response.text();
+  if (text.length > 2 * 1024 * 1024) throw new Error("Locale catalog is too large.");
+  const tree = JSON.parse(text);
+  if (tree.sha !== hidIoRevision || tree.truncated !== false || !Array.isArray(tree.tree)) throw new Error("Incomplete locale catalog.");
+  const paths = tree.tree.filter(entry => entry.type === "blob" && validateLocalePath(entry.path)).map(entry => entry.path);
+  const names = Object.create(null);
+  // Optional upstream metadata supplies human-readable names without fetching
+  // hundreds of individual locale documents just to populate the dropdown.
+  if (tree.tree.some(entry => entry.type === "blob" && entry.path === "tools/xkb-catalog.tsv")) {
+    try {
+      const response = await fetch(`${hidIoRaw}tools/xkb-catalog.tsv`,options);
+      if (!response.ok) throw new Error("Locale descriptions unavailable.");
+      const text = await response.text();
+      if (text.length > 1024 * 1024) throw new Error("Locale descriptions too large.");
+      for (const row of text.split(/\r?\n/).slice(1)) {
+        const [name, description, path] = row.split("\t");
+        if (validateLocalePath(path) && typeof name === "string" && typeof description === "string") {
+          const label = `${name} — ${description}`;
+          if (label.length <= 240 && !/[\u0000-\u001f\u007f]/.test(label)) names[path] = label;
+        }
+      }
+    } catch (_) { /* File-derived names remain usable if descriptions fail. */ }
+  }
+  const catalog = {paths,names};
+  installDisplayCatalog(catalog);
+  try { localStorage.setItem(cacheKey,JSON.stringify(catalog)); } catch (_) {}
+}
+function ensureDisplayCatalog() {
+  if (!catalogPromise) catalogPromise = fetchDisplayCatalog().catch(error => { catalogPromise = null; throw error; });
+  return catalogPromise;
+}
+function refreshDisplayLocaleOptions() {
+  const selector = document.getElementById("display-layout");
+  const choices = Object.entries(displayLayouts).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  selector.replaceChildren(...choices.map(([id, item]) => new Option(item.name,id)));
+  if (!Object.hasOwn(displayLayouts,selectedDisplayLayout)) selector.append(new Option(`Saved locale: ${selectedDisplayLayout}`,selectedDisplayLayout));
+  selector.value = selectedDisplayLayout;
+}
 const labelRequests = new Map();
 let displayLabels = null, displayLegends = null, labelGeneration = 0;
 function validateLabelMap(value) {
@@ -143,6 +206,7 @@ function mergeHidIoLabels(labels, data) {
     if (data[field] !== undefined && (!data[field] || typeof data[field] !== "object" || Array.isArray(data[field]))) throw new Error("Invalid HID mapping table.");
   }
   for (const sequence of Object.values(data.composition ?? {})) {
+    if (sequence === null) continue; // Explicitly remove an inherited composition.
     if (!Array.isArray(sequence) || sequence.length < 1 || sequence.length > 16 || sequence.some(chord =>
         !Array.isArray(chord) || chord.length < 1 || chord.length > 8 || chord.some(name => typeof name !== "string" || !name.length || name.length > 100))) throw new Error("Invalid character composition.");
   }
@@ -201,33 +265,32 @@ function compileHidIoLegends(documents, labels) {
   }
   // Resolve every document against the final aliases so inherited letters follow
   // layouts such as AZERTY/Colemak. Process parents first: child compositions win.
-  for (const data of documents) {
-    for (const [text, sequence] of Object.entries(data.composition ?? {})) {
-      if (!isLegendCharacter(text)) continue;
-      const dead = sequence.length === 2 && sequence[1].length === 1 && sequence[1][0].toLowerCase() === "space";
-      let modifiers = 0, code = null, supported = true;
-      for (const name of sequence[0]) {
-        const token = name.toLowerCase();
-        if (token === "shift") modifiers |= 1;
-        else if (token === "altgr") modifiers |= 2;
-        else if (code === null) code = symbols.get(token === "^" && !symbols.has(token) ? "ˆ" : token);
-        else supported = false;
-      }
-      if (!supported || !Number.isInteger(code) || code < 4 || code > 101) continue;
-      const level = legendLevels[modifiers];
-      const legend = legends[code] ??= {dead:[]};
-      // For an accent followed by another key, show the accent key itself,
-      // never the final composed character (e.g. show ˆ, not â).
-      if (sequence.length > 1 && !dead) {
-        const accent = sequence[0].find(name => !["shift", "altgr"].includes(name.toLowerCase()));
-        if (!isLegendCharacter(accent)) continue;
-        if (modifiers === 0) legend[level] = accent;
-        if (legend[level] && !legend.dead.includes(level)) legend.dead.push(level);
-      } else {
-        legend[level] = text;
-        legend.dead = legend.dead.filter(item => item !== level);
-        if (dead) legend.dead.push(level);
-      }
+  const compositions = Object.assign(Object.create(null), ...documents.map(data => data.composition ?? {}));
+  for (const [text, sequence] of Object.entries(compositions)) {
+    if (sequence === null || !isLegendCharacter(text)) continue;
+    const dead = sequence.length === 2 && sequence[1].length === 1 && sequence[1][0].toLowerCase() === "space";
+    let modifiers = 0, code = null, supported = true;
+    for (const name of sequence[0]) {
+      const token = name.toLowerCase();
+      if (token === "shift") modifiers |= 1;
+      else if (token === "altgr") modifiers |= 2;
+      else if (code === null) code = symbols.get(token === "^" && !symbols.has(token) ? "ˆ" : token);
+      else supported = false;
+    }
+    if (!supported || !Number.isInteger(code) || code < 4 || code > 101) continue;
+    const level = legendLevels[modifiers];
+    const legend = legends[code] ??= {dead:[]};
+    // For an accent followed by another key, show the accent key itself,
+    // never the final composed character (e.g. show ˆ, not â).
+    if (sequence.length > 1 && !dead) {
+      const accent = sequence[0].find(name => !["shift", "altgr"].includes(name.toLowerCase()));
+      if (!isLegendCharacter(accent)) continue;
+      if (modifiers === 0) legend[level] = accent;
+      if (legend[level] && !legend.dead.includes(level)) legend.dead.push(level);
+    } else {
+      legend[level] = text;
+      legend.dead = legend.dead.filter(item => item !== level);
+      if (dead) legend.dead.push(level);
     }
   }
   return validateLegends(legends);
@@ -236,9 +299,10 @@ function validateDisplayMapping(value) {
   return {labels:validateLabelMap(value?.labels), legends:validateLegends(value?.legends)};
 }
 async function fetchHidIoMapping(id) {
+  await ensureDisplayCatalog();
   const choice = Object.hasOwn(displayLayouts, id) && displayLayouts[id];
   if (!choice) throw new Error(`Unknown display layout: ${id}.`);
-  const cacheKey = `ergodox-labels-v2:${hidIoRevision}:${id}`;
+  const cacheKey = `ergodox-labels-v3:gennartan/layouts:${hidIoRevision}:${id}`;
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) return validateDisplayMapping(JSON.parse(cached));
@@ -246,18 +310,15 @@ async function fetchHidIoMapping(id) {
   const labels = Object.create(null), seen = new Set(), documents = [];
   const signal = AbortSignal.timeout(10000);
   async function load(path) {
-    if (!hidIoPaths.has(path) || seen.has(path) || seen.size >= 5) throw new Error("Invalid hid-io parent chain.");
+    if (!hidIoPaths.has(path) || seen.has(path) || seen.size >= 16) throw new Error("Invalid hid-io parent chain.");
     seen.add(path);
-    let data = bundledLocaleDocuments[path];
-    if (!data) {
-      const response = await fetch(`https://raw.githubusercontent.com/hid-io/layouts/${hidIoRevision}/${path}`, {
-        mode:"cors", credentials:"omit", referrerPolicy:"no-referrer", signal
-      });
-      if (!response.ok) throw new Error(`Layout download returned HTTP ${response.status}.`);
-      const text = await response.text();
-      if (text.length > 256 * 1024) throw new Error("Layout download is too large.");
-      data = JSON.parse(text);
-    }
+    const response = await fetch(`${hidIoRaw}${path}`, {
+      mode:"cors", credentials:"omit", referrerPolicy:"no-referrer", signal
+    });
+    if (!response.ok) throw new Error(`Layout download returned HTTP ${response.status}.`);
+    const text = await response.text();
+    if (text.length > 256 * 1024) throw new Error("Layout download is too large.");
+    const data = JSON.parse(text);
     // Validate before following any remote-supplied parent path.
     mergeHidIoLabels(Object.create(null), data);
     if (data.parent !== null) await load(data.parent);
@@ -277,7 +338,7 @@ function getHidIoMapping(id) {
   return labelRequests.get(id);
 }
 async function loadDisplayLabels() {
-  const generation = ++labelGeneration, id = layout.displayLayout ?? "qwerty";
+  const generation = ++labelGeneration, id = selectedDisplayLayout;
   const status = document.getElementById("display-layout-status");
   const retry = document.getElementById("retry-labels");
   displayLabels = null;
@@ -286,15 +347,20 @@ async function loadDisplayLabels() {
   retry.hidden = true;
   render();
   try {
+    await ensureDisplayCatalog();
+    if (generation !== labelGeneration) return;
+    refreshDisplayLocaleOptions();
     const mapping = await getHidIoMapping(id);
     if (generation !== labelGeneration) return;
+    refreshDisplayLocaleOptions();
     displayLabels = mapping.labels;
     displayLegends = mapping.legends;
     status.textContent = `${displayLayouts[id].name} labels`;
   } catch (error) {
     if (generation !== labelGeneration) return;
     status.textContent = `Using en_US labels. ${error.message}`;
-    retry.hidden = !Object.hasOwn(displayLayouts, id);
+    refreshDisplayLocaleOptions();
+    retry.hidden = false;
   }
   render();
 }
@@ -302,7 +368,7 @@ function displayKeyName(code) {
   return displayLabels?.[code] ?? keyName(code);
 }
 function keyIdentity(code) {
-  const id = layout?.displayLayout ?? "qwerty";
+  const id = selectedDisplayLayout;
   const locale = displayLayouts[id]?.locale ?? id;
   const hid = `0x${code.toString(16).padStart(2,"0")} HID_KEY_${keyTokens[code] ?? code}`;
   if (displayLabels) return `${hid} ${locale} ${displayKeyName(code)}`;
@@ -390,8 +456,8 @@ const consumerTokens = {0:"NONE",0x6f:"BRIGHTNESS_UP",0x70:"BRIGHTNESS_DOWN",0xb
 const systemTokens = {0:"NONE",0x81:"POWER",0x82:"SLEEP",0x83:"WAKE"};
 
 function validateDisplayLayout(value) {
-  if (typeof value !== "string" || !/^[a-z0-9][a-z0-9_-]{0,10}$/.test(value)) {
-    throw new Error("Display layout must be 1–11 lowercase letters, digits, hyphens or underscores, starting with a letter or digit.");
+  if (typeof value !== "string" || !/^[a-z0-9][a-z0-9_-]{0,126}$/.test(value)) {
+    throw new Error("Display layout must be 1–127 lowercase letters, digits, hyphens or underscores, starting with a letter or digit.");
   }
   return value;
 }
@@ -490,12 +556,10 @@ function layoutFromJSON(value) {
   return decodeLayout(encodeLayout(result).buffer);
 }
 function encodeLayout(current) {
-  const hasMacros = (current.macros ?? []).some(macro => macro.length);
-  const bytes=new Uint8Array(64+2*current.layerCount*38*4+(hasMacros ? 544 : 0)),view=new DataView(bytes.buffer);
-  bytes.set([69,75,67,70,hasMacros ? 3 : 2,0,64,0]);view.setUint32(8,bytes.length,true);
+  const bytes=new Uint8Array(64+2*current.layerCount*38*4+544+128),view=new DataView(bytes.buffer);
+  bytes.set([69,75,67,70,5,0,64,0]);view.setUint32(8,bytes.length,true);
   bytes.set([current.layerCount,current.defaultLayer,2,38],12);
   bytes.set(new TextEncoder().encode(current.name),16);
-  bytes.set(new TextEncoder().encode(validateDisplayLayout(current.displayLayout ?? "qwerty")),48);
   let offset=64;
   for(const hand of current.actions) for(const layer of hand) for(const a of layer) {
     bytes[offset]=a.type;
@@ -508,17 +572,16 @@ function encodeLayout(current) {
     }
     offset+=4;
   }
-  if (hasMacros) {
-    for (let i=0; i<8; ++i) {
-      const macro = current.macros[i];
-      bytes[offset]=macro.length; offset+=4;
-      for (let j=0; j<16; ++j) {
-        const step=macro[j];
-        if (step) { bytes[offset]=step.modifier; bytes[offset+1]=step.keycode; view.setUint16(offset+2,step.delayMs,true); }
-        offset+=4;
-      }
+  for (let i=0; i<8; ++i) {
+    const macro = current.macros?.[i] ?? [];
+    bytes[offset]=macro.length; offset+=4;
+    for (let j=0; j<16; ++j) {
+      const step=macro[j];
+      if (step) { bytes[offset]=step.modifier; bytes[offset+1]=step.keycode; view.setUint16(offset+2,step.delayMs,true); }
+      offset+=4;
     }
   }
+  bytes.set(new TextEncoder().encode(validateDisplayLayout(current.displayLayout ?? "qwerty")),offset);
   view.setUint32(60,crc32(bytes),true);
   return bytes;
 }
@@ -786,11 +849,8 @@ function updateTransferControls() {
 }
 function displayLayout(current) {
   layout=current;selectedKey=null;
-  const displaySelector = document.getElementById("display-layout");
-  const id = current.displayLayout ?? "qwerty";
-  displaySelector.replaceChildren(...Object.entries(displayLayouts).map(([value, item]) => new Option(item.name, value)));
-  if (!Object.hasOwn(displayLayouts, id)) displaySelector.append(new Option(`Unavailable (${id})`, id));
-  displaySelector.value = id;
+  selectedDisplayLayout = current.displayLayout ?? "qwerty";
+  refreshDisplayLocaleOptions();
   document.getElementById("detail-title").textContent="Key details";
   document.getElementById("detail").textContent="Left-click a key to edit its assigned action.";
   document.getElementById("layout-name").textContent=layout.name || "Unnamed layout";
@@ -803,18 +863,17 @@ function changeDisplayLayout() {
   if (!layout || layoutTransferBusy) return;
   const input = document.getElementById("display-layout");
   try {
-    const value = validateDisplayLayout(input.value);
-    pendingLayout = {...layout, displayLayout:value};
-    pendingSaved = false;
+    const id = validateDisplayLayout(input.value);
+    if (!Object.hasOwn(displayLayouts,id)) throw new Error("Choose an available locale from the catalog.");
+    pendingLayout = {...layout,displayLayout:id}; pendingSaved = false;
     displayLayout(pendingLayout);
     document.getElementById("mode-badge").textContent = "Unsaved configuration";
     document.getElementById("import-preview").hidden = false;
-    document.getElementById("preview-message").textContent = "Display layout preference changed. Save to keyboard to keep it after reboot.";
+    document.getElementById("preview-message").textContent = "Locale changed. Save to keyboard to restore it automatically on any computer after reboot.";
     document.getElementById("save-layout").textContent = "Save to keyboard";
     document.getElementById("discard-import").textContent = "Discard preview";
-    transferMessage("");
   } catch (error) {
-    input.value = layout.displayLayout ?? "qwerty";
+    input.value = selectedDisplayLayout;
     transferMessage(error.message, true);
   }
 }

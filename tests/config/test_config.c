@@ -56,8 +56,8 @@ static void test_codec(void)
     setup();
     assert(sizeof(struct keyboard_action) == 4);
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    assert(length == 2496);
-    assert(memcmp(blob, "EKCF\2\0\100\0", 8) == 0);
+    assert(length == 3168);
+    assert(memcmp(blob, "EKCF\5\0\100\0", 8) == 0);
     assert(blob[64] == KEYBOARD_ACTION_KEY && blob[66] == HID_KEY_A);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
     assert(memcmp(&source, &decoded, sizeof(source)) == 0);
@@ -81,7 +81,7 @@ static void test_codec(void)
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == -EINVAL); /* other targets */
     memset(source.actions, 0, sizeof(source.actions));
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    assert(length == 368);
+    assert(length == 1040);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
     assert(decoded.layer_count == 1);
     source.actions[0][0][0].type = 255;
@@ -90,32 +90,47 @@ static void test_codec(void)
     assert(keyboard_config_validate(&source) == -EINVAL);
     setup();
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    strcpy(source.display_layout, "be-azerty");
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
-    assert(strcmp(decoded.display_layout, "be-azerty") == 0);
+    /* Long dynamic identifiers survive round trips. Invalid candidates do not. */
+    strcpy(source.display_layout, "xkb_be__oss");
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(memcmp(&source, &decoded, sizeof(source)) == 0);
     memset(source.display_layout, 'x', sizeof(source.display_layout));
     assert(keyboard_config_validate(&source) == -EINVAL);
-    strcpy(source.display_layout, "bad/id");
+    strcpy(source.display_layout, "../bad");
     assert(keyboard_config_validate(&source) == -EINVAL);
-    source.display_layout[0] = '\0';
+    strcpy(source.display_layout, "qwerty");
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    assert(keyboard_config_decode(blob, length, &decoded) == 0);
-    assert(strcmp(decoded.display_layout, "qwerty") == 0);
-    /* Existing version-1 records retain their actions and acquire the default. */
-    blob[4] = 1;
-    memset(blob + 48, 0, 12);
-    update_crc(blob, length);
-    assert(keyboard_config_decode(blob, length, &decoded) == 0);
-    assert(strcmp(decoded.display_layout, "qwerty") == 0);
-    assert(memcmp(source.actions, decoded.actions, sizeof(source.actions)) == 0);
-    blob[48] = 'x';
+    memset(blob + length - KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE, 'x', KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE);
     update_crc(blob, length);
     assert(keyboard_config_decode(blob, length, &decoded) == -EINVAL);
+    /* Versions 3/4 have macros without the new locale trailer. */
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    memset(blob + 48, 'x', 12);
-    update_crc(blob, length);
-    assert(keyboard_config_decode(blob, length, &decoded) == -EINVAL);
+    length -= KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE;
+    for (int version = 3; version <= 4; ++version) {
+        blob[4] = version;
+        memset(blob + 48, 0, 12);
+        if (version == 3) memcpy(blob + 48, "fr_be", 6);
+        for (int i = 0; i < 4; ++i) blob[8+i] = length >> (8*i);
+        update_crc(blob, length);
+        assert(keyboard_config_decode(blob, length, &decoded) == 0);
+        assert(strcmp(decoded.display_layout, version == 3 ? "fr_be" : "qwerty") == 0);
+        assert(memcmp(source.actions, decoded.actions, sizeof(source.actions)) == 0);
+    }
+    /* Versions 1/2 omit macros as well. Restore legacy locale metadata. */
+    length -= KEYBOARD_CONFIG_MACRO_BANK_SIZE;
+    for (int version = 1; version <= 2; ++version) {
+        blob[4] = version;
+        memset(blob + 48, 0, 12);
+        if (version == 2) memcpy(blob + 48, "fr_be", 6);
+        for (int i = 0; i < 4; ++i) blob[8+i] = length >> (8*i);
+        update_crc(blob, length);
+        assert(keyboard_config_decode(blob, length, &decoded) == 0);
+        assert(strcmp(decoded.display_layout, version == 2 ? "fr_be" : "qwerty") == 0);
+        assert(memcmp(source.actions, decoded.actions, sizeof(source.actions)) == 0);
+    }
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
     FILE *out = fopen("/tmp/ergodox-config-test.bin", "wb");
     assert(out != NULL);
@@ -178,7 +193,7 @@ static void test_macros(void)
     struct keyboard_runtime runtime;
     setup_macro();
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
-    assert(length == 3040 && blob[4] == 3);
+    assert(length == 3168 && blob[4] == 5);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
     assert(memcmp(&source, &decoded, sizeof(source)) == 0);
     /* Even a valid CRC cannot bypass step, padding, or reference checks. */
@@ -256,7 +271,7 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     assert(keyboard_config_init(true) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
     setup_macro();
-    strcpy(source.display_layout, "be-azerty");
+    strcpy(source.display_layout, "xkb_be__oss");
     assert(keyboard_config_save(&source) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0); /* apply only on reboot */
     assert(keyboard_config_save(&source) == 0); /* unchanged save is successful */
@@ -314,7 +329,6 @@ ZTEST(config, test_binary_import_persists_without_live_apply)
     assert(memcmp(*keyboard_config_layout()->layers, source.actions, sizeof(source.actions)) == 0);
     assert(keyboard_config_export(blob, sizeof(blob), &length) == 0);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
-    assert(strcmp(decoded.display_layout, "qwerty") == 0);
     assert(keyboard_config_import(blob, length) == -EACCES);
     flash_area_close(area);
 }

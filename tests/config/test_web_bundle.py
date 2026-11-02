@@ -20,6 +20,11 @@ class WebBundleTests(unittest.TestCase):
         self.assertIn((source / "app.js").read_text(), html)
         self.assertLess(html.index('id="retry"'), html.index("<script>"))
         self.assertIn('rel="icon" href="data:,"', html)
+        self.assertIn('const hidIoRepository = "gennartan/layouts"', html)
+        self.assertIn("https://api.github.com/repos/", html)
+        self.assertNotIn("bundledLocaleDocuments", html)
+        for field in ("to_hid_keyboard", "from_hid_keyboard", "composition"):
+            self.assertNotIn(f'"{field}":', html, "Locale JSON must never enter the firmware bundle")
 
     def test_missing_asset_reference_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

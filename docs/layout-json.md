@@ -15,20 +15,22 @@ an import preview.
 
 ## JSON structure, version 1
 
-The display-layout preference is included in downloads and saved to NVM.
-Older JSON files without this field use `qwerty`. It does not change key
-assignments or the computer’s settings. The UI offers `qwerty` (default),
-`azerty`, `qwertz`, `colemak`, `en_us`, `fr_fr`, `fr_be`, and `de_de`. Their display labels
-are downloaded from hid-io/layouts and cached in the browser; Belgian overrides
-are bundled locally. Unknown identifiers
-are retained on import/export and shown with QWERTY fallback labels.
+The `display_layout` identifier is saved with the configuration and restored
+from keyboard NVM on any computer. The default for JSON without this field is
+`qwerty`. Available identifiers come from the pinned repository's catalog: they
+are lowercase JSON filename stems, such as `fr_be` or `xkb_be__oss`. Changing the
+selection creates a preview that must be saved to the keyboard. Locale labels
+and compositions are downloaded from
+[gennartan/layouts](https://github.com/gennartan/layouts) and cached in the
+browser. Only the identifier is stored on the keyboard.
 
 The browser uses native JSON parsing and named action values. The firmware does
 not parse JSON: the browser converts the validated file to the existing binary
 record, and the firmware independently validates its bounds, version, CRC, and
-actions before saving it. The browser writes version-2 NVM records without macros and version-3 records
-when any macro slot is populated. New firmware reads versions 1, 2, and 3; older
-firmware cannot import version-3 records.
+actions before saving it. The browser writes version-5 NVM records, with a
+fixed macro bank followed by a 128-byte locale identifier. New firmware reads
+versions 1–5; earlier firmware cannot read version 5. Legacy locale metadata in
+versions 2/3 is retained; versions 1/4 use `qwerty`.
 The old offline Python configurator JSON is a different format and is not
 implicitly migrated.
 
@@ -37,7 +39,7 @@ implicitly migrated.
 | `format` | `"ergodox-layout"` |
 | `version` | `1` |
 | `name` | At most 31 UTF-8 bytes, without NUL characters |
-| `display_layout` | Optional identifier, default `"qwerty"`; 1–11 lowercase ASCII letters, digits, hyphens or underscores, starting with a letter or digit |
+| `display_layout` | Optional locale identifier, 1–127 lowercase ASCII letters/digits/underscores/hyphens, starting with a letter or digit; default `qwerty` |
 | `default_layer` | Zero-based index of an existing layer |
 | `layers` | An array of 1–8 layer objects |
 | `macros` | Optional array of exactly eight macro slots, each an array of 0–16 steps |
@@ -99,8 +101,8 @@ controls. Exports prefer names whenever one is known.
 ## Device upload endpoint
 
 `POST /api/layout/import` accepts only `application/octet-stream`, containing one
-complete version-1, version-2, or version-3 binary record. The JSON conversion happens in the browser.
-The resource accumulates at most 3,040 bytes across request fragments. An aborted,
+complete binary record in versions 1–5. The JSON conversion happens in the browser.
+The resource accumulates at most 3,168 bytes across request fragments. An aborted,
 oversized, invalid, or wrong-content-type request does not save a layout.
 Only a fully received, valid record is submitted to NVS in configuration mode.
 The endpoint does not provide CORS access.

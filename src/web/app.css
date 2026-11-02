@@ -13,7 +13,7 @@ h3 { font-size: .9rem; font-weight: 600; }
 #status { margin: 22px 0; color: #61718b; }
 #status.error { color: #a52c39; }
 #layout { margin-top: 28px; }
-.toolbar { background: #fff; padding: 20px 24px; border: 1px solid #e0e6ef; border-radius: 14px; }
+.toolbar { flex-wrap: wrap; background: #fff; padding: 20px 24px; border: 1px solid #e0e6ef; border-radius: 14px; }
 #summary, .note, footer { color: #61718b; font-size: .85rem; }
 label { display: flex; align-items: center; gap: 12px; font-size: .85rem; white-space: nowrap; }
 select, button, input[type="text"] { font: inherit; color: inherit; background: #fff; border: 1px solid #bcc7d8; border-radius: 7px; padding: 8px 12px; }
@@ -74,3 +74,5 @@ button:disabled { opacity: .55; cursor: default; }
 #key-editor .macro-step fieldset { display: flex; }
 #macro-steps > .editor-buttons { margin-bottom: 16px; }
 #key-editor fieldset { min-inline-size: 0; max-width: 100%; }
+
+#display-layout { width: min(28rem, 52vw); text-overflow: ellipsis; }

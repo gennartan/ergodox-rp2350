@@ -1,8 +1,8 @@
-# hid-io layout fixtures
+JSON files and MIT license from https://github.com/gennartan/layouts
+Revision: 8a391fd41a2b2b77cfab16d7f2e53da09bfe747a
 
-Unmodified JSON files and MIT license from https://github.com/hid-io/layouts
-at revision `9fa4d76ecfd9bb23a10e6b32d79fc3ccb13ab69f`.
+Test fixtures only; never bundled in firmware.
 
-These fixtures verify the actual upstream inheritance and alias format without
-network access. They are test data only and are not bundled into the firmware.
-The browser downloads the selected mapping at runtime from this same revision.
+`repository-tree.json` is the GitHub tree response at this revision. The XKB
+catalog, inheritance helpers and representative XKB variants exercise dynamic
+discovery and long locale identifiers. Fixtures are never bundled in firmware.

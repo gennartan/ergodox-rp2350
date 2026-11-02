@@ -6,21 +6,21 @@
 
 #define KEYBOARD_CONFIG_NAME_SIZE 32
 #define KEYBOARD_CONFIG_HEADER_SIZE 64
-#define KEYBOARD_CONFIG_VERSION 3
+#define KEYBOARD_CONFIG_VERSION 5
+#define KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE 128
+#define KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT "qwerty"
 #define KEYBOARD_CONFIG_MACRO_SLOT_SIZE (4 + KEYBOARD_MACRO_MAX_STEPS * 4)
 #define KEYBOARD_CONFIG_MACRO_BANK_SIZE (KEYBOARD_MACRO_COUNT * KEYBOARD_CONFIG_MACRO_SLOT_SIZE)
-#define KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE 12
-#define KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT "qwerty"
 #define KEYBOARD_CONFIG_MAX_BLOB_SIZE (KEYBOARD_CONFIG_HEADER_SIZE + \
     KEYBOARD_HAND_COUNT * KEYBOARD_MAX_LAYERS * KEYBOARD_KEY_COUNT * 4 + \
-    KEYBOARD_CONFIG_MACRO_BANK_SIZE)
+    KEYBOARD_CONFIG_MACRO_BANK_SIZE + KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE)
 
 /* Owned RAM data; keyboard_layout is a read-only view of these arrays. */
 struct keyboard_config {
     char name[KEYBOARD_CONFIG_NAME_SIZE];
     uint8_t layer_count;
     uint8_t default_layer;
-    /* UI preference only; never changes HID interpretation. Empty means qwerty. */
+    /* UI identifier only. Empty RAM values encode as qwerty. */
     char display_layout[KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE];
     struct keyboard_macro macros[KEYBOARD_MACRO_COUNT];
     struct keyboard_action actions[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT];

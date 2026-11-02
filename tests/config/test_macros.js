@@ -4,13 +4,13 @@ const context = vm.createContext({TextDecoder,TextEncoder});
 vm.runInContext(fs.readFileSync(path.join(__dirname,"../../src/web/app.js"),"utf8"),context);
 const run = code => vm.runInContext(code,context);
 const fromJSON=run('layoutFromJSON'), toJSON=run('layoutToJSON'), encode=run('encodeLayout'), decode=run('decodeLayout');
-const value = {format:"ergodox-layout",version:1,name:"Macro test",display_layout:"fr_be",default_layer:0,
+const value = {format:"ergodox-layout",version:1,name:"Macro test",default_layer:0,display_layout:"qwerty",
   macros:Array.from({length:8},()=>[]), layers:[Object.fromEntries(["left","right"].map(hand => [hand,Array.from({length:38},(_,i)=>({position:i+1,type:"none"}))]))]};
 value.macros[0] = [{key:"NON_US_HASH",modifiers:["RIGHT_ALT"],delay_ms:20},{key:"SPACE",modifiers:[],delay_ms:0}];
 value.layers[0].left[0] = {position:1,type:"macro",macro:0};
 value.layers[0].right[37] = {position:38,type:"macro",macro:0};
 let current = fromJSON(value), bytes = encode(current);
-assert.equal(bytes[4],3); assert.equal(bytes.length,912);
+assert.equal(bytes[4],5); assert.equal(bytes.length,1040);
 assert.deepEqual(JSON.parse(JSON.stringify(toJSON(decode(bytes.buffer)))),value);
 assert.equal(current.macros[0][0].modifier,64); assert.equal(current.macros[0][0].keycode,50);
 for (const change of [
@@ -33,7 +33,7 @@ for (const [offset,byte] of [[368,17],[369,1],[373,102],[375,255],[380,1],[66,8]
 const maximum=JSON.parse(JSON.stringify(value));
 maximum.layers=Array.from({length:8},()=>JSON.parse(JSON.stringify(value.layers[0])));
 maximum.macros=Array.from({length:8},()=>Array.from({length:16},()=>({key:"A",modifiers:["LEFT_CTRL"],delay_ms:5000})));
-assert.equal(encode(fromJSON(maximum)).length,3040);
+assert.equal(encode(fromJSON(maximum)).length,3168);
 fs.writeFileSync('/tmp/ergodox-js-macro-test.bin',encode(fromJSON(maximum)));
 // Optional interoperability with the firmware's encoder.
 if (process.argv[2]) {

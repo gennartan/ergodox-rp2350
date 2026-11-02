@@ -10,15 +10,15 @@ fallback.
 ## RAM
 
 `struct keyboard_config` owns a name, an active layer count (1–8), a default
-layer, a display-layout identifier, and a fixed `actions[2][8][38]` table. `struct keyboard_layout` is a
+layer, a saved display-locale identifier, eight macro slots, and a fixed `actions[2][8][38]` table. `struct keyboard_layout` is a
 read-only view into that RAM. The table uses 2,432 bytes, and the complete owned
-configuration uses 2,478 bytes on the target.
+configuration uses 3,122 bytes on the target.
 
 Each naturally aligned action uses four bytes:
 
 | Field | Size | Meaning |
 | --- | --- | --- |
-| type | 1 byte | Explicit action ID, 0–11 |
+| type | 1 byte | Explicit action ID, 0–12 |
 | modifier | 1 byte | Keyboard modifier mask; zero for other action types |
 | payload | 2 bytes | Keycode, usage, mouse deltas, or target layer |
 
@@ -35,18 +35,20 @@ layer slots. The C layout files provide a factory fallback rather than the live
 runtime table. The offline configurator's C export remains usable for generating
 factory defaults.
 
-## NVM binary record, versions 1–3
+## NVM binary record, versions 1–5
 
 This is an explicit byte encoding, not a dump of a C structure. All multibyte
 integers are little-endian. Signed mouse deltas use two's-complement bytes.
-Version-1 records remain readable and default to the `qwerty` display layout.
-Unknown versions are rejected. Saves without macros use version 2; saves containing macros use version 3.
-Both remain readable, along with version 1.
+Saves use version 5, including the macro bank and a 128-byte display-locale
+trailer. Versions 1–4 remain readable. Locale metadata is restored from versions
+2/3; versions 1/4 default to `qwerty`. Older firmware rejects version-5 records,
+so export JSON before downgrading firmware.
+Unknown versions are rejected.
 
 | Header offset | Size | Field |
 | --- | --- | --- |
 | 0 | 4 | ASCII magic `EKCF` |
-| 4 | 2 | Format version: 1, 2, or 3 |
+| 4 | 2 | Format version: 1–5 |
 | 6 | 2 | Header size, 64 |
 | 8 | 4 | Total record length, including header |
 | 12 | 1 | Active layer count, 1–8 |
@@ -54,7 +56,7 @@ Both remain readable, along with version 1.
 | 14 | 1 | Hand count, exactly 2 |
 | 15 | 1 | Keys per hand, exactly 38 |
 | 16 | 32 | NUL-terminated name, at most 31 bytes |
-| 48 | 12 | NUL-terminated display-layout identifier, at most 11 ASCII characters |
+| 48 | 12 | Reserved, zero in versions 1/4/5; 12-byte locale identifier in versions 2/3 |
 | 60 | 4 | IEEE CRC-32 of the entire record, treating this field as zero |
 | 64 | variable | Four-byte actions, ordered by hand, active layer, key index |
 
@@ -75,24 +77,27 @@ Hand 0 is left; hand 1 is right. Only active layers are serialized. An action is
 | Momentary layer | 9 | `0`, target layer |
 | Toggle layer | 10 | `0`, target layer |
 | Default layer | 11 | `0`, target layer |
-| Macro | 12 | 16-bit macro slot index, little-endian (version 3 only) |
-
-The display-layout identifier uses lowercase letters, digits, hyphens, and
-underscores, beginning with a letter or digit. Factory defaults use `qwerty`.
-It is a UI preference and does not alter HID reports or host settings.
+| Macro | 12 | 16-bit macro slot index, little-endian (versions 3–5 only) |
 
 Unused action fields must be zero. Validation checks action types, supported HID
 usage ranges, mouse ranges, lighting commands, and layer references. The maximum
-record size is **3,040 bytes** with macros (**2,496** without); four layers use
-**1,824 bytes** with macros (**1,280** without). Malformed data
+version-5 record size is **3,168 bytes**; four layers use **1,952 bytes**.
+Versions 3/4 omit the 128-byte locale trailer; versions 1/2 omit both the
+locale trailer and the 544-byte macro bank. Malformed data
 never partially replaces the RAM configuration.
 
-Version 3 appends a fixed 544-byte macro bank after the actions: eight slots of
+Versions 3–5 append a fixed 544-byte macro bank after the actions: eight slots of
 68 bytes each. A slot starts with a one-byte step count (0–16) and three zero
 reserved bytes, followed by sixteen four-byte steps. A step is
 `[modifier, keycode, delay_ms_low, delay_ms_high]`. Unused steps must be zero.
 Keys are HID usages 0–101; modifiers are the usual eight-bit keyboard mask;
 delays are 0–5,000 ms. An action may only reference a nonempty slot.
+
+Version 5 then appends a fixed 128-byte NUL-terminated display-locale identifier
+(up to 127 ASCII characters). Identifiers are lowercase filename stems from the
+repository, using letters, digits, underscores or hyphens, starting with a letter
+or digit. The default is `qwerty`. This identifier affects only the configurator's
+labels; locale documents are not stored in flash and HID behavior is unchanged.
 
 ## Macro execution and editing
 
@@ -179,21 +184,25 @@ closes the editor without changes. Save to keyboard persists the preview for
 the next reboot, and Discard preview restores the current layout. All thirteen
 action types are supported, including modifier-only keys and layer switching. Transparent assignments remain explicitly transparent rather
 than pretending to resolve all possible combinations of active layers.
-The display-layout identifier is saved with each configuration, independently
-of host settings, and can be edited without importing a file. The browser downloads labels from a pinned revision of
-[hid-io/layouts](https://github.com/hid-io/layouts), resolving its parent files.
-Choices are QWERTY, AZERTY, QWERTZ, Colemak, US English, French (France), and
-German (Germany). Only the selected layout's identifier is stored in NVM.
-Downloads go directly from the browser to GitHub over HTTPS; the keyboard needs
-no Internet connection, TLS, or locale database. GitHub permits cross-origin
-requests, so this also works from the keyboard's HTTP page in Firefox/Chromium.
-A first download requires Internet access on the computer. Validated labels are
-cached in browser storage for subsequent/offline visits; blocked or full storage
-still allows downloads and reuse within the page. The cache is specific to the
-page origin and repository revision. Missing/unknown mappings or failed downloads
-fall back to QWERTY labels with an explicit status and a retry button for known
-layouts. Unknown saved identifiers remain intact until the user changes them.
-Unmodified printable keyboard actions show keycap legends from hid-io's
+The selected display locale is part of the configuration, JSON export, and NVM.
+Changing it creates a preview; **Save to keyboard** persists it for the next
+reboot. Opening the configurator reads the identifier from the keyboard, so the
+same selection is restored on a different computer. Browser preferences never
+override the saved selection. Discard preview restores the current locale too.
+The browser downloads the GitHub repository tree at revision
+`8a391fd41a2b2b77cfab16d7f2e53da09bfe747a` of
+[gennartan/layouts](https://github.com/gennartan/layouts) and builds the dropdown
+from the available JSON files. Optional `tools/xkb-catalog.tsv` metadata provides
+human-readable XKB names. There is no embedded list of locales; inheritance
+helpers are excluded from the selector. At this revision there are 710 choices.
+Only the chosen mapping and its parents are downloaded; the catalog and mappings
+are cached by repository/revision for offline reuse. Downloads go directly from
+the browser to GitHub over HTTPS. GitHub API limits, network failures, or unknown
+saved identifiers leave the saved preference intact and show US HID fallback
+labels with a retry button. If descriptions fail, filename-derived names remain
+available. Blocked/full browser storage still allows use within the open page.
+Locale documents and the catalog are never bundled in firmware.
+Unmodified printable keyboard actions show keycap legends from the repository's
 character compositions: base at lower left, Shift at upper left, AltGr at lower
 right, and Shift+AltGr at upper right. Parent aliases for remapped positions are
 removed before resolving inherited compositions, so an obsolete US symbol is

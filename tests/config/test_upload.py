@@ -20,7 +20,7 @@ class UploadTest(unittest.TestCase):
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
-#define KEYBOARD_CONFIG_MAX_BLOB_SIZE 3040
+#define KEYBOARD_CONFIG_MAX_BLOB_SIZE 3168
 #define ARG_UNUSED(x) (void)(x)
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 #define LOG_ERR(...) ((void)0)
@@ -68,7 +68,7 @@ int main(void) {
  upload_handler(&client,HTTP_SERVER_REQUEST_DATA_FINAL,&request,&response,NULL);
  assert(saves==1 && response.status==415);
  upload_handler(&client,HTTP_SERVER_TRANSACTION_COMPLETE,NULL,NULL,NULL);
- request.headers=&header; request.header_count=1; request.data_len=3041;
+ request.headers=&header; request.header_count=1; request.data_len=KEYBOARD_CONFIG_MAX_BLOB_SIZE+1;
  upload_handler(&client,HTTP_SERVER_REQUEST_DATA_FINAL,&request,&response,NULL);
  assert(saves==1 && response.status==413);
  return 0;

@@ -91,9 +91,9 @@ static bool valid_action(const struct keyboard_action *a, uint8_t layers, const 
     return memcmp(a, &canonical, sizeof(*a)) == 0;
 }
 
-static bool valid_display_layout(const uint8_t *name, bool allow_empty)
+static bool valid_display_layout(const uint8_t *name, size_t capacity, bool allow_empty)
 {
-    for (size_t i = 0; i < KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE; ++i) {
+    for (size_t i = 0; i < capacity; ++i) {
         uint8_t c = name[i];
         if (c == 0) { return i != 0 || allow_empty; }
         if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
@@ -108,7 +108,7 @@ int keyboard_config_validate(const struct keyboard_config *config)
         config->layer_count > KEYBOARD_MAX_LAYERS ||
         config->default_layer >= config->layer_count ||
         memchr(config->name, '\0', sizeof(config->name)) == NULL ||
-        !valid_display_layout((const uint8_t *)config->display_layout, true)) {
+        !valid_display_layout((const uint8_t *)config->display_layout, sizeof(config->display_layout), true)) {
         return -EINVAL;
     }
     for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
@@ -165,13 +165,11 @@ int keyboard_config_encode(const struct keyboard_config *config,
     }
     size = KEYBOARD_CONFIG_HEADER_SIZE +
         KEYBOARD_HAND_COUNT * config->layer_count * KEYBOARD_KEY_COUNT * 4;
-    bool has_macros = false;
-    for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) { has_macros |= config->macros[i].count != 0; }
-    if (has_macros) { size += KEYBOARD_CONFIG_MACRO_BANK_SIZE; }
+    size += KEYBOARD_CONFIG_MACRO_BANK_SIZE + KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE;
     if (capacity < size) { return -ENOSPC; }
     memset(blob, 0, size);
     memcpy(blob, "EKCF", 4);
-    blob[4] = has_macros ? KEYBOARD_CONFIG_VERSION : 2;
+    blob[4] = KEYBOARD_CONFIG_VERSION;
     blob[6] = KEYBOARD_CONFIG_HEADER_SIZE;
     put32(blob + 8, size);
     blob[12] = config->layer_count;
@@ -179,9 +177,6 @@ int keyboard_config_encode(const struct keyboard_config *config,
     blob[14] = KEYBOARD_HAND_COUNT;
     blob[15] = KEYBOARD_KEY_COUNT;
     memcpy(blob + 16, config->name, strlen(config->name));
-    const char *display_layout = config->display_layout[0] ?
-        config->display_layout : KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT;
-    memcpy(blob + 48, display_layout, strlen(display_layout));
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
         for (int layer = 0; layer < config->layer_count; ++layer) {
             for (int key = 0; key < KEYBOARD_KEY_COUNT; ++key) {
@@ -203,21 +198,21 @@ int keyboard_config_encode(const struct keyboard_config *config,
             }
         }
     }
-    if (has_macros) {
-        for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
-            const struct keyboard_macro *macro = &config->macros[i];
-            blob[offset] = macro->count;
+    for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
+        const struct keyboard_macro *macro = &config->macros[i];
+        blob[offset] = macro->count;
+        offset += 4;
+        for (int j = 0; j < KEYBOARD_MACRO_MAX_STEPS; ++j) {
+            const struct keyboard_macro_step *step = &macro->steps[j];
+            blob[offset] = step->modifier;
+            blob[offset + 1] = step->keycode;
+            blob[offset + 2] = step->delay_ms & 0xff;
+            blob[offset + 3] = step->delay_ms >> 8;
             offset += 4;
-            for (int j = 0; j < KEYBOARD_MACRO_MAX_STEPS; ++j) {
-                const struct keyboard_macro_step *step = &macro->steps[j];
-                blob[offset] = step->modifier;
-                blob[offset + 1] = step->keycode;
-                blob[offset + 2] = step->delay_ms & 0xff;
-                blob[offset + 3] = step->delay_ms >> 8;
-                offset += 4;
-            }
         }
     }
+    const char *locale = config->display_layout[0] ? config->display_layout : KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT;
+    memcpy(blob + offset, locale, strlen(locale));
     put32(blob + 60, blob_crc(blob, size));
     *length = size;
     return 0;
@@ -232,27 +227,34 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
     if (blob == NULL || config == NULL || length < KEYBOARD_CONFIG_HEADER_SIZE ||
         length > KEYBOARD_CONFIG_MAX_BLOB_SIZE) { return -EINVAL; }
     uint16_t version = get16(blob + 4);
-    if (memcmp(blob, "EKCF", 4) != 0 || (version != 1 && version != 2 && version != KEYBOARD_CONFIG_VERSION) ||
+    if (memcmp(blob, "EKCF", 4) != 0 || (version != 1 && version != 2 && version != 3 && version != 4 && version != KEYBOARD_CONFIG_VERSION) ||
         get16(blob + 6) != KEYBOARD_CONFIG_HEADER_SIZE) { return -ENOTSUP; }
     layers = blob[12];
     expected = KEYBOARD_CONFIG_HEADER_SIZE + KEYBOARD_HAND_COUNT * layers * KEYBOARD_KEY_COUNT * 4;
-    if (version == 3) { expected += KEYBOARD_CONFIG_MACRO_BANK_SIZE; }
+    if (version >= 3) { expected += KEYBOARD_CONFIG_MACRO_BANK_SIZE; }
+    if (version >= 5) { expected += KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE; }
     if (layers == 0 || layers > KEYBOARD_MAX_LAYERS || blob[13] >= layers ||
         blob[14] != KEYBOARD_HAND_COUNT || blob[15] != KEYBOARD_KEY_COUNT ||
         length != expected || get32(blob + 8) != length ||
         memchr(blob + 16, '\0', KEYBOARD_CONFIG_NAME_SIZE) == NULL) { return -EINVAL; }
-    if (version == 1) {
+    if (version == 1 || version >= 4) {
         for (int i = 48; i < 60; ++i) {
             if (blob[i] != 0) { return -EINVAL; }
         }
-    } else if (!valid_display_layout(blob + 48, false)) {
-        return -EINVAL;
+    }
+    const uint8_t *locale = (const uint8_t *)KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT;
+    if (version >= 5) {
+        locale = blob + length - KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE;
+        if (!valid_display_layout(locale, KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE, false)) { return -EINVAL; }
+    } else if (version == 2 || version == 3) {
+        locale = blob + 48;
+        if (!valid_display_layout(locale, 12, false)) { return -EINVAL; }
     }
     if (get32(blob + 60) != blob_crc(blob, length)) { return -EBADMSG; }
     /* Decode/validate the small macro bank before touching the destination. */
     struct keyboard_macro macros[KEYBOARD_MACRO_COUNT] = {0};
     size_t actions_end = KEYBOARD_CONFIG_HEADER_SIZE + KEYBOARD_HAND_COUNT * layers * KEYBOARD_KEY_COUNT * 4;
-    if (version == 3) {
+    if (version >= 3) {
         size_t macro_offset = actions_end;
         for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
             struct keyboard_macro *macro = &macros[i];
@@ -281,11 +283,7 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
     memcpy(config->macros, macros, sizeof(macros));
     config->layer_count = layers;
     config->default_layer = blob[13];
-    if (version == 1) {
-        strcpy(config->display_layout, KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT);
-    } else {
-        memcpy(config->display_layout, blob + 48, sizeof(config->display_layout));
-    }
+    strcpy(config->display_layout, (const char *)locale);
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
         for (int layer = 0; layer < layers; ++layer) {
             for (int key = 0; key < KEYBOARD_KEY_COUNT; ++key) {

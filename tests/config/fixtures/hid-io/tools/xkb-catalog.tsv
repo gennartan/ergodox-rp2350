@@ -1,0 +1,749 @@
+xkb_name	description	file	parent	compositions	unavailable_positions
+xkb:af	Dari	keyboards/xkb_af.json	base/qwerty-keys.json	139	
+xkb:al	Albanian	keyboards/xkb_al.json	base/qwertz-keys.json	676	
+xkb:am	Armenian	keyboards/xkb_am.json	base/qwerty-keys.json	103	LSGT:group1:level3,LSGT:group1:level4
+xkb:ancient	Ancient	keyboards/xkb_ancient.json	base/qwerty-keys.json	85	
+xkb:apl	APL	keyboards/xkb_apl.json	base/qwerty-keys.json	94	LSGT:group1:level4
+xkb:ara	Arabic	keyboards/xkb_ara.json	base/qwerty-keys.json	131	
+xkb:at	German (Austria)	keyboards/xkb_at.json	base/qwertz-keys.json	547	
+xkb:au	English (Australia)	keyboards/xkb_au.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:az	Azerbaijani	keyboards/xkb_az.json	base/qwerty-keys.json	102	
+xkb:ba	Bosnian	keyboards/xkb_ba.json	base/qwertz-keys.json	614	
+xkb:bd	Bangla	keyboards/xkb_bd.json	base/qwerty-keys.json	129	
+xkb:be	Belgian	keyboards/xkb_be.json	base/azerty-keys.json	630	
+xkb:bg	Bulgarian	keyboards/xkb_bg.json	base/qwerty-keys.json	98	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE03:group1:level3,AE03:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE11:group1:level3,AD01:group1:level3,AD01:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC07:group1:level3,AC07:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB08:group1:level3,AB08:group1:level4
+xkb:bqn	BQN	keyboards/xkb_bqn.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:br	Portuguese (Brazil)	keyboards/xkb_br.json	base/qwerty-keys.json	653	
+xkb:brai	Braille	keyboards/xkb_brai.json	base/qwerty-keys.json	14	LSGT:group1:level4
+xkb:bt	Dzongkha	keyboards/xkb_bt.json	base/qwerty-keys.json	187	
+xkb:bw	Tswana	keyboards/xkb_bw.json	base/qwerty-keys.json	109	
+xkb:by	Belarusian	keyboards/xkb_by.json	base/qwerty-keys.json	96	LSGT:group1:level4,AE08:group1:level3,AD07:group1:level3,AD07:group1:level4
+xkb:ca	French (Canada)	keyboards/xkb_ca.json	base/qwerty-keys.json	280	
+xkb:cd	French (Democratic Republic of the Congo)	keyboards/xkb_cd.json	base/azerty-keys.json	127	
+xkb:ch	German (Switzerland)	keyboards/xkb_ch.json	base/qwertz-keys.json	666	
+xkb:cm	English (Cameroon)	keyboards/xkb_au.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:cn	Chinese	keyboards/xkb_au.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:custom	A user-defined custom Layout			0	no installed definition
+xkb:cz	Czech	keyboards/xkb_cz.json	base/qwertz-keys.json	549	
+xkb:de	German	keyboards/xkb_de.json	base/qwertz-keys.json	547	
+xkb:dk	Danish	keyboards/xkb_dk.json	base/qwerty-keys.json	620	
+xkb:dz	Berber (Algeria, Latin)	keyboards/xkb_dz.json	base/azerty-keys.json	536	
+xkb:ee	Estonian	keyboards/xkb_ee.json	base/qwerty-keys.json	618	
+xkb:eg	Arabic (Egypt)	keyboards/xkb_eg.json	base/qwerty-keys.json	131	
+xkb:epo	Esperanto	keyboards/xkb_epo.json	base/qwerty-keys.json	120	
+xkb:es	Spanish	keyboards/xkb_es.json	base/qwerty-keys.json	692	
+xkb:et	Amharic	keyboards/xkb_et.json	base/qwerty-keys.json	79	LSGT:group1:level3,LSGT:group1:level4
+xkb:eu	EurKEY (US)	keyboards/xkb_eu.json	base/qwerty-keys.json	933	
+xkb:fi	Finnish	keyboards/xkb_fi.json	base/qwerty-keys.json	806	
+xkb:fo	Faroese	keyboards/xkb_fo.json	base/qwerty-keys.json	573	
+xkb:fr	French	keyboards/xkb_fr.json	base/azerty-keys.json	610	
+xkb:gb	English (UK)	keyboards/xkb_gb.json	base/qwerty-keys.json	694	
+xkb:ge	Georgian	keyboards/xkb_ge.json	base/qwerty-keys.json	120	
+xkb:gh	English (Ghana)	keyboards/xkb_gh.json	base/qwerty-keys.json	99	
+xkb:gn	N'Ko (AZERTY)	keyboards/xkb_gn.json	base/qwerty-keys.json	89	
+xkb:gr	Greek	keyboards/xkb_gr.json	base/qwerty-keys.json	390	
+xkb:hr	Croatian	keyboards/xkb_hr.json	base/qwertz-keys.json	672	
+xkb:hu	Hungarian	keyboards/xkb_hu.json	base/qwertz-keys.json	529	
+xkb:id	Indonesian (Latin)	keyboards/xkb_au.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:ie	Irish	keyboards/xkb_ie.json	base/qwerty-keys.json	907	
+xkb:il	Hebrew	keyboards/xkb_il.json	base/qwerty-keys.json	131	
+xkb:in	Indian	keyboards/xkb_in.json	base/qwerty-keys.json	142	
+xkb:iq	Arabic (Iraq)	keyboards/xkb_eg.json	base/qwerty-keys.json	131	
+xkb:ir	Persian	keyboards/xkb_ir.json	base/qwerty-keys.json	132	
+xkb:is	Icelandic	keyboards/xkb_is.json	base/qwerty-keys.json	601	
+xkb:it	Italian	keyboards/xkb_it.json	base/qwerty-keys.json	527	
+xkb:jp	Japanese	keyboards/xkb_jp.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:ke	Swahili (Kenya)	keyboards/xkb_bw.json	base/qwerty-keys.json	109	
+xkb:kg	Kyrgyz	keyboards/xkb_kg.json	base/qwerty-keys.json	101	LSGT:group1:level4
+xkb:kh	Khmer (Cambodia)	keyboards/xkb_kh.json	base/qwerty-keys.json	173	
+xkb:kr	Korean	keyboards/xkb_kr.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:kz	Kazakh	keyboards/xkb_kz.json	base/qwerty-keys.json	102	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level3,LSGT:group1:level4
+xkb:la	Lao	keyboards/xkb_la.json	base/qwerty-keys.json	88	LSGT:group1:level3,LSGT:group1:level4
+xkb:latam	Spanish (Latin American)	keyboards/xkb_latam.json	base/qwerty-keys.json	562	
+xkb:lk	Sinhala (phonetic)	keyboards/xkb_lk.json	base/qwerty-keys.json	125	
+xkb:lt	Lithuanian	keyboards/xkb_lt.json	base/qwerty-keys.json	654	
+xkb:lv	Latvian	keyboards/xkb_lv.json	base/qwerty-keys.json	153	
+xkb:ma	Arabic (Morocco)	keyboards/xkb_ma.json	base/qwerty-keys.json	130	
+xkb:md	Moldavian	keyboards/xkb_md.json	base/qwerty-keys.json	469	
+xkb:me	Montenegrin	keyboards/xkb_me.json	base/qwertz-keys.json	611	
+xkb:mk	Macedonian	keyboards/xkb_mk.json	base/qwerty-keys.json	110	LSGT:group1:level3,LSGT:group1:level4
+xkb:ml	Bambara	keyboards/xkb_ml.json	base/azerty-keys.json	623	
+xkb:mm	Burmese	keyboards/xkb_mm.json	base/qwerty-keys.json	98	TLDE:group1:level4,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4
+xkb:mn	Mongolian	keyboards/xkb_mn.json	base/qwerty-keys.json	135	
+xkb:mt	Maltese	keyboards/xkb_mt.json	base/qwerty-keys.json	550	
+xkb:mv	Dhivehi	keyboards/xkb_mv.json	base/qwerty-keys.json	97	
+xkb:my	Malay (Jawi, Arabic Keyboard)	keyboards/xkb_my.json	base/qwerty-keys.json	108	
+xkb:ng	English (Nigeria)	keyboards/xkb_ng.json	base/qwerty-keys.json	99	
+xkb:nl	Dutch	keyboards/xkb_nl.json	base/qwerty-keys.json	551	
+xkb:no	Norwegian	keyboards/xkb_no.json	base/qwerty-keys.json	538	
+xkb:np	Nepali	keyboards/xkb_np.json	base/qwerty-keys.json	99	LSGT:group1:level3,LSGT:group1:level4
+xkb:nz	English (New Zealand)	keyboards/xkb_au.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:ph	Filipino	keyboards/xkb_ph.json	base/qwerty-keys.json	161	
+xkb:pk	Urdu (Pakistan)	keyboards/xkb_pk.json	base/qwerty-keys.json	97	
+xkb:pl	Polish	keyboards/xkb_pl.json	base/qwerty-keys.json	668	
+xkb:pt	Portuguese	keyboards/xkb_pt.json	base/qwerty-keys.json	691	
+xkb:ro	Romanian	keyboards/xkb_md.json	base/qwerty-keys.json	469	
+xkb:rs	Serbian	keyboards/xkb_rs.json	base/qwerty-keys.json	225	
+xkb:ru	Russian	keyboards/xkb_ru.json	base/qwerty-keys.json	97	LSGT:group1:level4,AE08:group1:level3
+xkb:se	Swedish	keyboards/xkb_se.json	base/qwerty-keys.json	636	
+xkb:si	Slovenian	keyboards/xkb_si.json	base/qwertz-keys.json	613	
+xkb:sk	Slovak	keyboards/xkb_sk.json	base/qwertz-keys.json	562	
+xkb:sn	Wolof	keyboards/xkb_sn.json	base/azerty-keys.json	341	
+xkb:sy	Arabic (Syria)	keyboards/xkb_eg.json	base/qwerty-keys.json	131	
+xkb:tg	French (Togo)	keyboards/xkb_tg.json	base/azerty-keys.json	486	
+xkb:th	Thai	keyboards/xkb_th.json	base/qwerty-keys.json	100	LSGT:group1:level3,LSGT:group1:level4
+xkb:tj	Tajik	keyboards/xkb_tj.json	base/qwerty-keys.json	108	
+xkb:tm	Turkmen	keyboards/xkb_tm.json	base/qwerty-keys.json	113	
+xkb:tr	Turkish	keyboards/xkb_tr.json	base/qwerty-keys.json	446	
+xkb:trans	International Phonetic Alphabet	keyboards/xkb_trans.json	base/qwertz-keys.json	342	
+xkb:tw	Taiwanese	keyboards/xkb_tw.json	base/qwerty-keys.json	672	
+xkb:tz	Swahili (Tanzania)	keyboards/xkb_tz.json	base/qwerty-keys.json	84	LSGT:group1:level4
+xkb:ua	Ukrainian	keyboards/xkb_ua.json	base/qwerty-keys.json	150	
+xkb:us	English (US)	keyboards/xkb_us.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:uz	Uzbek	keyboards/xkb_uz.json	base/qwerty-keys.json	100	LSGT:group1:level4
+xkb:vn	Vietnamese	keyboards/xkb_vn.json	base/qwerty-keys.json	338	
+xkb:za	English (South Africa)	keyboards/xkb_za.json	base/qwerty-keys.json	669	
+xkb:af(fa-olpc)	Dari (Afghanistan, OLPC)	keyboards/xkb_af__fa-olpc.json	base/qwerty-keys.json	94	TLDE:group1:level3,BKSL:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE11:group1:level3,AD01:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD06:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AD11:group1:level3,AD12:group1:level3,AC01:group1:level3,AC02:group1:level3,AC03:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC08:group1:level3,AC09:group1:level3,AC10:group1:level3,AC11:group1:level3,AB01:group1:level3,AB02:group1:level3,AB03:group1:level3,AB04:group1:level3,AB05:group1:level3,AB06:group1:level3,AB07:group1:level3,AB08:group1:level3,AB09:group1:level3,AB10:group1:level3
+xkb:af(ps)	Pashto	keyboards/xkb_af__ps.json	keyboards/xkb_af.json	139	
+xkb:af(ps-olpc)	Pashto (Afghanistan, OLPC)	keyboards/xkb_af__ps-olpc.json	base/qwerty-keys.json	95	TLDE:group1:level3,BKSL:group1:level3,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AE12:group1:level3,AD01:group1:level3,AD02:group1:level3,AD03:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AD11:group1:level3,AD12:group1:level3,AC03:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC10:group1:level3,AC11:group1:level3,AB01:group1:level3,AB02:group1:level3,AB06:group1:level3,AB07:group1:level3,AB08:group1:level3,AB09:group1:level3,AB10:group1:level3
+xkb:af(uz)	Uzbek (Afghanistan)	keyboards/xkb_af__uz.json	keyboards/xkb_af.json	139	
+xkb:af(uz-olpc)	Uzbek (Afghanistan, OLPC)	keyboards/xkb_af__uz-olpc.json	base/qwerty-keys.json	94	TLDE:group1:level3,BKSL:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE11:group1:level3,AD01:group1:level3,AD02:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD06:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AD11:group1:level3,AD12:group1:level3,AC01:group1:level3,AC02:group1:level3,AC03:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC08:group1:level3,AC09:group1:level3,AC10:group1:level3,AC11:group1:level3,AB01:group1:level3,AB02:group1:level3,AB03:group1:level3,AB04:group1:level3,AB05:group1:level3,AB06:group1:level3,AB07:group1:level3,AB08:group1:level3,AB10:group1:level3
+xkb:al(plisi)	Albanian (Plisi)	keyboards/xkb_al__plisi.json	base/qwerty-keys.json	573	
+xkb:al(veqilharxhi)	Albanian (Veqilharxhi)	keyboards/xkb_al__veqilharxhi.json	base/qwerty-keys.json	111	
+xkb:am(eastern)	Armenian (eastern)	keyboards/xkb_am__eastern.json	base/qwerty-keys.json	98	LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level2,AE04:group1:level2,AE05:group1:level2,AE06:group1:level2
+xkb:am(eastern-alt)	Armenian (alt. eastern)	keyboards/xkb_am__eastern-alt.json	base/qwerty-keys.json	96	LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level2,AE04:group1:level2,AE05:group1:level2,AE06:group1:level2
+xkb:am(olpc-phonetic)	Armenian (OLPC, phonetic)	keyboards/xkb_am__olpc-phonetic.json	base/qwerty-keys.json	102	LSGT:group1:level3,LSGT:group1:level4
+xkb:am(phonetic)	Armenian (phonetic)	keyboards/xkb_am__phonetic.json	base/qwerty-keys.json	102	LSGT:group1:level3,LSGT:group1:level4
+xkb:am(phonetic-alt)	Armenian (alt. phonetic)	keyboards/xkb_am__olpc-phonetic.json	base/qwerty-keys.json	102	LSGT:group1:level3,LSGT:group1:level4
+xkb:am(western)	Armenian (western)	keyboards/xkb_am__western.json	base/qwerty-keys.json	98	LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level2,AE04:group1:level2,AE05:group1:level2,AE06:group1:level2
+xkb:ancient(ave)	Avestan	keyboards/xkb_ancient__ave.json	base/qwerty-keys.json	80	LSGT:group1:level3,LSGT:group1:level4
+xkb:ancient(got)	Gothic	keyboards/xkb_ancient__got.json	base/qwerty-keys.json	56	LSGT:group1:level4
+xkb:ancient(got-alt)	Gothic (Alternative)	keyboards/xkb_ancient__got-alt.json	base/qwerty-keys.json	73	LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE12:group1:level3,AD11:group1:level3,AD12:group1:level3,AC11:group1:level3
+xkb:ancient(uga)	Ugaritic	keyboards/xkb_ancient.json	base/qwerty-keys.json	85	
+xkb:apl(apl2)	APL symbols (IBM APL2)	keyboards/xkb_apl__apl2.json	base/qwerty-keys.json	81	
+xkb:apl(aplplusII)	APL symbols (Manugistics APL*PLUS II)	keyboards/xkb_apl__aplplusII.json	base/qwerty-keys.json	81	
+xkb:apl(aplx)	APL symbols (APLX unified)	keyboards/xkb_apl__aplx.json	base/qwerty-keys.json	75	LSGT:group1:level4
+xkb:apl(dyalog)	APL symbols (Dyalog APL)	keyboards/xkb_apl__dyalog.json	base/qwerty-keys.json	104	LSGT:group1:level4
+xkb:apl(sax)	APL symbols (SAX, Sharp APL for Unix)	keyboards/xkb_apl__sax.json	base/qwerty-keys.json	80	LSGT:group1:level4
+xkb:apl(unified)	APL symbols (unified)	keyboards/xkb_apl__unified.json	base/qwerty-keys.json	53	LSGT:group1:level4
+xkb:ara(azerty)	Arabic (AZERTY)	keyboards/xkb_ara__azerty.json	base/qwerty-keys.json	130	
+xkb:ara(azerty_digits)	Arabic (AZERTY, Eastern Arabic numerals)	keyboards/xkb_ara__azerty_digits.json	base/qwerty-keys.json	130	
+xkb:ara(basic_ext)	Arabic (Arabic numerals, extensions in the 4th level)	keyboards/xkb_ara__basic_ext.json	base/qwerty-keys.json	180	
+xkb:ara(basic_ext_digits)	Arabic (Eastern Arabic numerals, extensions in the 4th level)	keyboards/xkb_ara__basic_ext_digits.json	base/qwerty-keys.json	180	
+xkb:ara(buckwalter)	Arabic (Buckwalter)	keyboards/xkb_ara__buckwalter.json	base/qwerty-keys.json	76	LSGT:group1:level3,LSGT:group1:level4
+xkb:ara(digits)	Arabic (Eastern Arabic numerals)	keyboards/xkb_ara__digits.json	keyboards/xkb_ara.json	141	
+xkb:ara(ergoarabic)	Arabic (ErgoArabic)	keyboards/xkb_ara__ergoarabic.json	base/qwerty-keys.json	127	
+xkb:ara(mac)	Arabic (Macintosh)	keyboards/xkb_ara__mac.json	base/qwerty-keys.json	131	
+xkb:ara(mac-phonetic)	Arabic (Macintosh, phonetic)	keyboards/xkb_ara__mac-phonetic.json	base/qwerty-keys.json	103	AE01:group1:level5,AE02:group1:level5,AE03:group1:level5,AE04:group1:level5,AE05:group1:level5,AE06:group1:level5,AE07:group1:level5,AE08:group1:level5,AE09:group1:level5,AE10:group1:level5
+xkb:ara(olpc)	Arabic (OLPC)	keyboards/xkb_ara__olpc.json	base/qwerty-keys.json	129	
+xkb:ara(sun_type6)	Arabic (Sun Type 6/7)	keyboards/xkb_ara__sun_type6.json	base/qwerty-keys.json	912	
+xkb:at(mac)	German (Austria, Macintosh)	keyboards/xkb_at__mac.json	base/qwertz-keys.json	364	
+xkb:at(nodeadkeys)	German (Austria, no dead keys)	keyboards/xkb_at__nodeadkeys.json	base/qwertz-keys.json	179	
+xkb:az(cyrillic)	Azerbaijani (Cyrillic)	keyboards/xkb_az__cyrillic.json	base/qwerty-keys.json	106	
+xkb:ba(alternatequotes)	Bosnian (with guillemets)	keyboards/xkb_ba__alternatequotes.json	base/qwertz-keys.json	612	
+xkb:ba(unicode)	Bosnian (with Bosnian digraphs)	keyboards/xkb_ba__unicode.json	base/qwerty-keys.json	577	
+xkb:ba(unicodeus)	Bosnian (US, with Bosnian digraphs)	keyboards/xkb_ba__unicodeus.json	base/qwerty-keys.json	577	
+xkb:ba(us)	Bosnian (US)	keyboards/xkb_ba__us.json	base/qwerty-keys.json	614	
+xkb:bd(probhat)	Bangla (Probhat)	keyboards/xkb_bd__probhat.json	base/qwerty-keys.json	119	
+xkb:be(iso-alternate)	Belgian (ISO, alt.)	keyboards/xkb_be__iso-alternate.json	base/azerty-keys.json	628	
+xkb:be(nodeadkeys)	Belgian (no dead keys)	keyboards/xkb_be__nodeadkeys.json	base/azerty-keys.json	172	
+xkb:be(oss)	Belgian (alt.)	keyboards/xkb_be__oss.json	base/azerty-keys.json	551	
+xkb:be(oss_latin9)	Belgian (Latin-9 only, alt.)	keyboards/xkb_be__oss_latin9.json	base/azerty-keys.json	403	
+xkb:be(sun_type6)	Belgian (Sun Type 6/7)	keyboards/xkb_be__sun_type6.json	base/azerty-keys.json	871	
+xkb:be(wang)	Belgian (Wang 724 AZERTY)	keyboards/xkb_be__wang.json	keyboards/xkb_be.json	631	
+xkb:bg(bas_phonetic)	Bulgarian (new phonetic)	keyboards/xkb_bg__bas_phonetic.json	base/qwerty-keys.json	97	BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD11:group1:level3,AD11:group1:level4,AC02:group1:level3,AC02:group1:level4,AC07:group1:level3,AC07:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:bg(bekl)	Bulgarian (enhanced)	keyboards/xkb_bg__bekl.json	base/qwerty-keys.json	98	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE11:group1:level3,AD01:group1:level3,AD01:group1:level4,AD03:group1:level3,AD03:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AC01:group1:level3,AC01:group1:level4,AC07:group1:level3,AC07:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB08:group1:level3,AB08:group1:level4
+xkb:bg(phonetic)	Bulgarian (traditional phonetic)	keyboards/xkb_bg__phonetic.json	base/qwerty-keys.json	97	LSGT:group1:level3,LSGT:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AC02:group1:level3,AC02:group1:level4,AC07:group1:level3,AC07:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:br(dvorak)	Portuguese (Brazil, Dvorak)	keyboards/xkb_br__dvorak.json	base/qwerty-keys.json	714	
+xkb:br(nativo)	Portuguese (Brazil, Nativo)	keyboards/xkb_br__nativo.json	base/qwerty-keys.json	710	
+xkb:br(nativo-epo)	Esperanto (Brazil, Nativo)	keyboards/xkb_br__nativo-epo.json	base/qwerty-keys.json	703	
+xkb:br(nativo-us)	Portuguese (Brazil, Nativo for US keyboards)	keyboards/xkb_br__nativo-us.json	base/qwerty-keys.json	709	
+xkb:br(nodeadkeys)	Portuguese (Brazil, no dead keys)	keyboards/xkb_br__nodeadkeys.json	base/qwerty-keys.json	168	
+xkb:br(rus)	Russian (Brazil, phonetic)	keyboards/xkb_br__rus.json	base/qwerty-keys.json	300	
+xkb:br(sun_type6)	Portuguese (Brazil, Sun Type 6/7)	keyboards/xkb_br__sun_type6.json	base/qwerty-keys.json	878	
+xkb:br(thinkpad)	Portuguese (Brazil, IBM/Lenovo ThinkPad)	keyboards/xkb_br__thinkpad.json	keyboards/xkb_br.json	653	
+xkb:brai(left_hand)	Braille (one-handed, left)	keyboards/xkb_brai__left_hand.json	keyboards/xkb_brai.json	14	LSGT:group1:level4
+xkb:brai(left_hand_invert)	Braille (one-handed, left, inverted thumb)	keyboards/xkb_brai__left_hand_invert.json	keyboards/xkb_brai.json	14	LSGT:group1:level4
+xkb:brai(right_hand)	Braille (one-handed, right)	keyboards/xkb_brai__right_hand.json	keyboards/xkb_brai.json	14	LSGT:group1:level4
+xkb:brai(right_hand_invert)	Braille (one-handed, right, inverted thumb)	keyboards/xkb_brai__right_hand_invert.json	keyboards/xkb_brai.json	14	LSGT:group1:level4
+xkb:by(intl)	Belarusian (intl.)	keyboards/xkb_by__intl.json	keyboards/xkb_by.json	111	
+xkb:by(latin)	Belarusian (Latin)	keyboards/xkb_by__latin.json	base/qwerty-keys.json	591	
+xkb:by(legacy)	Belarusian (legacy)	keyboards/xkb_by__legacy.json	base/qwerty-keys.json	95	LSGT:group1:level4,AE08:group1:level3,AD07:group1:level3,AD07:group1:level4
+xkb:by(phonetic)	Belarusian (phonetic)	keyboards/xkb_by__phonetic.json	base/qwerty-keys.json	104	
+xkb:by(ru)	Russian (Belarus)	keyboards/xkb_by__ru.json	keyboards/xkb_by.json	105	
+xkb:ca(eng)	English (Canada)	keyboards/xkb_ca__eng.json	base/qwerty-keys.json	96	
+xkb:ca(fr-dvorak)	French (Canada, Dvorak)	keyboards/xkb_ca__fr-dvorak.json	base/qwerty-keys.json	278	
+xkb:ca(fr-legacy)	French (Canada, legacy)	keyboards/xkb_ca__fr-legacy.json	base/qwerty-keys.json	342	
+xkb:ca(ike)	Inuktitut	keyboards/xkb_ca__ike.json	base/qwerty-keys.json	101	LSGT:group1:level4
+xkb:ca(kut)	Kutenai	keyboards/xkb_ca__kut.json	base/qwerty-keys.json	856	
+xkb:ca(multix)	Canadian (CSA)	keyboards/xkb_ca__multix.json	keyboards/xkb_ca.json	575	
+xkb:ca(shs)	Secwepemctsin	keyboards/xkb_ca__shs.json	base/qwerty-keys.json	851	
+xkb:ca(sun_type6)	Multilingual (Canada, Sun Type 6/7)	keyboards/xkb_ca__sun_type6.json	base/qwerty-keys.json	853	
+xkb:ch(de_mac)	German (Switzerland, Macintosh)	keyboards/xkb_ch__de_mac.json	base/qwertz-keys.json	361	
+xkb:ch(de_nodeadkeys)	German (Switzerland, no dead keys)	keyboards/xkb_ch__de_nodeadkeys.json	base/qwertz-keys.json	493	
+xkb:ch(fr)	French (Switzerland)	keyboards/xkb_ch__fr.json	keyboards/xkb_ch.json	666	
+xkb:ch(fr_mac)	French (Switzerland, Macintosh)	keyboards/xkb_ch__fr_mac.json	base/qwertz-keys.json	359	
+xkb:ch(fr_nodeadkeys)	French (Switzerland, no dead keys)	keyboards/xkb_ch__fr_nodeadkeys.json	base/qwertz-keys.json	493	
+xkb:ch(legacy)	German (Switzerland, legacy)	keyboards/xkb_ch__legacy.json	keyboards/xkb_ch.json	666	
+xkb:ch(sun_type6_de)	German (Switzerland, Sun Type 6/7)	keyboards/xkb_ch__sun_type6_de.json	base/qwertz-keys.json	873	
+xkb:ch(sun_type6_fr)	French (Switzerland, Sun Type 6/7)	keyboards/xkb_ch__sun_type6_fr.json	base/qwertz-keys.json	873	
+xkb:cm(azerty)	Cameroon (AZERTY, intl.)	keyboards/xkb_cm__azerty.json	base/azerty-keys.json	323	
+xkb:cm(dvorak)	Cameroon (Dvorak, intl.)	keyboards/xkb_cm__dvorak.json	base/qwerty-keys.json	230	
+xkb:cm(french)	French (Cameroon)	keyboards/xkb_cm__french.json	base/azerty-keys.json	610	
+xkb:cm(mmuock)	Mmuock	keyboards/xkb_cm__mmuock.json	base/qwerty-keys.json	404	
+xkb:cm(qwerty)	Cameroon Multilingual (QWERTY, intl.)	keyboards/xkb_cm__qwerty.json	keyboards/xkb_au.json	165	
+xkb:cn(altgr-pinyin)	Hanyu Pinyin Letters (with AltGr dead keys)	keyboards/xkb_cn__altgr-pinyin.json	keyboards/xkb_au.json	332	
+xkb:cn(mon_manchu_galik)	Mongolian (Manchu Galik)	keyboards/xkb_cn__mon_manchu_galik.json	base/qwerty-keys.json	48	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_todo_galik)	Mongolian (Todo Galik)	keyboards/xkb_cn__mon_todo_galik.json	base/qwerty-keys.json	64	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_trad)	Mongolian (Bichig)	keyboards/xkb_cn__mon_trad.json	base/qwerty-keys.json	80	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_trad_galik)	Mongolian (Galik)	keyboards/xkb_cn__mon_trad_galik.json	base/qwerty-keys.json	69	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_trad_manchu)	Mongolian (Manchu)	keyboards/xkb_cn__mon_trad_manchu.json	base/qwerty-keys.json	72	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_trad_todo)	Mongolian (Todo)	keyboards/xkb_cn__mon_trad_todo.json	base/qwerty-keys.json	81	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(mon_trad_xibe)	Mongolian (Xibe)	keyboards/xkb_cn__mon_trad_xibe.json	base/qwerty-keys.json	80	LSGT:group1:level3,LSGT:group1:level4
+xkb:cn(tib)	Tibetan	keyboards/xkb_cn__tib.json	base/qwerty-keys.json	104	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:cn(tib_asciinum)	Tibetan (with ASCII numerals)	keyboards/xkb_cn__tib_asciinum.json	base/qwerty-keys.json	104	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:cn(ug)	Uyghur	keyboards/xkb_cn__ug.json	base/qwerty-keys.json	79	LSGT:group1:level4
+xkb:cz(bksl)	Czech (extra backslash)	keyboards/xkb_cz__bksl.json	keyboards/xkb_cz.json	549	
+xkb:cz(coder)	Czech (coder)	keyboards/xkb_cz__coder.json	base/qwerty-keys.json	222	
+xkb:cz(colemak-ucw)	Czech (US, Colemak, UCW support)	keyboards/xkb_cz__colemak-ucw.json	base/qwerty-keys.json	44	LSGT:group1:level4
+xkb:cz(dvorak-ucw)	Czech (US, Dvorak, UCW support)	keyboards/xkb_cz__dvorak-ucw.json	base/qwerty-keys.json	444	
+xkb:cz(prog)	Czech (programming)	keyboards/xkb_cz__prog.json	base/qwerty-keys.json	858	
+xkb:cz(prog_typo)	Czech (programming, typographic)	keyboards/xkb_cz__prog_typo.json	base/qwerty-keys.json	866	
+xkb:cz(qwerty)	Czech (QWERTY)	keyboards/xkb_cz__qwerty.json	base/qwerty-keys.json	549	
+xkb:cz(qwerty-mac)	Czech (QWERTY, Macintosh)	keyboards/xkb_cz__qwerty-mac.json	base/qwerty-keys.json	439	
+xkb:cz(qwerty_bksl)	Czech (QWERTY, extra backslash)	keyboards/xkb_cz__qwerty_bksl.json	base/qwerty-keys.json	549	
+xkb:cz(rus)	Russian (Czechia, phonetic)	keyboards/xkb_cz__rus.json	base/qwerty-keys.json	306	
+xkb:cz(sun_type6)	Czech (Sun Type 6/7)	keyboards/xkb_cz__sun_type6.json	base/qwertz-keys.json	861	
+xkb:cz(ucw)	Czech (UCW, only accented letters)	keyboards/xkb_cz__ucw.json	base/qwerty-keys.json	66	LSGT:group1:level4
+xkb:cz(winkeys)	Czech (QWERTZ, Windows)	keyboards/xkb_cz__winkeys.json	base/qwertz-keys.json	479	
+xkb:cz(winkeys-qwerty)	Czech (QWERTY, Windows)	keyboards/xkb_cz__winkeys-qwerty.json	base/qwerty-keys.json	479	
+xkb:de(T3)	German (T3)	keyboards/xkb_de__T3.json	base/qwertz-keys.json	739	TLDE:group1:level5,BKSL:group1:level5,LSGT:group1:level5,LSGT:group1:level7,AE01:group1:level5,AE01:group1:level7,AE02:group1:level7,AE03:group1:level7,AE04:group1:level5,AE04:group1:level7,AE05:group1:level5,AE05:group1:level7,AE06:group1:level5,AE06:group1:level7,AE07:group1:level5,AE08:group1:level5,AE09:group1:level5,AE10:group1:level5,AE12:group1:level7,AD01:group1:level5,AD01:group1:level7,AD02:group1:level5,AD03:group1:level5,AD04:group1:level5,AD05:group1:level5,AD06:group1:level5,AD06:group1:level7,AD07:group1:level5,AD08:group1:level5,AD08:group1:level7,AD09:group1:level5,AD10:group1:level5,AD11:group1:level5,AC01:group1:level5,AC01:group1:level7,AC03:group1:level5,AC03:group1:level7,AC04:group1:level5,AC04:group1:level7,AC05:group1:level5,AC05:group1:level7,AC06:group1:level5,AC06:group1:level7,AC07:group1:level5,AC07:group1:level7,AC08:group1:level5,AC09:group1:level5,AC09:group1:level7,AC11:group1:level5,AB01:group1:level5,AB02:group1:level5,AB03:group1:level5,AB03:group1:level7,AB04:group1:level5,AB05:group1:level5,AB06:group1:level5,AB08:group1:level5,AB09:group1:level5,AB10:group1:level5,AB10:group1:level7
+xkb:de(adnw)	German (Aus der Neo-Welt)	keyboards/xkb_de__adnw.json	base/qwerty-keys.json	1181	
+xkb:de(bone)	German (Bone)	keyboards/xkb_de__bone.json	base/qwerty-keys.json	1181	
+xkb:de(bone_eszett_home)	German (Bone, eszett in the home row)	keyboards/xkb_de__bone_eszett_home.json	base/qwerty-keys.json	1181	
+xkb:de(deadacute)	German (dead acute)	keyboards/xkb_de__deadacute.json	base/qwertz-keys.json	566	
+xkb:de(deadgraveacute)	German (dead grave acute)	keyboards/xkb_de__deadgraveacute.json	base/qwertz-keys.json	566	
+xkb:de(deadtilde)	German (dead tilde)	keyboards/xkb_de__deadtilde.json	keyboards/xkb_de.json	640	
+xkb:de(dsb)	Lower Sorbian	keyboards/xkb_de__dsb.json	base/qwerty-keys.json	675	
+xkb:de(dsb_qwertz)	Lower Sorbian (QWERTZ)	keyboards/xkb_de__dsb_qwertz.json	base/qwertz-keys.json	528	AE11:group1:level5
+xkb:de(dvorak)	German (Dvorak)	keyboards/xkb_de__dvorak.json	base/qwerty-keys.json	425	
+xkb:de(e1)	German (E1)	keyboards/xkb_de__e1.json	base/qwertz-keys.json	970	BKSL:group1:level5,BKSL:group1:level6,LSGT:group1:level5,LSGT:group1:level6,AE01:group1:level5,AE01:group1:level6,AE02:group1:level5,AE03:group1:level5,AE03:group1:level6,AE04:group1:level5,AE04:group1:level6,AE05:group1:level5,AE05:group1:level6,AE06:group1:level5,AE06:group1:level6,AE07:group1:level5,AE07:group1:level6,AE08:group1:level5,AE08:group1:level6,AE09:group1:level5,AE09:group1:level6,AE10:group1:level5,AE10:group1:level6,AE11:group1:level5,AE11:group1:level6,AE12:group1:level5,AE12:group1:level6,AD01:group1:level5,AD01:group1:level6,AD02:group1:level5,AD02:group1:level6,AD03:group1:level5,AD03:group1:level6,AD04:group1:level5,AD04:group1:level6,AD05:group1:level5,AD05:group1:level6,AD06:group1:level5,AD06:group1:level6,AD07:group1:level5,AD07:group1:level6,AD08:group1:level5,AD08:group1:level6,AD09:group1:level5,AD09:group1:level6,AD10:group1:level5,AD10:group1:level6,AD11:group1:level5,AD11:group1:level6,AD12:group1:level6,AC02:group1:level5,AC02:group1:level6,AC03:group1:level5,AC03:group1:level6,AC05:group1:level5,AC05:group1:level6,AC06:group1:level5,AC06:group1:level6,AC07:group1:level5,AC07:group1:level6,AC09:group1:level5,AC09:group1:level6,AC10:group1:level5,AC10:group1:level6,AC11:group1:level5,AC11:group1:level6,AB01:group1:level5,AB01:group1:level6,AB02:group1:level5,AB02:group1:level6,AB03:group1:level5,AB03:group1:level6,AB04:group1:level5,AB04:group1:level6,AB05:group1:level5,AB06:group1:level5,AB06:group1:level6,AB07:group1:level6,AB08:group1:level5,AB08:group1:level6,AB09:group1:level5,AB09:group1:level6,AB10:group1:level5,AB10:group1:level6
+xkb:de(e2)	German (E2)	keyboards/xkb_de__e2.json	base/qwertz-keys.json	969	BKSL:group1:level5,BKSL:group1:level6,AE01:group1:level5,AE01:group1:level6,AE02:group1:level5,AE02:group1:level6,AE03:group1:level5,AE03:group1:level6,AE04:group1:level5,AE04:group1:level6,AE05:group1:level5,AE05:group1:level6,AE06:group1:level5,AE06:group1:level6,AE07:group1:level5,AE07:group1:level6,AE08:group1:level5,AE08:group1:level6,AE09:group1:level5,AE09:group1:level6,AE10:group1:level5,AE10:group1:level6,AE11:group1:level5,AE11:group1:level6,AE12:group1:level5,AE12:group1:level6,AD01:group1:level5,AD01:group1:level6,AD02:group1:level5,AD02:group1:level6,AD03:group1:level5,AD03:group1:level6,AD04:group1:level5,AD04:group1:level6,AD05:group1:level5,AD05:group1:level6,AD06:group1:level5,AD06:group1:level6,AD07:group1:level5,AD07:group1:level6,AD08:group1:level5,AD08:group1:level6,AD09:group1:level5,AD09:group1:level6,AD10:group1:level5,AD10:group1:level6,AD11:group1:level5,AD11:group1:level6,AD12:group1:level5,AD12:group1:level6,AC02:group1:level5,AC02:group1:level6,AC03:group1:level5,AC03:group1:level6,AC05:group1:level5,AC05:group1:level6,AC06:group1:level5,AC06:group1:level6,AC07:group1:level5,AC07:group1:level6,AC09:group1:level5,AC09:group1:level6,AC10:group1:level5,AC10:group1:level6,AC11:group1:level5,AC11:group1:level6,AB01:group1:level5,AB01:group1:level6,AB02:group1:level5,AB02:group1:level6,AB03:group1:level5,AB03:group1:level6,AB04:group1:level5,AB04:group1:level6,AB05:group1:level5,AB06:group1:level5,AB06:group1:level6,AB07:group1:level6,AB08:group1:level5,AB08:group1:level6,AB09:group1:level5,AB09:group1:level6,AB10:group1:level5,AB10:group1:level6
+xkb:de(hu)	German (with Hungarian letters, no dead keys)	keyboards/xkb_de__hu.json	base/qwertz-keys.json	285	
+xkb:de(koy)	German (KOY)	keyboards/xkb_de__koy.json	base/qwerty-keys.json	1181	
+xkb:de(mac)	German (Macintosh)	keyboards/xkb_de__mac.json	base/qwertz-keys.json	364	
+xkb:de(mac_nodeadkeys)	German (Macintosh, no dead keys)	keyboards/xkb_de__mac_nodeadkeys.json	base/qwertz-keys.json	182	
+xkb:de(neo)	German (Neo 2)	keyboards/xkb_de__neo.json	base/qwerty-keys.json	1181	
+xkb:de(neo_qwerty)	German (Neo, QWERTY)	keyboards/xkb_de__neo_qwerty.json	base/qwerty-keys.json	1181	
+xkb:de(neo_qwertz)	German (Neo, QWERTZ)	keyboards/xkb_de__neo_qwertz.json	base/qwertz-keys.json	1181	
+xkb:de(nodeadkeys)	German (no dead keys)	keyboards/xkb_de__nodeadkeys.json	base/qwertz-keys.json	179	
+xkb:de(noted)	German (Noted)	keyboards/xkb_de__noted.json	base/qwerty-keys.json	1181	
+xkb:de(pl)	Polish (Germany, no dead keys)	keyboards/xkb_de__pl.json	base/qwertz-keys.json	182	AE11:group1:level5
+xkb:de(qwerty)	German (QWERTY)	keyboards/xkb_de__qwerty.json	base/qwerty-keys.json	545	
+xkb:de(ro)	Romanian (Germany)	keyboards/xkb_de__ro.json	base/qwertz-keys.json	490	AE11:group1:level5
+xkb:de(ro_nodeadkeys)	Romanian (Germany, no dead keys)	keyboards/xkb_de__ro_nodeadkeys.json	base/qwertz-keys.json	182	AE11:group1:level5
+xkb:de(ru)	Russian (Germany, phonetic)	keyboards/xkb_de__ru.json	base/qwerty-keys.json	250	
+xkb:de(ru-recom)	Russian (Germany, recommended)	keyboards/xkb_de__ru-recom.json	base/qwerty-keys.json	208	AE11:group1:level5
+xkb:de(ru-translit)	Russian (Germany, transliteration)	keyboards/xkb_de__ru-translit.json	base/qwerty-keys.json	208	AE11:group1:level5
+xkb:de(sun_type6)	German (Sun Type 6/7)	keyboards/xkb_de__sun_type6.json	base/qwertz-keys.json	854	
+xkb:de(tr)	Turkish (Germany)	keyboards/xkb_de__tr.json	base/qwertz-keys.json	537	AE11:group1:level5
+xkb:de(us)	German (US)	keyboards/xkb_de__us.json	base/qwerty-keys.json	898	
+xkb:dk(dvorak)	Danish (Dvorak)	keyboards/xkb_dk__dvorak.json	base/qwerty-keys.json	374	
+xkb:dk(mac)	Danish (Macintosh)	keyboards/xkb_dk__mac.json	base/qwerty-keys.json	578	
+xkb:dk(mac_nodeadkeys)	Danish (Macintosh, no dead keys)	keyboards/xkb_dk__mac_nodeadkeys.json	base/qwerty-keys.json	526	
+xkb:dk(nodeadkeys)	Danish (no dead keys)	keyboards/xkb_dk__nodeadkeys.json	base/qwerty-keys.json	171	
+xkb:dk(sun_type6)	Danish (Sun Type 6/7)	keyboards/xkb_dk__sun_type6.json	base/qwerty-keys.json	877	
+xkb:dk(winkeys)	Danish (Windows)	keyboards/xkb_dk__winkeys.json	keyboards/xkb_dk.json	620	
+xkb:dz(ar)	Arabic (Algeria)	keyboards/xkb_ma.json	base/qwerty-keys.json	130	
+xkb:dz(azerty-deadkeys)	Kabyle (AZERTY, with dead keys)	keyboards/xkb_dz__azerty-deadkeys.json	base/azerty-keys.json	614	
+xkb:dz(ber)	Berber (Algeria, Tifinagh)	keyboards/xkb_dz__ber.json	base/qwerty-keys.json	166	
+xkb:dz(qwerty-gb-deadkeys)	Kabyle (QWERTY, UK, with dead keys)	keyboards/xkb_dz__qwerty-gb-deadkeys.json	base/qwerty-keys.json	675	
+xkb:dz(qwerty-us-deadkeys)	Kabyle (QWERTY, US, with dead keys)	keyboards/xkb_dz__qwerty-us-deadkeys.json	base/qwerty-keys.json	665	
+xkb:ee(dvorak)	Estonian (Dvorak)	keyboards/xkb_ee__dvorak.json	base/qwerty-keys.json	447	
+xkb:ee(nodeadkeys)	Estonian (no dead keys)	keyboards/xkb_ee__nodeadkeys.json	base/qwerty-keys.json	181	
+xkb:ee(sun_type6)	Estonian (Sun Type 6/7)	keyboards/xkb_ee__sun_type6.json	base/qwerty-keys.json	903	
+xkb:ee(us)	Estonian (US)	keyboards/xkb_ee__us.json	base/qwerty-keys.json	112	
+xkb:eg(cop)	Coptic	keyboards/xkb_eg__cop.json	base/qwerty-keys.json	102	LSGT:group1:level3,LSGT:group1:level4,AE11:group1:level3,AE12:group1:level3,AE12:group1:level4
+xkb:epo(legacy)	Esperanto (legacy)	keyboards/xkb_epo__legacy.json	base/qwerty-keys.json	108	
+xkb:es(ast)	Asturian (Spain, with bottom-dot H and L)	keyboards/xkb_es__ast.json	base/qwerty-keys.json	688	
+xkb:es(cat)	Catalan (Spain, with middle-dot L)	keyboards/xkb_es__cat.json	base/qwerty-keys.json	690	
+xkb:es(deadtilde)	Spanish (dead tilde)	keyboards/xkb_es__deadtilde.json	keyboards/xkb_es.json	692	
+xkb:es(dvorak)	Spanish (Dvorak)	keyboards/xkb_es__dvorak.json	base/qwerty-keys.json	545	
+xkb:es(nodeadkeys)	Spanish (no dead keys)	keyboards/xkb_es__nodeadkeys.json	base/qwerty-keys.json	173	
+xkb:es(sun_type6)	Spanish (Sun Type 6/7)	keyboards/xkb_es__sun_type6.json	base/qwerty-keys.json	854	
+xkb:es(winkeys)	Spanish (Windows)	keyboards/xkb_es__winkeys.json	base/qwerty-keys.json	691	
+xkb:fi(classic)	Finnish (classic)	keyboards/xkb_fi__classic.json	base/qwerty-keys.json	602	
+xkb:fi(das)	Finnish (DAS)	keyboards/xkb_fi__das.json	base/qwerty-keys.json	393	
+xkb:fi(fidvorak)	Finnish (Dvorak)	keyboards/xkb_fi__fidvorak.json	base/qwerty-keys.json	447	
+xkb:fi(mac)	Finnish (Macintosh)	keyboards/xkb_fi__mac.json	base/qwerty-keys.json	417	
+xkb:fi(nodeadkeys)	Finnish (classic, no dead keys)	keyboards/xkb_fi__nodeadkeys.json	base/qwerty-keys.json	207	
+xkb:fi(smi)	Northern Saami (Finland)	keyboards/xkb_fi__smi.json	base/qwerty-keys.json	402	
+xkb:fi(sun_type6)	Finnish (Sun Type 6/7)	keyboards/xkb_fi__sun_type6.json	base/qwerty-keys.json	854	
+xkb:fi(winkeys)	Finnish (Windows)	keyboards/xkb_fi__winkeys.json	base/qwerty-keys.json	805	
+xkb:fo(nodeadkeys)	Faroese (no dead keys)	keyboards/xkb_fo__nodeadkeys.json	base/qwerty-keys.json	169	
+xkb:fr(afnor)	French (AZERTY, AFNOR)	keyboards/xkb_fr__afnor.json	base/azerty-keys.json	808	AE07:group1:level5,AE09:group1:level5,AD01:group1:level5,AD01:group1:level6,AD03:group1:level5,AD03:group1:level6,AD05:group1:level5,AD05:group1:level6,AD08:group1:level5,AD08:group1:level6,AD09:group1:level5,AD09:group1:level6,AC02:group1:level5,AC03:group1:level5,AC03:group1:level6,AC05:group1:level5,AC05:group1:level6,AC07:group1:level5,AC07:group1:level6
+xkb:fr(azerty)	French (AZERTY)	keyboards/xkb_fr__azerty.json	base/azerty-keys.json	175	
+xkb:fr(bepo)	French (BEPO)	keyboards/xkb_fr__bepo.json	base/qwerty-keys.json	855	
+xkb:fr(bepo_afnor)	French (BEPO, AFNOR)	keyboards/xkb_fr__bepo_afnor.json	base/qwerty-keys.json	827	
+xkb:fr(bepo_latin9)	French (BEPO, Latin-9 only)	keyboards/xkb_fr__bepo_latin9.json	base/qwerty-keys.json	768	
+xkb:fr(bre)	Breton (France)	keyboards/xkb_fr__bre.json	base/qwerty-keys.json	525	
+xkb:fr(dvorak)	French (Dvorak)	keyboards/xkb_fr__dvorak.json	base/qwerty-keys.json	162	LSGT:group1:level3,LSGT:group1:level4,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE08:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD08:group1:level4,AD09:group1:level3,AC01:group1:level3,AC01:group1:level4,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level4,AC07:group1:level3,AC09:group1:level3,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB03:group1:level3,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB07:group1:level3,AB09:group1:level3
+xkb:fr(ergol)	French (Ergo‑L)	keyboards/xkb_fr__ergol.json	base/qwerty-keys.json	566	SPCE:group1:level5,SPCE:group1:level6,AE01:group1:level5,AE01:group1:level6,AE02:group1:level5,AE02:group1:level6,AE03:group1:level5,AE03:group1:level6,AE04:group1:level5,AE08:group1:level5,AE09:group1:level5,AE10:group1:level5,AD01:group1:level5,AD01:group1:level6,AD02:group1:level5,AD02:group1:level6,AD03:group1:level5,AD03:group1:level6,AD04:group1:level5,AD04:group1:level6,AD07:group1:level5,AD09:group1:level5,AD09:group1:level6,AD10:group1:level5,AD10:group1:level6,AC01:group1:level5,AC01:group1:level6,AC02:group1:level5,AC02:group1:level6,AC03:group1:level5,AC03:group1:level6,AC04:group1:level5,AC04:group1:level6,AC05:group1:level5,AC05:group1:level6,AC08:group1:level5,AC08:group1:level6,AC09:group1:level5,AC09:group1:level6,AC10:group1:level5,AC10:group1:level6,AB01:group1:level5,AB01:group1:level6,AB02:group1:level5,AB02:group1:level6,AB03:group1:level5,AB03:group1:level6,AB05:group1:level5,AB06:group1:level5,AB08:group1:level5,AB09:group1:level5,AB09:group1:level6
+xkb:fr(ergol_iso)	French (Ergo‑L, ISO variant)	keyboards/xkb_fr__ergol_iso.json	base/qwerty-keys.json	566	LSGT:group1:level5,LSGT:group1:level6,SPCE:group1:level5,SPCE:group1:level6,AE01:group1:level5,AE01:group1:level6,AE02:group1:level5,AE02:group1:level6,AE03:group1:level5,AE03:group1:level6,AE04:group1:level5,AE08:group1:level5,AE09:group1:level5,AE10:group1:level5,AD01:group1:level5,AD01:group1:level6,AD02:group1:level5,AD02:group1:level6,AD03:group1:level5,AD03:group1:level6,AD04:group1:level5,AD04:group1:level6,AD07:group1:level5,AD09:group1:level5,AD09:group1:level6,AD10:group1:level5,AD10:group1:level6,AC01:group1:level5,AC01:group1:level6,AC02:group1:level5,AC02:group1:level6,AC03:group1:level5,AC03:group1:level6,AC04:group1:level5,AC04:group1:level6,AC05:group1:level5,AC05:group1:level6,AC08:group1:level5,AC08:group1:level6,AC09:group1:level5,AC09:group1:level6,AC10:group1:level5,AC10:group1:level6,AB01:group1:level5,AB01:group1:level6,AB02:group1:level5,AB02:group1:level6,AB04:group1:level5,AB06:group1:level5,AB08:group1:level5,AB09:group1:level5,AB09:group1:level6
+xkb:fr(geo)	Georgian (France, AZERTY Tskapo)	keyboards/xkb_fr__geo.json	base/qwerty-keys.json	105	
+xkb:fr(latin9)	French (legacy, alt.)	keyboards/xkb_fr__latin9.json	base/azerty-keys.json	387	
+xkb:fr(latin9_nodeadkeys)	French (legacy, alt., no dead keys)	keyboards/xkb_fr__latin9_nodeadkeys.json	base/azerty-keys.json	225	
+xkb:fr(mac)	French (Macintosh)	keyboards/xkb_fr__mac.json	base/azerty-keys.json	348	
+xkb:fr(nodeadkeys)	French (no dead keys)	keyboards/xkb_fr__nodeadkeys.json	base/azerty-keys.json	176	
+xkb:fr(oci)	Occitan	keyboards/xkb_fr__oci.json	base/azerty-keys.json	448	
+xkb:fr(oss)	French (alt.)	keyboards/xkb_fr__oss.json	base/azerty-keys.json	514	
+xkb:fr(oss_latin9)	French (alt., Latin-9 only)	keyboards/xkb_fr__oss_latin9.json	base/azerty-keys.json	403	
+xkb:fr(oss_nodeadkeys)	French (alt., no dead keys)	keyboards/xkb_fr__oss_nodeadkeys.json	base/azerty-keys.json	205	
+xkb:fr(sun_type6)	French (Sun Type 6/7)	keyboards/xkb_fr__sun_type6.json	base/azerty-keys.json	851	
+xkb:fr(us)	French (US)	keyboards/xkb_fr__us.json	base/qwerty-keys.json	203	
+xkb:fr(us-alt)	French (US with dead keys, alt.)	keyboards/xkb_fr__us-alt.json	base/qwerty-keys.json	202	
+xkb:fr(us-azerty)	French (US, AZERTY)	keyboards/xkb_fr__us-azerty.json	base/azerty-keys.json	202	
+xkb:gb(colemak)	English (UK, Colemak)	keyboards/xkb_gb__colemak.json	base/qwerty-keys.json	503	
+xkb:gb(colemak_dh)	English (UK, Colemak-DH)	keyboards/xkb_gb__colemak_dh.json	base/qwerty-keys.json	503	
+xkb:gb(dvorak)	English (UK, Dvorak)	keyboards/xkb_gb__dvorak.json	base/qwerty-keys.json	488	
+xkb:gb(dvorakukp)	English (UK, Dvorak, with UK punctuation)	keyboards/xkb_gb__dvorakukp.json	base/qwerty-keys.json	488	
+xkb:gb(extd)	English (UK, extended, Windows)	keyboards/xkb_gb__extd.json	base/qwerty-keys.json	552	
+xkb:gb(gla)	Scottish Gaelic	keyboards/xkb_gb__gla.json	base/qwerty-keys.json	681	
+xkb:gb(intl)	English (UK, intl., with dead keys)	keyboards/xkb_gb__intl.json	base/qwerty-keys.json	613	
+xkb:gb(mac)	English (UK, Macintosh)	keyboards/xkb_gb__mac.json	keyboards/xkb_gb.json	694	
+xkb:gb(mac_intl)	English (UK, Macintosh, intl.)	keyboards/xkb_gb__mac_intl.json	base/qwerty-keys.json	613	
+xkb:gb(pl)	Polish (British keyboard)	keyboards/xkb_gb__pl.json	base/qwerty-keys.json	676	
+xkb:gb(sun_type6)	English (UK, Sun Type 6/7)	keyboards/xkb_gb__sun_type6.json	base/qwerty-keys.json	850	
+xkb:ge(ergonomic)	Georgian (ergonomic)	keyboards/xkb_ge__ergonomic.json	base/qwerty-keys.json	119	
+xkb:ge(mess)	Georgian (MESS)	keyboards/xkb_ge__mess.json	base/qwerty-keys.json	125	
+xkb:ge(os)	Ossetian (Georgia)	keyboards/xkb_ge__os.json	base/qwerty-keys.json	96	LSGT:group1:level4,AC07:group1:level3,AC07:group1:level4
+xkb:ge(ru)	Russian (Georgia)	keyboards/xkb_ge__ru.json	base/qwerty-keys.json	98	LSGT:group1:level4
+xkb:gh(akan)	Akan	keyboards/xkb_gh__akan.json	base/qwerty-keys.json	103	
+xkb:gh(avn)	Avatime	keyboards/xkb_gh__avn.json	base/qwerty-keys.json	113	
+xkb:gh(ewe)	Ewe	keyboards/xkb_gh__ewe.json	base/qwerty-keys.json	111	
+xkb:gh(fula)	Fula	keyboards/xkb_gh__fula.json	base/qwerty-keys.json	120	
+xkb:gh(ga)	Ga	keyboards/xkb_gh__ga.json	base/qwerty-keys.json	105	
+xkb:gh(generic)	English (Ghana, multilingual)	keyboards/xkb_gh__generic.json	keyboards/xkb_gh.json	115	
+xkb:gh(gillbt)	English (Ghana, GILLBT)	keyboards/xkb_gh__gillbt.json	base/qwerty-keys.json	129	
+xkb:gh(hausa)	Hausa (Ghana)	keyboards/xkb_gh__fula.json	base/qwerty-keys.json	120	
+xkb:gr(colemak)	Greek (Colemak)	keyboards/xkb_gr__colemak.json	base/qwerty-keys.json	388	
+xkb:gr(nodeadkeys)	Greek (no dead keys)	keyboards/xkb_gr__nodeadkeys.json	base/qwerty-keys.json	95	LSGT:group1:level4
+xkb:gr(polytonic)	Greek (polytonic)	keyboards/xkb_gr__polytonic.json	base/qwerty-keys.json	381	
+xkb:gr(simple)	Greek (simple)	keyboards/xkb_gr__simple.json	base/qwerty-keys.json	119	LSGT:group1:level4
+xkb:gr(sun_type6)	Greek (Sun Type 6/7)	keyboards/xkb_gr__sun_type6.json	base/qwerty-keys.json	479	
+xkb:hr(alternatequotes)	Croatian (with guillemets)	keyboards/xkb_ba__alternatequotes.json	base/qwertz-keys.json	612	
+xkb:hr(unicode)	Croatian (with Croatian digraphs)	keyboards/xkb_ba__unicode.json	base/qwerty-keys.json	577	
+xkb:hr(unicodeus)	Croatian (US, with Croatian digraphs)	keyboards/xkb_ba__unicodeus.json	base/qwerty-keys.json	577	
+xkb:hr(us)	Croatian (US)	keyboards/xkb_hr__us.json	base/qwerty-keys.json	111	
+xkb:hu(101_qwerty_comma_dead)	Hungarian (QWERTY, 101-key, comma, dead keys)	keyboards/xkb_hu__101_qwerty_comma_dead.json	base/qwerty-keys.json	529	
+xkb:hu(101_qwerty_comma_nodead)	Hungarian (QWERTY, 101-key, comma, no dead keys)	keyboards/xkb_hu__101_qwerty_comma_nodead.json	base/qwerty-keys.json	274	
+xkb:hu(101_qwerty_dot_dead)	Hungarian (QWERTY, 101-key, dot, dead keys)	keyboards/xkb_hu__101_qwerty_dot_dead.json	base/qwerty-keys.json	529	
+xkb:hu(101_qwerty_dot_nodead)	Hungarian (QWERTY, 101-key, dot, no dead keys)	keyboards/xkb_hu__101_qwerty_dot_nodead.json	base/qwerty-keys.json	274	
+xkb:hu(101_qwertz_comma_dead)	Hungarian (QWERTZ, 101-key, comma, dead keys)	keyboards/xkb_hu__101_qwertz_comma_dead.json	base/qwertz-keys.json	529	
+xkb:hu(101_qwertz_comma_nodead)	Hungarian (QWERTZ, 101-key, comma, no dead keys)	keyboards/xkb_hu__101_qwertz_comma_nodead.json	base/qwertz-keys.json	274	
+xkb:hu(101_qwertz_dot_dead)	Hungarian (QWERTZ, 101-key, dot, dead keys)	keyboards/xkb_hu__101_qwertz_dot_dead.json	base/qwertz-keys.json	529	
+xkb:hu(101_qwertz_dot_nodead)	Hungarian (QWERTZ, 101-key, dot, no dead keys)	keyboards/xkb_hu__101_qwertz_dot_nodead.json	base/qwertz-keys.json	274	
+xkb:hu(102_qwerty_comma_dead)	Hungarian (QWERTY, 102-key, comma, dead keys)	keyboards/xkb_hu__102_qwerty_comma_dead.json	base/qwerty-keys.json	529	
+xkb:hu(102_qwerty_comma_nodead)	Hungarian (QWERTY, 102-key, comma, no dead keys)	keyboards/xkb_hu__102_qwerty_comma_nodead.json	base/qwerty-keys.json	274	
+xkb:hu(102_qwerty_dot_dead)	Hungarian (QWERTY, 102-key, dot, dead keys)	keyboards/xkb_hu__102_qwerty_dot_dead.json	base/qwerty-keys.json	529	
+xkb:hu(102_qwerty_dot_nodead)	Hungarian (QWERTY, 102-key, dot, no dead keys)	keyboards/xkb_hu__102_qwerty_dot_nodead.json	base/qwerty-keys.json	274	
+xkb:hu(102_qwertz_comma_dead)	Hungarian (QWERTZ, 102-key, comma, dead keys)	keyboards/xkb_hu.json	base/qwertz-keys.json	529	
+xkb:hu(102_qwertz_comma_nodead)	Hungarian (QWERTZ, 102-key, comma, no dead keys)	keyboards/xkb_hu__102_qwertz_comma_nodead.json	base/qwertz-keys.json	274	
+xkb:hu(102_qwertz_dot_dead)	Hungarian (QWERTZ, 102-key, dot, dead keys)	keyboards/xkb_hu__102_qwertz_dot_dead.json	keyboards/xkb_hu.json	529	
+xkb:hu(102_qwertz_dot_nodead)	Hungarian (QWERTZ, 102-key, dot, no dead keys)	keyboards/xkb_hu__102_qwertz_dot_nodead.json	base/qwertz-keys.json	274	
+xkb:hu(nodeadkeys)	Hungarian (no dead keys)	keyboards/xkb_hu__102_qwertz_comma_nodead.json	base/qwertz-keys.json	274	
+xkb:hu(oldhun_sk_sh)	Old Hungarian (Carpathian Highlands, S as Sh)	keyboards/xkb_hu__oldhun_sk_sh.json	base/qwerty-keys.json	153	
+xkb:hu(oldhun_sk_sz)	Old Hungarian (Carpathian Highlands, S as Sz)	keyboards/xkb_hu__oldhun_sk_sz.json	base/qwerty-keys.json	153	
+xkb:hu(oldhunlig)	Old Hungarian (for ligatures)	keyboards/xkb_hu__oldhunlig.json	base/qwerty-keys.json	155	
+xkb:hu(qwerty)	Hungarian (QWERTY)	keyboards/xkb_hu__101_qwerty_comma_dead.json	base/qwerty-keys.json	529	
+xkb:hu(standard)	Hungarian (standard)	keyboards/xkb_hu.json	base/qwertz-keys.json	529	
+xkb:hu(us)	Hungarian (US)	keyboards/xkb_hu__us.json	base/qwerty-keys.json	115	
+xkb:id(javanese)	Javanese	keyboards/xkb_id__javanese.json	base/qwerty-keys.json	106	
+xkb:id(melayu-phonetic)	Indonesian (Arab Melayu, phonetic)	keyboards/xkb_id__melayu-phonetic.json	base/qwerty-keys.json	111	
+xkb:id(melayu-phoneticx)	Indonesian (Arab Melayu, extended phonetic)	keyboards/xkb_id__melayu-phoneticx.json	base/qwerty-keys.json	129	
+xkb:id(pegon-phonetic)	Indonesian (Arab Pegon, phonetic)	keyboards/xkb_id__pegon-phonetic.json	base/qwerty-keys.json	110	
+xkb:ie(CloGaelach)	CloGaelach	keyboards/xkb_ie__CloGaelach.json	base/qwerty-keys.json	893	
+xkb:ie(UnicodeExpert)	Irish (UnicodeExpert)	keyboards/xkb_ie__UnicodeExpert.json	base/qwerty-keys.json	932	
+xkb:ie(ogam)	Ogham	keyboards/xkb_ie__ogam.json	base/qwerty-keys.json	42	
+xkb:ie(ogam_is434)	Ogham (IS434)	keyboards/xkb_ie__ogam_is434.json	base/qwerty-keys.json	788	
+xkb:il(biblical)	Hebrew (Biblical, Tiro)	keyboards/xkb_il__biblical.json	base/qwerty-keys.json	105	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level4,AE02:group1:level4,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level4,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level4,AE10:group1:level3,AE11:group1:level3,AE11:group1:level4,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD07:group1:level3,AD11:group1:level4,AD12:group1:level4,AC06:group1:level3,AC07:group1:level3,AC09:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB03:group1:level3,AB05:group1:level3,AB10:group1:level3,AB10:group1:level4
+xkb:il(biblicalSIL)	Hebrew (Biblical, SIL phonetic)	keyboards/xkb_il__biblicalSIL.json	base/qwerty-keys.json	134	
+xkb:il(lyx)	Hebrew (lyx)	keyboards/xkb_il__lyx.json	base/qwerty-keys.json	85	LSGT:group1:level4
+xkb:il(phonetic)	Hebrew (phonetic)	keyboards/xkb_il__phonetic.json	base/qwerty-keys.json	106	
+xkb:il(si2)	Hebrew (SI-1452-2)	keyboards/xkb_il__si2.json	base/qwerty-keys.json	131	
+xkb:in(asm-kagapa)	Assamese (KaGaPa, phonetic)	keyboards/xkb_in__asm-kagapa.json	base/qwerty-keys.json	139	
+xkb:in(ben)	Bangla (India)	keyboards/xkb_in__ben.json	base/qwerty-keys.json	90	
+xkb:in(ben-kagapa)	Bangla (India, KaGaPa, phonetic)	keyboards/xkb_in__asm-kagapa.json	base/qwerty-keys.json	139	
+xkb:in(ben_baishakhi)	Bangla (India, Baishakhi)	keyboards/xkb_in__ben_baishakhi.json	base/qwerty-keys.json	112	
+xkb:in(ben_bornona)	Bangla (India, Bornona)	keyboards/xkb_in__ben_bornona.json	base/qwerty-keys.json	107	
+xkb:in(ben_gitanjali)	Bangla (India, Gitanjali)	keyboards/xkb_in__ben_gitanjali.json	base/qwerty-keys.json	94	LSGT:group1:level4
+xkb:in(ben_inscript)	Bangla (India, Baishakhi InScript)	keyboards/xkb_in__ben_inscript.json	base/qwerty-keys.json	87	LSGT:group1:level4
+xkb:in(ben_probhat)	Bangla (India, Probhat)	keyboards/xkb_bd__probhat.json	base/qwerty-keys.json	119	
+xkb:in(bolnagri)	Hindi (Bolnagri)	keyboards/xkb_in__bolnagri.json	base/qwerty-keys.json	128	
+xkb:in(eng)	English (India, with rupee)	keyboards/xkb_in__eng.json	base/qwerty-keys.json	98	
+xkb:in(guj)	Gujarati	keyboards/xkb_in__guj.json	base/qwerty-keys.json	94	
+xkb:in(guj-kagapa)	Gujarati (KaGaPa, phonetic)	keyboards/xkb_in__guj-kagapa.json	base/qwerty-keys.json	135	
+xkb:in(guru)	Punjabi (Gurmukhi)	keyboards/xkb_in__guru.json	base/qwerty-keys.json	92	
+xkb:in(hin-kagapa)	Hindi (KaGaPa, phonetic)	keyboards/xkb_in__hin-kagapa.json	base/qwerty-keys.json	154	
+xkb:in(hin-wx)	Hindi (Wx)	keyboards/xkb_in__hin-wx.json	base/qwerty-keys.json	116	
+xkb:in(iipa)	Indic IPA	keyboards/xkb_in__iipa.json	base/qwerty-keys.json	94	LSGT:group1:level4
+xkb:in(jhelum)	Punjabi (Gurmukhi Jhelum)	keyboards/xkb_in__jhelum.json	base/qwerty-keys.json	123	
+xkb:in(kan)	Kannada	keyboards/xkb_in__kan.json	base/qwerty-keys.json	92	
+xkb:in(kan-kagapa)	Kannada (KaGaPa, phonetic)	keyboards/xkb_in__kan-kagapa.json	base/qwerty-keys.json	137	
+xkb:in(mal)	Malayalam	keyboards/xkb_in__mal.json	base/qwerty-keys.json	99	
+xkb:in(mal_enhanced)	Malayalam (enhanced InScript, with rupee)	keyboards/xkb_in__mal_enhanced.json	base/qwerty-keys.json	104	
+xkb:in(mal_lalitha)	Malayalam (Lalitha)	keyboards/xkb_in__mal_lalitha.json	base/qwerty-keys.json	120	
+xkb:in(mal_poorna)	Malayalam (Poorna, extended InScript)	keyboards/xkb_in__mal_poorna.json	base/qwerty-keys.json	164	
+xkb:in(mar-kagapa)	Marathi (KaGaPa, phonetic)	keyboards/xkb_in__hin-kagapa.json	base/qwerty-keys.json	154	
+xkb:in(marathi)	Marathi (enhanced InScript)	keyboards/xkb_in__marathi.json	base/qwerty-keys.json	102	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE10:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD04:group1:level3,AD04:group1:level4,AD08:group1:level3,AD10:group1:level3,AD11:group1:level3,AD11:group1:level4,AC06:group1:level4,AC08:group1:level3,AC08:group1:level4,AC10:group1:level3,AC11:group1:level4,AB01:group1:level3,AB03:group1:level3,AB09:group1:level3,AB10:group1:level3
+xkb:in(mni)	Manipuri (Meitei)	keyboards/xkb_in__mni.json	base/qwerty-keys.json	90	LSGT:group1:level4
+xkb:in(modi-kagapa)	Modi (KaGaPa, phonetic)	keyboards/xkb_in__modi-kagapa.json	base/qwerty-keys.json	129	
+xkb:in(ori)	Oriya	keyboards/xkb_in__ori.json	base/qwerty-keys.json	88	
+xkb:in(ori-bolnagri)	Oriya (Bolnagri)	keyboards/xkb_in__ori-bolnagri.json	base/qwerty-keys.json	130	
+xkb:in(ori-wx)	Oriya (Wx)	keyboards/xkb_in__ori-wx.json	base/qwerty-keys.json	127	
+xkb:in(san-kagapa)	Sanskrit (KaGaPa, phonetic)	keyboards/xkb_in__hin-kagapa.json	base/qwerty-keys.json	154	
+xkb:in(san-misc)	Sanskrit symbols	keyboards/xkb_in__san-misc.json	base/qwerty-keys.json	94	
+xkb:in(sat)	Santali (Ol Chiki)	keyboards/xkb_in__sat.json	base/qwerty-keys.json	80	
+xkb:in(tam)	Tamil (InScript, with Arabic numerals)	keyboards/xkb_in__tam.json	base/qwerty-keys.json	77	LSGT:group1:level4
+xkb:in(tam_tamilnumbers)	Tamil (InScript, with Tamil numerals)	keyboards/xkb_in__tam_tamilnumbers.json	base/qwerty-keys.json	79	LSGT:group1:level4
+xkb:in(tamilnet)	Tamil (TamilNet '99)	keyboards/xkb_in__tamilnet.json	base/qwerty-keys.json	82	LSGT:group1:level4
+xkb:in(tamilnet_TAB)	Tamil (TamilNet '99, TAB encoding)	keyboards/xkb_in__tamilnet_TAB.json	base/qwerty-keys.json	83	LSGT:group1:level4
+xkb:in(tamilnet_TSCII)	Tamil (TamilNet '99, TSCII encoding)	keyboards/xkb_in__tamilnet_TSCII.json	base/qwerty-keys.json	73	LSGT:group1:level4
+xkb:in(tamilnet_tamilnumbers)	Tamil (TamilNet '99 with Tamil numerals)	keyboards/xkb_in__tamilnet_tamilnumbers.json	base/qwerty-keys.json	82	LSGT:group1:level4
+xkb:in(tel)	Telugu	keyboards/xkb_in__tel.json	base/qwerty-keys.json	98	
+xkb:in(tel-kagapa)	Telugu (KaGaPa, phonetic)	keyboards/xkb_in__tel-kagapa.json	base/qwerty-keys.json	135	
+xkb:in(tel-sarala)	Telugu (Sarala)	keyboards/xkb_in__tel-sarala.json	base/qwerty-keys.json	141	
+xkb:in(urd-navees)	Urdu (Navees)	keyboards/xkb_in__urd-navees.json	base/qwerty-keys.json	125	
+xkb:in(urd-phonetic)	Urdu (phonetic)	keyboards/xkb_pk.json	base/qwerty-keys.json	97	
+xkb:in(urd-phonetic3)	Urdu (alt. phonetic)	keyboards/xkb_in__urd-phonetic3.json	base/qwerty-keys.json	118	
+xkb:in(urd-winkeys)	Urdu (Windows)	keyboards/xkb_in__urd-winkeys.json	base/qwerty-keys.json	95	
+xkb:iq(ku)	Kurdish (Iraq, Latin Q)	keyboards/xkb_iq__ku.json	base/qwerty-keys.json	419	
+xkb:iq(ku_alt)	Kurdish (Iraq, Latin Alt-Q)	keyboards/xkb_iq__ku_alt.json	base/qwerty-keys.json	657	
+xkb:iq(ku_ara)	Kurdish (Iraq, Arabic-Latin)	keyboards/xkb_iq__ku_ara.json	base/qwerty-keys.json	174	
+xkb:iq(ku_f)	Kurdish (Iraq, F)	keyboards/xkb_iq__ku_f.json	base/qwerty-keys.json	366	
+xkb:ir(azb)	Azerbaijani (Iran)	keyboards/xkb_ir__azb.json	base/qwerty-keys.json	133	
+xkb:ir(ku)	Kurdish (Iran, Latin Q)	keyboards/xkb_ir__ku.json	base/qwerty-keys.json	419	
+xkb:ir(ku_alt)	Kurdish (Iran, Latin Alt-Q)	keyboards/xkb_ir__ku_alt.json	base/qwerty-keys.json	657	
+xkb:ir(ku_ara)	Kurdish (Iran, Arabic-Latin)	keyboards/xkb_ir__ku_ara.json	base/qwerty-keys.json	174	
+xkb:ir(ku_f)	Kurdish (Iran, F)	keyboards/xkb_ir__ku_f.json	base/qwerty-keys.json	366	
+xkb:ir(pes_keypad)	Persian (with Persian keypad)	keyboards/xkb_ir__pes_keypad.json	keyboards/xkb_ir.json	132	
+xkb:ir(winkeys)	Persian (Windows)	keyboards/xkb_ir__winkeys.json	base/qwerty-keys.json	107	
+xkb:is(dvorak)	Icelandic (Dvorak)	keyboards/xkb_is__dvorak.json	base/qwerty-keys.json	457	
+xkb:is(mac)	Icelandic (Macintosh)	keyboards/xkb_is__mac.json	base/qwerty-keys.json	322	
+xkb:is(mac_legacy)	Icelandic (Macintosh, legacy)	keyboards/xkb_is__mac_legacy.json	base/qwerty-keys.json	358	
+xkb:it(dvorak)	Italian (Dvorak)	keyboards/xkb_it__dvorak.json	base/qwerty-keys.json	527	
+xkb:it(fur)	Friulian (Italy)	keyboards/xkb_it__fur.json	base/qwerty-keys.json	461	
+xkb:it(geo)	Georgian (Italy)	keyboards/xkb_it__geo.json	base/qwerty-keys.json	274	
+xkb:it(ibm)	Italian (IBM 142)	keyboards/xkb_it__ibm.json	base/qwerty-keys.json	108	
+xkb:it(lld)	Ladin (Italian keyboard)	keyboards/xkb_it__lld.json	base/qwerty-keys.json	514	
+xkb:it(lldde)	Ladin (German keyboard)	keyboards/xkb_it__lldde.json	base/qwertz-keys.json	545	
+xkb:it(mac)	Italian (Macintosh)	keyboards/xkb_it__mac.json	base/qwerty-keys.json	161	
+xkb:it(nodeadkeys)	Italian (no dead keys)	keyboards/xkb_it__nodeadkeys.json	base/qwerty-keys.json	176	
+xkb:it(scn)	Sicilian	keyboards/xkb_it__scn.json	base/qwerty-keys.json	507	
+xkb:it(sun_type6)	Italian (Sun Type 6/7)	keyboards/xkb_it__sun_type6.json	base/qwerty-keys.json	851	
+xkb:it(us)	Italian (US)	keyboards/xkb_it__us.json	base/qwerty-keys.json	320	
+xkb:it(winkeys)	Italian (Windows)	keyboards/xkb_it__winkeys.json	base/qwerty-keys.json	526	
+xkb:jp(OADG109A)	Japanese (OADG 109A)	keyboards/xkb_jp__OADG109A.json	keyboards/xkb_jp.json	97	LSGT:group1:level4
+xkb:jp(dvorak)	Japanese (Dvorak)	keyboards/xkb_jp__dvorak.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:jp(kana)	Japanese (Kana)	keyboards/xkb_jp__kana.json	base/qwerty-keys.json	75	LSGT:group1:level3,LSGT:group1:level4
+xkb:jp(mac)	Japanese (Macintosh)	keyboards/xkb_jp__mac.json	base/qwerty-keys.json	75	LSGT:group1:level3,LSGT:group1:level4
+xkb:jp(sun_type6)	Japanese (Sun Type 6)	keyboards/xkb_jp__sun_type6.json	keyboards/xkb_jp.json	850	LSGT:group1:level4
+xkb:jp(sun_type7)	Japanese (Sun Type 7, PC-compatible)	keyboards/xkb_jp.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:jp(sun_type7_suncompat)	Japanese (Sun Type 7, Sun-compatible)	keyboards/xkb_jp__sun_type7_suncompat.json	keyboards/xkb_jp.json	850	LSGT:group1:level4,AE10:group1:level3,AE10:group1:level4
+xkb:ke(kik)	Kikuyu	keyboards/xkb_ke__kik.json	base/qwerty-keys.json	614	
+xkb:kg(phonetic)	Kyrgyz (phonetic)	keyboards/xkb_kg__phonetic.json	base/qwerty-keys.json	102	LSGT:group1:level3,LSGT:group1:level4
+xkb:kr(kr104)	Korean (101/104-key compatible)	keyboards/xkb_kr__kr104.json	keyboards/xkb_kr.json	96	LSGT:group1:level4
+xkb:kr(sun_type6)	Korean (Sun Type 6/7)	keyboards/xkb_kr__sun_type6.json	keyboards/xkb_kr.json	96	BKSL:group1:level3,LSGT:group1:level4
+xkb:kz(ext)	Kazakh (extended)	keyboards/xkb_kz__ext.json	keyboards/xkb_kz.json	130	
+xkb:kz(kazrus)	Kazakh (with Russian)	keyboards/xkb_kz__kazrus.json	base/qwerty-keys.json	98	BKSL:group1:level3,LSGT:group1:level3,LSGT:group1:level4,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE06:group1:level3,AE07:group1:level3,AD02:group1:level3,AD02:group1:level4,AD09:group1:level3,AD09:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC03:group1:level3,AC03:group1:level4,AC11:group1:level3,AC11:group1:level4,AB02:group1:level3,AB02:group1:level4,AB07:group1:level3,AB07:group1:level4
+xkb:kz(latin)	Kazakh (Latin)	keyboards/xkb_kz__latin.json	base/qwerty-keys.json	89	LSGT:group1:level3,LSGT:group1:level4
+xkb:kz(ruskaz)	Russian (Kazakhstan, with Kazakh)	keyboards/xkb_kz__ruskaz.json	base/qwerty-keys.json	98	BKSL:group1:level3,LSGT:group1:level3,LSGT:group1:level4,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE06:group1:level3,AE07:group1:level3,AD01:group1:level3,AD01:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD11:group1:level3,AD11:group1:level4,AC04:group1:level3,AC04:group1:level4,AC07:group1:level3,AC07:group1:level4,AB05:group1:level3,AB05:group1:level4
+xkb:la(stea)	Lao (STEA)	keyboards/xkb_la__stea.json	base/qwerty-keys.json	102	
+xkb:latam(colemak)	Spanish (Latin American, Colemak)	keyboards/xkb_latam__colemak.json	base/qwerty-keys.json	382	
+xkb:latam(deadtilde)	Spanish (Latin American, dead tilde)	keyboards/xkb_latam__deadtilde.json	keyboards/xkb_latam.json	613	
+xkb:latam(dvorak)	Spanish (Latin American, Dvorak)	keyboards/xkb_latam__dvorak.json	base/qwerty-keys.json	368	
+xkb:latam(nodeadkeys)	Spanish (Latin American, no dead keys)	keyboards/xkb_latam__nodeadkeys.json	base/qwerty-keys.json	171	
+xkb:lk(tam_TAB)	Tamil (Sri Lanka, TamilNet '99, TAB encoding)	keyboards/xkb_in__tamilnet_TAB.json	base/qwerty-keys.json	83	LSGT:group1:level4
+xkb:lk(tam_unicode)	Tamil (Sri Lanka, TamilNet '99)	keyboards/xkb_in__tamilnet.json	base/qwerty-keys.json	82	LSGT:group1:level4
+xkb:lk(us)	Sinhala (US)	keyboards/xkb_lk__us.json	base/qwerty-keys.json	179	
+xkb:lt(ibm)	Lithuanian (IBM)	keyboards/xkb_lt__ibm.json	base/qwerty-keys.json	297	
+xkb:lt(lekp)	Lithuanian (LEKP)	keyboards/xkb_lt__lekp.json	base/qwerty-keys.json	128	
+xkb:lt(lekpa)	Lithuanian (LEKPa)	keyboards/xkb_lt__lekpa.json	base/qwerty-keys.json	128	
+xkb:lt(ratise)	Lithuanian (Ratise)	keyboards/xkb_lt__ratise.json	base/qwerty-keys.json	912	
+xkb:lt(sgs)	Samogitian	keyboards/xkb_lt__sgs.json	base/qwerty-keys.json	635	
+xkb:lt(std)	Lithuanian (standard)	keyboards/xkb_lt__std.json	base/qwerty-keys.json	431	
+xkb:lt(sun_type6)	Lithuanian (Sun Type 6/7)	keyboards/xkb_lt__sun_type6.json	base/qwerty-keys.json	905	
+xkb:lt(us)	Lithuanian (US)	keyboards/xkb_lt__us.json	keyboards/xkb_lt.json	654	
+xkb:lt(us_dvorak)	Lithuanian (Dvorak)	keyboards/xkb_lt__us_dvorak.json	base/qwerty-keys.json	368	
+xkb:lv(adapted)	Latvian (adapted)	keyboards/xkb_lv__adapted.json	base/qwerty-keys.json	143	
+xkb:lv(apostrophe)	Latvian (apostrophe)	keyboards/xkb_lv__apostrophe.json	base/qwerty-keys.json	152	
+xkb:lv(apostrophe-deadquotes)	Latvian (apostrophe, dead quotes)	keyboards/xkb_lv__apostrophe-deadquotes.json	base/qwerty-keys.json	152	
+xkb:lv(apostrophecolemak)	Latvian (Colemak, with apostrophe)	keyboards/xkb_lv__apostrophecolemak.json	base/qwerty-keys.json	152	
+xkb:lv(colemak)	Latvian (Colemak)	keyboards/xkb_lv__colemak.json	base/qwerty-keys.json	153	
+xkb:lv(dvorak)	Latvian (Dvorak)	keyboards/xkb_lv__dvorak.json	base/qwerty-keys.json	151	
+xkb:lv(dvorakprogr)	Latvian (programmer Dvorak)	keyboards/xkb_lv__dvorakprogr.json	base/qwerty-keys.json	152	
+xkb:lv(ergonomic)	Latvian (ergonomic, ŪGJRMV)	keyboards/xkb_lv__ergonomic.json	base/qwerty-keys.json	139	
+xkb:lv(fkey)	Latvian (F)	keyboards/xkb_lv__fkey.json	keyboards/xkb_lv.json	153	
+xkb:lv(minuskeydvorak)	Latvian (Dvorak, with minus)	keyboards/xkb_lv__minuskeydvorak.json	base/qwerty-keys.json	150	
+xkb:lv(minuskeydvorakprogr)	Latvian (programmer Dvorak, with minus)	keyboards/xkb_lv__minuskeydvorakprogr.json	base/qwerty-keys.json	151	
+xkb:lv(modern)	Latvian (Modern Latin)	keyboards/xkb_lv__modern.json	base/qwerty-keys.json	152	
+xkb:lv(modern-cyr)	Latvian (Modern Cyrillic)	keyboards/xkb_lv__modern-cyr.json	base/qwerty-keys.json	167	
+xkb:lv(sun_type6)	Latvian (Sun Type 6/7)	keyboards/xkb_lv__sun_type6.json	keyboards/xkb_lv.json	854	
+xkb:lv(tilde)	Latvian (tilde)	keyboards/xkb_lv__tilde.json	keyboards/xkb_lv.json	153	
+xkb:lv(ykeydvorak)	Latvian (Dvorak, with Y)	keyboards/xkb_lv__ykeydvorak.json	base/qwerty-keys.json	151	
+xkb:lv(ykeydvorakprogr)	Latvian (programmer Dvorak, with Y)	keyboards/xkb_lv__ykeydvorakprogr.json	base/qwerty-keys.json	152	
+xkb:ma(french)	French (Morocco)	keyboards/xkb_cm__french.json	base/azerty-keys.json	610	
+xkb:ma(rif)	Tarifit	keyboards/xkb_ma__rif.json	base/qwerty-keys.json	112	
+xkb:ma(tifinagh)	Berber (Morocco, Tifinagh)	keyboards/xkb_ma__tifinagh.json	base/qwerty-keys.json	83	
+xkb:ma(tifinagh-alt)	Berber (Morocco, Tifinagh alt.)	keyboards/xkb_ma__tifinagh-alt.json	base/qwerty-keys.json	120	
+xkb:ma(tifinagh-alt-phonetic)	Berber (Morocco, Tifinagh phonetic, alt.)	keyboards/xkb_ma__tifinagh-alt.json	base/qwerty-keys.json	120	
+xkb:ma(tifinagh-extended)	Berber (Morocco, Tifinagh extended)	keyboards/xkb_ma__tifinagh-extended.json	base/qwerty-keys.json	107	
+xkb:ma(tifinagh-extended-phonetic)	Berber (Morocco, Tifinagh extended phonetic)	keyboards/xkb_ma__tifinagh-extended.json	base/qwerty-keys.json	107	
+xkb:ma(tifinagh-phonetic)	Berber (Morocco, Tifinagh phonetic)	keyboards/xkb_ma__tifinagh-phonetic.json	base/qwerty-keys.json	83	
+xkb:md(gag)	Gagauz (Moldova)	keyboards/xkb_md__gag.json	base/qwerty-keys.json	115	
+xkb:me(cyrillic)	Montenegrin (Cyrillic)	keyboards/xkb_rs.json	base/qwerty-keys.json	225	
+xkb:me(cyrillicalternatequotes)	Montenegrin (Cyrillic, with guillemets)	keyboards/xkb_me__cyrillicalternatequotes.json	base/qwerty-keys.json	223	
+xkb:me(cyrillicyz)	Montenegrin (Cyrillic, ZE and ZHE swapped)	keyboards/xkb_me__cyrillicyz.json	base/qwerty-keys.json	225	
+xkb:me(latinalternatequotes)	Montenegrin (Latin, with guillemets)	keyboards/xkb_me__latinalternatequotes.json	base/qwertz-keys.json	609	
+xkb:me(latinunicode)	Montenegrin (Latin, Unicode)	keyboards/xkb_me__latinunicode.json	base/qwerty-keys.json	574	
+xkb:me(latinunicodeyz)	Montenegrin (Latin, Unicode, QWERTY)	keyboards/xkb_me__latinunicodeyz.json	base/qwerty-keys.json	574	
+xkb:me(latinyz)	Montenegrin (Latin, QWERTY)	keyboards/xkb_me__latinyz.json	base/qwerty-keys.json	612	
+xkb:mk(nodeadkeys)	Macedonian (no dead keys)	keyboards/xkb_mk__nodeadkeys.json	base/qwerty-keys.json	98	LSGT:group1:level3,LSGT:group1:level4
+xkb:ml(fr-oss)	French (Mali, alt.)	keyboards/xkb_ml__fr-oss.json	base/azerty-keys.json	554	
+xkb:ml(us-intl)	English (Mali, US, intl.)	keyboards/xkb_ml__us-intl.json	base/qwerty-keys.json	700	
+xkb:ml(us-mac)	English (Mali, US, Macintosh)	keyboards/xkb_ml__us-mac.json	base/qwerty-keys.json	692	
+xkb:mm(mnw)	Mon	keyboards/xkb_mm__mnw.json	base/qwerty-keys.json	100	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AE12:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB09:group1:level3,AB10:group1:level4
+xkb:mm(mnw-a1)	Mon (A1)	keyboards/xkb_mm__mnw-a1.json	base/qwerty-keys.json	100	LSGT:group1:level3,LSGT:group1:level4
+xkb:mm(shn)	Shan	keyboards/xkb_mm__shn.json	base/qwerty-keys.json	97	LSGT:group1:level4,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4
+xkb:mm(zawgyi)	Burmese (Zawgyi)	keyboards/xkb_mm__zawgyi.json	base/qwerty-keys.json	150	
+xkb:mm(zgt)	Shan (Zawgyi)	keyboards/xkb_mm__zawgyi.json	base/qwerty-keys.json	150	
+xkb:mt(alt-gb)	Maltese (UK, with AltGr overrides)	keyboards/xkb_mt__alt-gb.json	base/qwerty-keys.json	645	
+xkb:mt(alt-us)	Maltese (US, with AltGr overrides)	keyboards/xkb_mt__alt-us.json	base/qwerty-keys.json	291	
+xkb:mt(us)	Maltese (US)	keyboards/xkb_mt__us.json	base/qwerty-keys.json	513	
+xkb:my(phonetic)	Malay (Jawi, phonetic)	keyboards/xkb_my__phonetic.json	base/qwerty-keys.json	92	
+xkb:ng(hausa)	Hausa (Nigeria)	keyboards/xkb_ng__hausa.json	base/qwerty-keys.json	120	
+xkb:ng(igbo)	Igbo	keyboards/xkb_ng__igbo.json	base/qwerty-keys.json	107	
+xkb:ng(yoruba)	Yoruba	keyboards/xkb_ng__yoruba.json	base/qwerty-keys.json	105	
+xkb:nl(mac)	Dutch (Macintosh)	keyboards/xkb_nl__mac.json	base/qwerty-keys.json	693	
+xkb:nl(std)	Dutch (standard)	keyboards/xkb_nl__std.json	base/qwerty-keys.json	320	
+xkb:nl(sun_type6)	Dutch (Sun Type 6/7)	keyboards/xkb_nl__sun_type6.json	base/qwerty-keys.json	875	
+xkb:nl(us)	Dutch (US)	keyboards/xkb_nl__us.json	base/qwerty-keys.json	98	
+xkb:no(colemak)	Norwegian (Colemak)	keyboards/xkb_no__colemak.json	base/qwerty-keys.json	535	
+xkb:no(colemak_dh)	Norwegian (Colemak-DH)	keyboards/xkb_no__colemak_dh.json	base/qwerty-keys.json	547	
+xkb:no(colemak_dh_wide)	Norwegian (Colemak-DH Wide)	keyboards/xkb_no__colemak_dh_wide.json	base/qwerty-keys.json	547	
+xkb:no(dvorak)	Norwegian (Dvorak)	keyboards/xkb_no__dvorak.json	base/qwerty-keys.json	426	
+xkb:no(mac)	Norwegian (Macintosh)	keyboards/xkb_no__mac.json	base/qwerty-keys.json	162	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level4,AD02:group1:level3,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB02:group1:level3,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:no(mac_nodeadkeys)	Norwegian (Macintosh, no dead keys)	keyboards/xkb_no__mac_nodeadkeys.json	base/qwerty-keys.json	98	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level4,AD01:group1:level4,AD02:group1:level3,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC05:group1:level3,AC05:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB02:group1:level3,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:no(nodeadkeys)	Norwegian (no dead keys)	keyboards/xkb_no__nodeadkeys.json	base/qwerty-keys.json	181	
+xkb:no(smi)	Northern Saami (Norway)	keyboards/xkb_no__smi.json	base/qwerty-keys.json	402	
+xkb:no(smi_nodeadkeys)	Northern Saami (Norway, no dead keys)	keyboards/xkb_no__smi_nodeadkeys.json	base/qwerty-keys.json	303	
+xkb:no(sun_type6)	Norwegian (Sun Type 6/7)	keyboards/xkb_no__sun_type6.json	base/qwerty-keys.json	877	
+xkb:no(winkeys)	Norwegian (Windows)	keyboards/xkb_no__winkeys.json	keyboards/xkb_no.json	538	
+xkb:nz(mao)	Maori	keyboards/xkb_nz__mao.json	keyboards/xkb_au.json	934	
+xkb:ph(capewell-dvorak)	Filipino (Capewell-Dvorak, Latin)	keyboards/xkb_ph__capewell-dvorak.json	base/qwerty-keys.json	161	
+xkb:ph(capewell-dvorak-bay)	Filipino (Capewell-Dvorak, Baybayin)	keyboards/xkb_ph__capewell-dvorak-bay.json	base/qwerty-keys.json	37	
+xkb:ph(capewell-qwerf2k6)	Filipino (Capewell-QWERF 2006, Latin)	keyboards/xkb_ph__capewell-qwerf2k6.json	base/qwerty-keys.json	161	
+xkb:ph(capewell-qwerf2k6-bay)	Filipino (Capewell-QWERF 2006, Baybayin)	keyboards/xkb_ph__capewell-qwerf2k6-bay.json	base/qwerty-keys.json	37	
+xkb:ph(colemak)	Filipino (Colemak, Latin)	keyboards/xkb_ph__colemak.json	base/qwerty-keys.json	161	
+xkb:ph(colemak-bay)	Filipino (Colemak, Baybayin)	keyboards/xkb_ph__colemak-bay.json	base/qwerty-keys.json	37	
+xkb:ph(dvorak)	Filipino (Dvorak, Latin)	keyboards/xkb_ph__dvorak.json	base/qwerty-keys.json	161	
+xkb:ph(dvorak-bay)	Filipino (Dvorak, Baybayin)	keyboards/xkb_ph__dvorak-bay.json	base/qwerty-keys.json	37	
+xkb:ph(qwerty-bay)	Filipino (QWERTY, Baybayin)	keyboards/xkb_ph__qwerty-bay.json	base/qwerty-keys.json	37	
+xkb:pk(ara)	Arabic (Pakistan)	keyboards/xkb_pk__ara.json	base/qwerty-keys.json	93	
+xkb:pk(pak_urdu_phonetic)	Urdu (Pak Urdu Phonetic)	keyboards/xkb_pk__pak_urdu_phonetic.json	base/qwerty-keys.json	161	
+xkb:pk(snd)	Sindhi	keyboards/xkb_pk__snd.json	base/qwerty-keys.json	114	
+xkb:pk(urd-crulp)	Urdu (Pakistan, CRULP)	keyboards/xkb_in__urd-phonetic3.json	base/qwerty-keys.json	118	
+xkb:pk(urd-navees)	Urdu (Pakistan, Navees)	keyboards/xkb_in__urd-navees.json	base/qwerty-keys.json	125	
+xkb:pk(urd-nla)	Urdu (Pakistan, NLA)	keyboards/xkb_in__urd-winkeys.json	base/qwerty-keys.json	95	
+xkb:pl(colemak)	Polish (Colemak)	keyboards/xkb_pl__colemak.json	base/qwerty-keys.json	546	
+xkb:pl(colemak_dh)	Polish (Colemak-DH ISO)	keyboards/xkb_pl__colemak_dh.json	base/qwerty-keys.json	547	
+xkb:pl(colemak_dh_ansi)	Polish (Colemak-DH)	keyboards/xkb_pl__colemak_dh_ansi.json	base/qwerty-keys.json	546	
+xkb:pl(csb)	Kashubian	keyboards/xkb_pl__csb.json	base/qwerty-keys.json	670	
+xkb:pl(dvorak)	Polish (Dvorak)	keyboards/xkb_pl__dvorak.json	base/qwerty-keys.json	444	
+xkb:pl(dvorak_altquotes)	Polish (Dvorak, with Polish quotes on key 1)	keyboards/xkb_pl__dvorak_altquotes.json	base/qwerty-keys.json	446	
+xkb:pl(dvorak_quotes)	Polish (Dvorak, with Polish quotes on quotemark key)	keyboards/xkb_pl__dvorak_quotes.json	base/qwerty-keys.json	446	
+xkb:pl(dvp)	Polish (programmer Dvorak)	keyboards/xkb_pl__dvp.json	base/qwerty-keys.json	394	
+xkb:pl(glagolica)	Polish (Glagolica)	keyboards/xkb_pl__glagolica.json	base/qwerty-keys.json	58	
+xkb:pl(intl)	Polish (intl., with dead keys)	keyboards/xkb_pl__intl.json	base/qwerty-keys.json	573	
+xkb:pl(lefty)	Polish (lefty)	keyboards/xkb_pl__lefty.json	base/qwerty-keys.json	660	
+xkb:pl(legacy)	Polish (legacy)	keyboards/xkb_pl__legacy.json	base/qwerty-keys.json	675	
+xkb:pl(qwertz)	Polish (QWERTZ)	keyboards/xkb_pl__qwertz.json	base/qwertz-keys.json	623	
+xkb:pl(ru_phonetic_dvorak)	Russian (Poland, phonetic Dvorak)	keyboards/xkb_pl__ru_phonetic_dvorak.json	base/qwerty-keys.json	231	
+xkb:pl(sun_type6)	Polish (Sun Type 6/7)	keyboards/xkb_pl__sun_type6.json	base/qwerty-keys.json	850	
+xkb:pl(szl)	Silesian	keyboards/xkb_pl__szl.json	base/qwerty-keys.json	671	
+xkb:pt(colemak)	Portuguese (Colemak)	keyboards/xkb_pt__colemak.json	base/qwerty-keys.json	686	
+xkb:pt(mac)	Portuguese (Macintosh)	keyboards/xkb_pt__mac.json	base/qwerty-keys.json	668	
+xkb:pt(mac_nodeadkeys)	Portuguese (Macintosh, no dead keys)	keyboards/xkb_pt__mac_nodeadkeys.json	base/qwerty-keys.json	655	
+xkb:pt(nativo)	Portuguese (Nativo)	keyboards/xkb_pt__nativo.json	base/qwerty-keys.json	708	
+xkb:pt(nativo-epo)	Esperanto (Portugal, Nativo)	keyboards/xkb_pt__nativo-epo.json	base/qwerty-keys.json	701	
+xkb:pt(nativo-us)	Portuguese (Nativo for US keyboards)	keyboards/xkb_pt__nativo-us.json	base/qwerty-keys.json	707	
+xkb:pt(nodeadkeys)	Portuguese (no dead keys)	keyboards/xkb_pt__nodeadkeys.json	base/qwerty-keys.json	170	
+xkb:pt(sun_type6)	Portuguese (Sun Type 6/7)	keyboards/xkb_pt__sun_type6.json	base/qwerty-keys.json	873	
+xkb:ro(crh_dobruja)	Crimean Tatar (Dobruja Q)	keyboards/xkb_ro__crh_dobruja.json	base/qwerty-keys.json	393	
+xkb:ro(ergonomic)	Romanian (ergonomic Touchtype)	keyboards/xkb_ro__ergonomic.json	base/qwerty-keys.json	467	
+xkb:ro(std)	Romanian (standard)	keyboards/xkb_ro__std.json	keyboards/xkb_md.json	469	
+xkb:ro(sun_type6)	Romanian (Sun Type 6/7)	keyboards/xkb_ro__sun_type6.json	keyboards/xkb_md.json	882	
+xkb:ro(winkeys)	Romanian (Windows)	keyboards/xkb_ro__winkeys.json	base/qwertz-keys.json	416	
+xkb:rs(alternatequotes)	Serbian (Cyrillic, with guillemets)	keyboards/xkb_me__cyrillicalternatequotes.json	base/qwerty-keys.json	223	
+xkb:rs(combiningkeys)	Serbian (combining accents instead of dead keys)	keyboards/xkb_rs__combiningkeys.json	base/qwerty-keys.json	165	
+xkb:rs(latin)	Serbian (Latin)	keyboards/xkb_ba.json	base/qwertz-keys.json	614	
+xkb:rs(latinalternatequotes)	Serbian (Latin, with guillemets)	keyboards/xkb_ba__alternatequotes.json	base/qwertz-keys.json	612	
+xkb:rs(latinunicode)	Serbian (Latin, Unicode)	keyboards/xkb_ba__unicode.json	base/qwerty-keys.json	577	
+xkb:rs(latinunicodeyz)	Serbian (Latin, Unicode, QWERTY)	keyboards/xkb_ba__unicodeus.json	base/qwerty-keys.json	577	
+xkb:rs(latinyz)	Serbian (Latin, QWERTY)	keyboards/xkb_ba__us.json	base/qwerty-keys.json	614	
+xkb:rs(rue)	Pannonian Rusyn	keyboards/xkb_rs__rue.json	base/qwerty-keys.json	232	
+xkb:rs(yz)	Serbian (Cyrillic, ZE and ZHE swapped)	keyboards/xkb_me__cyrillicyz.json	base/qwerty-keys.json	225	
+xkb:ru(ab)	Abkhazian (Russia)	keyboards/xkb_ru__ab.json	base/qwerty-keys.json	133	
+xkb:ru(bak)	Bashkirian	keyboards/xkb_ru__bak.json	keyboards/xkb_ru.json	116	
+xkb:ru(chm)	Mari	keyboards/xkb_ru__chm.json	keyboards/xkb_ru.json	109	
+xkb:ru(chu)	Church Slavonic	keyboards/xkb_ru__chu.json	base/qwerty-keys.json	104	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level4,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD02:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD06:group1:level3,AD07:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AD11:group1:level3,AD12:group1:level3,AC03:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC08:group1:level3,AC09:group1:level3,AC10:group1:level3,AC11:group1:level3,AB01:group1:level3,AB02:group1:level3,AB03:group1:level3,AB04:group1:level3,AB06:group1:level3,AB08:group1:level3,AB09:group1:level3,AB10:group1:level3,AB10:group1:level4
+xkb:ru(cv)	Chuvash	keyboards/xkb_ru__cv.json	keyboards/xkb_ru.json	107	
+xkb:ru(cv_latin)	Chuvash (Latin)	keyboards/xkb_ru__cv_latin.json	base/qwerty-keys.json	665	
+xkb:ru(diktor)	Russian (Diktor)	keyboards/xkb_ru__diktor.json	base/qwerty-keys.json	98	LSGT:group1:level3,LSGT:group1:level4
+xkb:ru(dos)	Russian (DOS)	keyboards/xkb_ru__dos.json	base/qwerty-keys.json	98	LSGT:group1:level4
+xkb:ru(gost-14289-88)	Russian (GOST 14289-88)	keyboards/xkb_ru__gost-14289-88.json	base/qwerty-keys.json	98	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE09:group1:level4,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE12:group1:level3
+xkb:ru(gost-6431-75-48)	Russian (GOST 6431-75)	keyboards/xkb_ru__gost-6431-75-48.json	base/qwerty-keys.json	99	LSGT:group1:level3,LSGT:group1:level4
+xkb:ru(kom)	Komi	keyboards/xkb_ru__kom.json	keyboards/xkb_ru.json	103	
+xkb:ru(legacy)	Russian (legacy)	keyboards/xkb_ru__legacy.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:ru(mac)	Russian (Macintosh)	keyboards/xkb_ru__mac.json	base/qwerty-keys.json	102	
+xkb:ru(os_legacy)	Ossetian (legacy)	keyboards/xkb_ru__os_legacy.json	base/qwerty-keys.json	96	LSGT:group1:level4,AC07:group1:level3,AC07:group1:level4
+xkb:ru(os_winkeys)	Ossetian (Windows)	keyboards/xkb_ru__os_winkeys.json	base/qwerty-keys.json	97	LSGT:group1:level4,AE08:group1:level3,AC07:group1:level3,AC07:group1:level4
+xkb:ru(phonetic)	Russian (phonetic)	keyboards/xkb_ru__phonetic.json	base/qwerty-keys.json	100	
+xkb:ru(phonetic_YAZHERTY)	Russian (phonetic, YAZHERTY)	keyboards/xkb_ru__phonetic_YAZHERTY.json	base/qwerty-keys.json	100	
+xkb:ru(phonetic_azerty)	Russian (phonetic, AZERTY)	keyboards/xkb_ru__phonetic_azerty.json	base/qwerty-keys.json	247	
+xkb:ru(phonetic_dvorak)	Russian (phonetic, Dvorak)	keyboards/xkb_ru__phonetic_dvorak.json	base/qwerty-keys.json	167	
+xkb:ru(phonetic_mac)	Russian (phonetic, Macintosh)	keyboards/xkb_ru__phonetic_mac.json	base/qwerty-keys.json	106	
+xkb:ru(phonetic_winkeys)	Russian (phonetic, Windows)	keyboards/xkb_ru__phonetic_winkeys.json	base/qwerty-keys.json	100	
+xkb:ru(prxn)	Russian (Polyglot and Reactionary)	keyboards/xkb_ru__prxn.json	keyboards/xkb_ru.json	378	
+xkb:ru(rtu)	Russian (plus Tatar letters)	keyboards/xkb_ru__rtu.json	keyboards/xkb_ru.json	136	
+xkb:ru(ruchey_en)	Russian (engineering, EN)	keyboards/xkb_ru__ruchey_en.json	base/qwerty-keys.json	82	TLDE:group1:level3,BKSL:group1:level3,LSGT:group1:level3,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AD03:group1:level3,AD04:group1:level3,AD06:group1:level3,AD11:group1:level3,AD12:group1:level3,AC02:group1:level3,AC04:group1:level3,AC10:group1:level3,AC11:group1:level3,AB03:group1:level3,AB08:group1:level3,AB09:group1:level3,AB10:group1:level4
+xkb:ru(ruchey_ru)	Russian (engineering, RU)	keyboards/xkb_ru__ruchey_ru.json	base/qwerty-keys.json	96	TLDE:group1:level3,BKSL:group1:level3,LSGT:group1:level3,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AD03:group1:level3,AD04:group1:level3,AD06:group1:level3,AD11:group1:level3,AD12:group1:level3,AC02:group1:level3,AC04:group1:level3,AC10:group1:level3,AC11:group1:level3,AB03:group1:level3,AB08:group1:level3,AB09:group1:level3,AB10:group1:level4
+xkb:ru(ruintl_en)	Russian (international, EN)	keyboards/xkb_ru__ruintl_en.json	base/qwerty-keys.json	467	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD10:group1:level3,AD10:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level4,AC05:group1:level3,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB01:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB06:group1:level3,AB06:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:ru(ruintl_ru)	Russian (international, RU)	keyboards/xkb_ru__ruintl_ru.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,BKSL:group1:level3,BKSL:group1:level4,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE01:group1:level4,AE02:group1:level3,AE02:group1:level4,AE03:group1:level3,AE03:group1:level4,AE04:group1:level3,AE04:group1:level4,AE05:group1:level3,AE05:group1:level4,AE06:group1:level3,AE06:group1:level4,AE07:group1:level3,AE07:group1:level4,AE08:group1:level3,AE08:group1:level4,AE09:group1:level3,AE10:group1:level3,AE10:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AE12:group1:level4,AD02:group1:level3,AD02:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD06:group1:level3,AD06:group1:level4,AD07:group1:level3,AD07:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC02:group1:level3,AC02:group1:level4,AC04:group1:level4,AC05:group1:level3,AC07:group1:level3,AC07:group1:level4,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level3,AC11:group1:level4,AB01:group1:level3,AB01:group1:level4,AB02:group1:level3,AB02:group1:level4,AB03:group1:level3,AB03:group1:level4,AB04:group1:level3,AB04:group1:level4,AB05:group1:level3,AB05:group1:level4,AB07:group1:level3,AB07:group1:level4,AB08:group1:level3,AB08:group1:level4,AB09:group1:level3,AB09:group1:level4,AB10:group1:level3,AB10:group1:level4
+xkb:ru(rulemak)	Russian (Rulemak, phonetic Colemak)	keyboards/xkb_ru__rulemak.json	base/qwerty-keys.json	169	
+xkb:ru(ruu)	Russian (plus Ukrainian and Belarusian letters)	keyboards/xkb_ru__ruu.json	keyboards/xkb_ru.json	145	
+xkb:ru(sah)	Yakut	keyboards/xkb_ru__sah.json	keyboards/xkb_ru.json	125	
+xkb:ru(srp)	Serbian (Russia)	keyboards/xkb_ru__srp.json	keyboards/xkb_ru.json	110	
+xkb:ru(sun_type6)	Russian (Sun Type 6/7)	keyboards/xkb_ru__sun_type6.json	keyboards/xkb_ru.json	1020	
+xkb:ru(tt)	Tatar	keyboards/xkb_ru__tt.json	base/qwerty-keys.json	111	
+xkb:ru(typewriter)	Russian (typewriter)	keyboards/xkb_ru__typewriter.json	keyboards/xkb_ru.json	97	LSGT:group1:level4
+xkb:ru(typewriter-legacy)	Russian (typewriter, legacy)	keyboards/xkb_ru__typewriter-legacy.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:ru(typo)	Russian (plus typographic symbols)	keyboards/xkb_ru__typo.json	keyboards/xkb_ru.json	124	
+xkb:ru(udm)	Udmurt	keyboards/xkb_ru__udm.json	keyboards/xkb_ru.json	108	
+xkb:ru(unipunct)	Russian (with US punctuation)	keyboards/xkb_ru__unipunct.json	base/qwerty-keys.json	96	LSGT:group1:level4,AE03:group1:level4,AD03:group1:level3,AD03:group1:level4,AD05:group1:level3,AD05:group1:level4,AD08:group1:level3,AD08:group1:level4,AC07:group1:level3,AC07:group1:level4,AB02:group1:level3,AB02:group1:level4,AB05:group1:level3,AB05:group1:level4,AB07:group1:level3,AB07:group1:level4
+xkb:ru(winkeys-p)	Russian (Programmer)	keyboards/xkb_ru__winkeys-p.json	base/qwerty-keys.json	101	LSGT:group1:level4,AE08:group1:level3
+xkb:ru(xal)	Kalmyk	keyboards/xkb_ru__xal.json	keyboards/xkb_ru.json	120	
+xkb:se(colemak)	Swedish (Colemak)	keyboards/xkb_se__colemak.json	base/qwerty-keys.json	629	
+xkb:se(dvorak)	Swedish (Dvorak)	keyboards/xkb_se__dvorak.json	base/qwerty-keys.json	485	
+xkb:se(dvorak_a5)	Swedish (Dvorak A5)	keyboards/xkb_se__dvorak_a5.json	base/qwerty-keys.json	335	
+xkb:se(mac)	Swedish (Macintosh)	keyboards/xkb_se__mac.json	base/qwerty-keys.json	417	
+xkb:se(nodeadkeys)	Swedish (no dead keys)	keyboards/xkb_se__nodeadkeys.json	base/qwerty-keys.json	181	
+xkb:se(ovd)	Elfdalian (Sweden, with combining ogonek)	keyboards/xkb_se__ovd.json	keyboards/xkb_se.json	636	
+xkb:se(rus)	Russian (Sweden, phonetic)	keyboards/xkb_se__rus.json	base/qwerty-keys.json	197	
+xkb:se(smi)	Northern Saami (Sweden)	keyboards/xkb_se__smi.json	base/qwerty-keys.json	402	
+xkb:se(sun_type6)	Swedish (Sun Type 6/7)	keyboards/xkb_se__sun_type6.json	base/qwerty-keys.json	854	
+xkb:se(svdvorak)	Swedish (Svdvorak)	keyboards/xkb_se__svdvorak.json	base/qwerty-keys.json	625	
+xkb:se(swl)	Swedish Sign Language	keyboards/xkb_se__swl.json	base/qwerty-keys.json	65	
+xkb:se(us)	Swedish (US)	keyboards/xkb_se__us.json	base/qwerty-keys.json	103	
+xkb:se(us_dvorak)	Swedish (Dvorak, intl.)	keyboards/xkb_se__us_dvorak.json	base/qwerty-keys.json	697	
+xkb:si(alternatequotes)	Slovenian (with guillemets)	keyboards/xkb_si__alternatequotes.json	base/qwertz-keys.json	611	
+xkb:si(us)	Slovenian (US)	keyboards/xkb_si__us.json	base/qwerty-keys.json	613	
+xkb:sk(acc)	Slovak (ACC layout, only accented letters)	keyboards/xkb_sk__acc.json	base/qwerty-keys.json	61	LSGT:group1:level4
+xkb:sk(bksl)	Slovak (extra backslash)	keyboards/xkb_sk__bksl.json	keyboards/xkb_sk.json	562	
+xkb:sk(qwerty)	Slovak (QWERTY)	keyboards/xkb_sk__qwerty.json	base/qwerty-keys.json	562	
+xkb:sk(qwerty_bksl)	Slovak (QWERTY, extra backslash)	keyboards/xkb_sk__qwerty_bksl.json	base/qwerty-keys.json	562	
+xkb:sk(sun_type6)	Slovak (Sun Type 6/7)	keyboards/xkb_sk__sun_type6.json	base/qwertz-keys.json	861	
+xkb:sy(ku)	Kurdish (Syria, Latin Q)	keyboards/xkb_iq__ku.json	base/qwerty-keys.json	419	
+xkb:sy(ku_alt)	Kurdish (Syria, Latin Alt-Q)	keyboards/xkb_iq__ku_alt.json	base/qwerty-keys.json	657	
+xkb:sy(ku_f)	Kurdish (Syria, F)	keyboards/xkb_iq__ku_f.json	base/qwerty-keys.json	366	
+xkb:sy(syc)	Syriac	keyboards/xkb_sy__syc.json	base/qwerty-keys.json	99	TLDE:group1:level3,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AE12:group1:level3,AD01:group1:level3,AD02:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD06:group1:level3,AD07:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AC01:group1:level3,AC02:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC08:group1:level3,AC09:group1:level3,AB01:group1:level3
+xkb:sy(syc_phonetic)	Syriac (phonetic)	keyboards/xkb_sy__syc_phonetic.json	base/qwerty-keys.json	99	TLDE:group1:level3,LSGT:group1:level3,LSGT:group1:level4,AE01:group1:level3,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE07:group1:level3,AE08:group1:level3,AE09:group1:level3,AE10:group1:level3,AE11:group1:level3,AE12:group1:level3,AD01:group1:level3,AD02:group1:level3,AD03:group1:level3,AD04:group1:level3,AD05:group1:level3,AD06:group1:level3,AD07:group1:level3,AD08:group1:level3,AD09:group1:level3,AD10:group1:level3,AC01:group1:level3,AC02:group1:level3,AC04:group1:level3,AC05:group1:level3,AC06:group1:level3,AC07:group1:level3,AC08:group1:level3,AC09:group1:level3,AB01:group1:level3
+xkb:th(mnc)	Thai (Manoonchai)	keyboards/xkb_th__mnc.json	base/qwerty-keys.json	135	
+xkb:th(pat)	Thai (Pattachote)	keyboards/xkb_th__pat.json	base/qwerty-keys.json	98	LSGT:group1:level3,LSGT:group1:level4
+xkb:th(tis)	Thai (TIS-820.2538)	keyboards/xkb_th__tis.json	base/qwerty-keys.json	101	LSGT:group1:level3,LSGT:group1:level4,AD09:group1:level3
+xkb:tj(legacy)	Tajik (legacy)	keyboards/xkb_tj__legacy.json	base/qwerty-keys.json	115	
+xkb:tm(alt)	Turkmen (Alt-Q)	keyboards/xkb_tm__alt.json	base/qwerty-keys.json	113	
+xkb:tr(alt)	Turkish (Alt-Q)	keyboards/xkb_tr__alt.json	base/qwerty-keys.json	658	
+xkb:tr(e)	Turkish (E)	keyboards/xkb_tr__e.json	base/qwerty-keys.json	361	
+xkb:tr(f)	Turkish (F)	keyboards/xkb_tr__f.json	base/qwerty-keys.json	361	
+xkb:tr(intl)	Turkish (intl., with dead keys)	keyboards/xkb_tr__intl.json	base/qwerty-keys.json	545	
+xkb:tr(ku)	Kurdish (Turkey, Latin Q)	keyboards/xkb_tr__ku.json	base/qwerty-keys.json	419	
+xkb:tr(ku_alt)	Kurdish (Turkey, Latin Alt-Q)	keyboards/xkb_tr__ku_alt.json	base/qwerty-keys.json	657	
+xkb:tr(ku_f)	Kurdish (Turkey, F)	keyboards/xkb_tr__ku_f.json	base/qwerty-keys.json	366	
+xkb:tr(ot)	Ottoman (Q)	keyboards/xkb_tr__ot.json	base/qwerty-keys.json	97	
+xkb:tr(otf)	Ottoman (F)	keyboards/xkb_tr__otf.json	base/qwerty-keys.json	97	
+xkb:tr(otk)	Old Turkic	keyboards/xkb_tr__otk.json	base/qwerty-keys.json	133	
+xkb:tr(otkf)	Old Turkic (F)	keyboards/xkb_tr__otkf.json	base/qwerty-keys.json	133	
+xkb:tr(sun_type6)	Turkish (Sun Type 6/7)	keyboards/xkb_tr__sun_type6.json	base/qwerty-keys.json	852	
+xkb:tr(us)	Turkish (i and ı swapped)	keyboards/xkb_tr__us.json	base/qwerty-keys.json	444	
+xkb:trans(qwerty)	International Phonetic Alphabet (QWERTY)	keyboards/xkb_trans__qwerty.json	base/qwerty-keys.json	342	
+xkb:tw(indigenous)	Taiwanese (indigenous)	keyboards/xkb_tw__indigenous.json	keyboards/xkb_tw.json	672	
+xkb:tw(saisiyat)	Saisiyat (Taiwan)	keyboards/xkb_tw__saisiyat.json	keyboards/xkb_tw.json	672	
+xkb:ua(crh)	Crimean Tatar (Turkish Q)	keyboards/xkb_ua__crh.json	base/qwerty-keys.json	384	
+xkb:ua(crh_alt)	Crimean Tatar (Turkish Alt-Q)	keyboards/xkb_ua__crh_alt.json	base/qwerty-keys.json	578	
+xkb:ua(crh_f)	Crimean Tatar (Turkish F)	keyboards/xkb_ua__crh_f.json	base/qwerty-keys.json	360	
+xkb:ua(homophonic)	Ukrainian (homophonic)	keyboards/xkb_ua__homophonic.json	base/qwerty-keys.json	100	LSGT:group1:level4
+xkb:ua(legacy)	Ukrainian (legacy)	keyboards/xkb_ua__legacy.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:ua(macOS)	Ukrainian (macOS)	keyboards/xkb_ua__macOS.json	base/qwerty-keys.json	148	
+xkb:ua(phonetic)	Ukrainian (phonetic)	keyboards/xkb_ua__phonetic.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:ua(sun_type6)	Ukrainian (Sun Type 6/7)	keyboards/xkb_ua__sun_type6.json	base/qwerty-keys.json	1014	
+xkb:ua(typewriter)	Ukrainian (typewriter)	keyboards/xkb_ua__typewriter.json	base/qwerty-keys.json	97	LSGT:group1:level4
+xkb:ua(winkeys)	Ukrainian (Windows)	keyboards/xkb_ua__winkeys.json	base/qwerty-keys.json	98	LSGT:group1:level4
+xkb:ua(winkeysenhanced)	Ukrainian (Windows Enhanced)	keyboards/xkb_ua__winkeysenhanced.json	base/qwerty-keys.json	98	
+xkb:us(3l)	English (3l)	keyboards/xkb_us__3l.json	base/qwerty-keys.json	174	
+xkb:us(3l-cros)	English (3l, Chromebook)	keyboards/xkb_us__3l-cros.json	base/qwerty-keys.json	174	
+xkb:us(3l-emacs)	English (3l, emacs)	keyboards/xkb_us__3l-emacs.json	base/qwerty-keys.json	174	
+xkb:us(alt-intl)	English (US, alt. intl.)	keyboards/xkb_us__alt-intl.json	keyboards/xkb_us.json	666	
+xkb:us(alt-intl-unicode)	English (US, intl., AltGr Unicode combining, alt.)	keyboards/xkb_us__alt-intl-unicode.json	keyboards/xkb_us.json	235	
+xkb:us(altgr-intl)	English (intl., with AltGr dead keys)	keyboards/xkb_us__altgr-intl.json	keyboards/xkb_us.json	701	
+xkb:us(altgr-weur)	English (Western European AltGr dead keys)	keyboards/xkb_us__altgr-weur.json	keyboards/xkb_us.json	595	
+xkb:us(ats)	Atsina	keyboards/xkb_us__ats.json	keyboards/xkb_us.json	856	
+xkb:us(carpalx)	English (Carpalx)	keyboards/xkb_us__carpalx.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:us(carpalx-altgr-intl)	English (Carpalx, intl., with AltGr dead keys)	keyboards/xkb_us__carpalx-altgr-intl.json	base/qwerty-keys.json	701	
+xkb:us(carpalx-full)	English (Carpalx, full optimization)	keyboards/xkb_us__carpalx-full.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:us(carpalx-full-altgr-intl)	English (Carpalx, full optimization, intl., with AltGr dead keys)	keyboards/xkb_us__carpalx-full-altgr-intl.json	base/qwerty-keys.json	701	
+xkb:us(carpalx-full-intl)	English (Carpalx, full optimization, intl., with dead keys)	keyboards/xkb_us__carpalx-full-intl.json	base/qwerty-keys.json	701	
+xkb:us(carpalx-intl)	English (Carpalx, intl., with dead keys)	keyboards/xkb_us__carpalx-intl.json	base/qwerty-keys.json	701	
+xkb:us(chr)	Cherokee	keyboards/xkb_us__chr.json	base/qwerty-keys.json	103	LSGT:group1:level3,LSGT:group1:level4
+xkb:us(colemak)	English (Colemak)	keyboards/xkb_us__colemak.json	base/qwerty-keys.json	546	
+xkb:us(colemak_dh)	English (Colemak-DH)	keyboards/xkb_us__colemak_dh.json	base/qwerty-keys.json	546	
+xkb:us(colemak_dh_iso)	English (Colemak-DH ISO)	keyboards/xkb_us__colemak_dh_iso.json	base/qwerty-keys.json	547	
+xkb:us(colemak_dh_ortho)	English (Colemak-DH Ortholinear)	keyboards/xkb_us__colemak_dh_ortho.json	base/qwerty-keys.json	546	
+xkb:us(colemak_dh_wide)	English (Colemak-DH Wide)	keyboards/xkb_us__colemak_dh_wide.json	base/qwerty-keys.json	546	
+xkb:us(colemak_dh_wide_iso)	English (Colemak-DH Wide ISO)	keyboards/xkb_us__colemak_dh_wide_iso.json	base/qwerty-keys.json	547	
+xkb:us(crd)	Coeur d'Alene Salish	keyboards/xkb_us__crd.json	keyboards/xkb_us.json	859	
+xkb:us(cz_sk_de)	Czech, Slovak and German (US)	keyboards/xkb_us__cz_sk_de.json	keyboards/xkb_us.json	204	
+xkb:us(cz_sk_pl_de_es_fi_sv)	Czech, Slovak, Polish, Spanish, Finnish, Swedish and German (US)	keyboards/xkb_us__cz_sk_pl_de_es_fi_sv.json	keyboards/xkb_us.json	232	
+xkb:us(de_se_fi)	German, Swedish and Finnish (US)	keyboards/xkb_us__de_se_fi.json	keyboards/xkb_us.json	108	
+xkb:us(drix)	English (Drix)	keyboards/xkb_us__drix.json	keyboards/xkb_us.json	859	TLDE:group1:level4,LSGT:group1:level4,AE01:group1:level4,AE02:group1:level4,AE03:group1:level4,AE04:group1:level4,AE05:group1:level4,AE06:group1:level4,AE07:group1:level4,AE08:group1:level4,AE09:group1:level4,AE10:group1:level4,AE12:group1:level4,AD01:group1:level4,AD02:group1:level4,AD04:group1:level4,AD05:group1:level4,AD08:group1:level4,AD09:group1:level4,AD10:group1:level4,AD11:group1:level4,AD12:group1:level4,AC01:group1:level4,AC02:group1:level4,AC03:group1:level4,AC04:group1:level4,AC07:group1:level4,AC08:group1:level4,AC09:group1:level4,AC11:group1:level4,AB01:group1:level4,AB02:group1:level4,AB03:group1:level4,AB05:group1:level4,AB07:group1:level4,AB08:group1:level4,AB09:group1:level4,AB10:group1:level4
+xkb:us(dvorak)	English (Dvorak)	keyboards/xkb_us__dvorak.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level4,AE06:group1:level3,AE06:group1:level4,AE09:group1:level3,AE09:group1:level4,AE12:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AB01:group1:level3,AB01:group1:level4
+xkb:us(dvorak-alt-intl)	English (Dvorak, alt. intl.)	keyboards/xkb_us__dvorak-alt-intl.json	base/qwerty-keys.json	486	
+xkb:us(dvorak-classic)	English (classic Dvorak)	keyboards/xkb_us__dvorak-classic.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level4,AE06:group1:level3,AE10:group1:level3,AE10:group1:level4,AE12:group1:level3,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD11:group1:level3,AD11:group1:level4,AB01:group1:level3,AB01:group1:level4
+xkb:us(dvorak-intl)	English (Dvorak, intl., with dead keys)	keyboards/xkb_us__dvorak-intl.json	base/qwerty-keys.json	701	
+xkb:us(dvorak-l)	English (Dvorak, one-handed, left)	keyboards/xkb_us__dvorak-l.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level4,AE06:group1:level3,AE06:group1:level4,AE09:group1:level3,AE09:group1:level4,AE12:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AB01:group1:level3,AB01:group1:level4
+xkb:us(dvorak-mac)	English (Dvorak, Macintosh, ANSI)	keyboards/xkb_us__dvorak-mac.json	base/qwerty-keys.json	366	
+xkb:us(dvorak-mac-iso)	English (Dvorak, Macintosh, ISO)	keyboards/xkb_us__dvorak-mac-iso.json	base/qwerty-keys.json	382	
+xkb:us(dvorak-r)	English (Dvorak, one-handed, right)	keyboards/xkb_us__dvorak-r.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level4,AE06:group1:level3,AE06:group1:level4,AE09:group1:level3,AE09:group1:level4,AE12:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AB01:group1:level3,AB01:group1:level4
+xkb:us(dvp)	English (programmer Dvorak)	keyboards/xkb_us__dvp.json	base/qwerty-keys.json	96	TLDE:group1:level3,TLDE:group1:level4,LSGT:group1:level4,AE02:group1:level3,AE03:group1:level3,AE04:group1:level3,AE05:group1:level3,AE06:group1:level3,AE06:group1:level4,AE08:group1:level3,AE09:group1:level3,AE09:group1:level4,AE11:group1:level3,AE11:group1:level4,AE12:group1:level3,AD01:group1:level3,AD01:group1:level4,AD02:group1:level3,AD02:group1:level4,AD03:group1:level3,AD03:group1:level4,AD04:group1:level3,AD04:group1:level4,AD05:group1:level3,AD05:group1:level4,AD08:group1:level3,AD08:group1:level4,AD09:group1:level3,AD09:group1:level4,AD11:group1:level3,AD11:group1:level4,AD12:group1:level3,AD12:group1:level4,AC01:group1:level3,AC01:group1:level4,AC02:group1:level3,AC02:group1:level4,AC03:group1:level3,AC03:group1:level4,AC04:group1:level3,AC04:group1:level4,AC06:group1:level3,AC06:group1:level4,AC07:group1:level3,AC08:group1:level3,AC08:group1:level4,AC09:group1:level3,AC09:group1:level4,AC10:group1:level3,AC10:group1:level4,AC11:group1:level4,AB01:group1:level3,AB01:group1:level4
+xkb:us(euro)	English (US, euro on 5)	keyboards/xkb_us__euro.json	keyboards/xkb_us.json	98	
+xkb:us(haw)	Hawaiian	keyboards/xkb_us__haw.json	keyboards/xkb_us.json	108	
+xkb:us(hbs)	Serbo-Croatian (US)	keyboards/xkb_us__hbs.json	keyboards/xkb_us.json	207	
+xkb:us(ibm238l)	English (US, IBM Arabic 238_L)	keyboards/xkb_us__ibm238l.json	keyboards/xkb_us.json	96	LSGT:group1:level4
+xkb:us(intl)	English (US, intl., with dead keys)	keyboards/xkb_us__intl.json	keyboards/xkb_us.json	701	
+xkb:us(intl-unicode)	English (US, intl., AltGr Unicode combining)	keyboards/xkb_us__intl-unicode.json	keyboards/xkb_us.json	235	
+xkb:us(mac)	English (Macintosh, ABC, ANSI)	keyboards/xkb_us__mac.json	keyboards/xkb_us.json	733	
+xkb:us(mac-iso)	English (Macintosh, ABC, ISO)	keyboards/xkb_us__mac-iso.json	keyboards/xkb_us.json	732	
+xkb:us(norman)	English (Norman)	keyboards/xkb_us__norman.json	base/qwerty-keys.json	97	
+xkb:us(olpc2)	English (the divide/multiply toggle the layout)	keyboards/xkb_us__olpc2.json	keyboards/xkb_us.json	196	
+xkb:us(rus)	Russian (US, phonetic)	keyboards/xkb_us__rus.json	base/qwerty-keys.json	111	
+xkb:us(scn)	Sicilian (US keyboard)	keyboards/xkb_us__scn.json	keyboards/xkb_us.json	616	
+xkb:us(sun_type6)	English (US, Sun Type 6/7)	keyboards/xkb_us__sun_type6.json	keyboards/xkb_us.json	850	
+xkb:us(symbolic)	English (US, Symbolic)	keyboards/xkb_us__symbolic.json	keyboards/xkb_us.json	189	
+xkb:us(workman)	English (Workman)	keyboards/xkb_us__workman.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:us(workman-intl)	English (Workman, intl., with dead keys)	keyboards/xkb_us__workman-intl.json	base/qwerty-keys.json	701	
+xkb:us(workman-p)	English (Workman-P)	keyboards/xkb_us__workman-p.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:uz(latin)	Uzbek (Latin)	keyboards/xkb_uz__latin.json	base/qwerty-keys.json	96	LSGT:group1:level4
+xkb:vn(aderty)	Vietnamese (AÐERTY)	keyboards/xkb_vn__aderty.json	base/qwerty-keys.json	616	
+xkb:vn(fr)	Vietnamese (France)	keyboards/xkb_vn__fr.json	base/azerty-keys.json	607	
+xkb:vn(qderty)	Vietnamese (QĐERTY)	keyboards/xkb_vn__qderty.json	base/qwerty-keys.json	357	
+xkb:vn(us)	Vietnamese (US)	keyboards/xkb_vn__us.json	base/qwerty-keys.json	357	

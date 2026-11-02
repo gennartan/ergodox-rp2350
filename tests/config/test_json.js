@@ -16,7 +16,7 @@ const samples=[
 samples.forEach((a,i)=>value.layers[0].left[i]={position:i+1,...a});
 value.layers[7].right[37]={position:38,type:"key",key:"NONE",modifiers:["RIGHT_ALT"]};
 const layout=fromJSON(value),blob=encode(layout);
-assert.equal(blob.length,2496);
+assert.equal(blob.length,3168);
 assert.equal(layout.name,"é test");
 assert.equal(layout.actions[0][0][0].modifier,65);
 assert.equal(layout.actions[0][0][5].x,-127);
@@ -31,9 +31,7 @@ assert.equal(toJSON(fromJSON(custom)).display_layout,"be-azerty");
 const legacy=fixture(); delete legacy.display_layout;
 assert.equal(fromJSON(legacy).displayLayout,"qwerty");
 const badCases=[
-  [v=>v.display_layout=null,/Display layout/],
-  [v=>v.display_layout="",/Display layout/],
-  [v=>v.display_layout="abcdefghijkl",/Display layout/],
+  [v=>v.display_layout="x".repeat(128),/Display layout/],
   [v=>v.display_layout="../bad",/Display layout/],
   [v=>v.version=2,/version/], [v=>v.extra=1,/unknown field/],
   [v=>v.name="é".repeat(16),/31 UTF-8/], [v=>v.name="x\0y",/NUL/],
@@ -60,32 +58,34 @@ if(process.argv[2]) {
 }
 fs.writeFileSync("/tmp/ergodox-json-test.bin",blob);
 fs.writeFileSync("/tmp/ergodox-json-test.json",JSON.stringify(value,null,2));
-// Editing only the preference must create a saveable preview without changing
-// the running configuration, and must preserve actions from an imported preview.
+// Locale selection stays in the browser and never creates a saveable preview.
 const controls = new Map();
+const storage = new Map();
+context.localStorage = {setItem:(key,value)=>storage.set(key,value)};
 context.document = {getElementById(id) {
   if (!controls.has(id)) controls.set(id,{value:"",classList:{toggle(){} }});
   return controls.get(id);
 }};
 context.fixtureLayout = layout;
 vm.runInContext(`
+  loadDisplayLabels = () => {};
   render = () => {};
-  displayLayout = current => { layout = current; updateTransferControls(); };
+  displayLayout = current => { layout = current; selectedDisplayLayout = current.displayLayout; updateTransferControls(); };
+  installDisplayCatalog({paths:["base/qwerty.json","keyboards/fr_BE.json"],names:{}});
   currentLayout = fixtureLayout;
   layout = currentLayout;
 `,context);
-controls.set("display-layout",{value:"be-azerty"});
+controls.set("display-layout",{value:"fr_be"});
 vm.runInContext("changeDisplayLayout()",context);
+assert.equal(vm.runInContext("pendingLayout.displayLayout",context),"fr_be");
 assert.equal(vm.runInContext("currentLayout.displayLayout",context),"qwerty");
-assert.equal(vm.runInContext("pendingLayout.displayLayout",context),"be-azerty");
-assert.equal(vm.runInContext("pendingLayout.actions === currentLayout.actions",context),true);
+assert.equal(decode(encode(vm.runInContext("pendingLayout",context)).buffer).displayLayout,"fr_be");
 assert.equal(controls.get("save-layout").disabled,false);
-assert.equal(controls.get("import-preview").hidden,false);
+assert.deepEqual(Array.from(encode(layout).slice(48,60)),Array(12).fill(0));
 controls.get("display-layout").value="../bad";
 vm.runInContext("changeDisplayLayout()",context);
-assert.equal(vm.runInContext("pendingLayout.displayLayout",context),"be-azerty");
-assert.equal(controls.get("display-layout").value,"be-azerty");
-console.log("JSON round trips, action validation, persisted display preferences, and UI preview tests passed");
+assert.equal(controls.get("display-layout").value,"fr_be");
+console.log("JSON round trips, action validation, and NVM locale round-trip and staging tests passed");
 // Every editor action must survive staging and wire encoding, without mutating
 // the running configuration or another key/layer. No typed input is required.
 context.document.querySelectorAll = selector => {

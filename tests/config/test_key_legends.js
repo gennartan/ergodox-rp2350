@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const context = vm.createContext({TextEncoder,TextDecoder,AbortSignal,
-  fetch:async url=>({ok:true,text:async()=>fs.readFileSync(path.join(__dirname,"fixtures/hid-io",...url.split("/").slice(-2)),"utf8")})
+  fetch:async url=>({ok:true,text:async()=>fs.readFileSync(path.join(__dirname,"fixtures/hid-io",...(url.includes("api.github.com") ? ["repository-tree.json"] : url.split("/").slice(-2))),"utf8")})
 });
 vm.runInContext(fs.readFileSync(path.join(__dirname,"../../src/web/app.js"),"utf8"),context);
 const run = code=>vm.runInContext(code,context);
@@ -21,7 +21,7 @@ function serialize(node) {
 }
 async function main() {
   const mappings = {};
-  for (const id of ["qwerty","azerty","qwertz","colemak","en_us","fr_fr","de_de"]) mappings[id] = await run(`getHidIoMapping("${id}")`);
+  for (const id of ["qwerty","azerty","qwertz","colemak","en_us","fr_fr","fr_be","de_de"]) mappings[id] = await run(`getHidIoMapping("${id}")`);
   const plain = value=>JSON.parse(JSON.stringify(value));
   assert.deepEqual(plain(mappings.qwerty.legends[30]),{base:"1",shift:"!",dead:[]});
   assert.deepEqual(plain(mappings.azerty.legends[30]),{base:"&",shift:"1",dead:[]});
