@@ -30,7 +30,7 @@ async function main() {
     azerty:{4:"Q",20:"A",30:"&",31:"é",52:"ù",54:";"},
     qwertz:{28:"Z",29:"Y",45:"ß",47:"Ü",51:"Ö"},
     colemak:{7:"S",8:"F",19:";",57:"Backspace"},
-    en_us:{4:"A",30:"1"}, fr_fr:{4:"Q",31:"é"}, de_de:{28:"Z",47:"Ü"}
+    fr_be:{4:"Q",35:"§",37:"!",56:"="}, en_us:{4:"A",30:"1"}, fr_fr:{4:"Q",31:"é"}, de_de:{28:"Z",47:"Ü"}
   };
   for (const [id, keys] of Object.entries(expected)) {
     const {labels} = await env.run(`getHidIoMapping("${id}")`);
@@ -38,6 +38,11 @@ async function main() {
     env.context.testLabels = labels;
     assert.equal(env.run("(displayLabels = testLabels, describe({type:2,keycode:4,modifier:0}).lines[0])"),labels[4]);
   }
+  env.run('layout = {displayLayout:"fr_be"}');
+  env.context.belgianLabels = (await env.run('getHidIoMapping("fr_be")')).labels;
+  assert.equal(env.run('(displayLabels = belgianLabels, keyIdentity(4))'), "0x04 HID_KEY_A fr_BE Q");
+  env.run('layout = {displayLayout:"azerty"}');
+  assert.match(env.run('keyIdentity(4)'), /HID_KEY_A fr_FR Q$/);
   const count = env.calls.length;
   await env.run('getHidIoMapping("fr_fr")');
   assert.equal(env.calls.length,count,"same-page reuse should not redownload");
@@ -83,11 +88,11 @@ async function main() {
   releaseOld({labels:{4:"Q"},legends:{}});
   await oldRequest;
   assert.equal(racing.run('displayKeyName(4)'),"A");
-  assert.equal(elements.get("display-layout-status").textContent,"QWERTY labels");
+  assert.equal(elements.get("display-layout-status").textContent,"en_US — English (US) labels");
   racing.run('getHidIoMapping = async () => { throw new Error("offline"); }; layout = {displayLayout:"azerty"}');
   await racing.run('loadDisplayLabels()');
   assert.equal(racing.run('displayKeyName(4)'),"A");
-  assert.match(elements.get("display-layout-status").textContent,/Using QWERTY labels.*offline/);
+  assert.match(elements.get("display-layout-status").textContent,/Using en_US labels.*offline/);
   assert.equal(elements.get("retry-labels").hidden,false);
   console.log("hid-io inheritance, all layouts, display labels, caching, failures, retries, and stale-download tests passed");
 }
