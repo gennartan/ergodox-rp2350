@@ -60,3 +60,12 @@ footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #dce3ec; }
 .import-preview button { margin: 0 8px 4px 0; }
 #save-layout { background: #4567bd; color: white; border-color: #4567bd; }
 button:disabled { opacity: .55; cursor: default; }
+
+#key-editor { width: min(620px, 94vw); max-height: 90vh; overflow: auto; color: inherit; border: 1px solid #bcc7d8; border-radius: 14px; padding: 24px; }
+#key-editor::backdrop { background: #25334b88; }
+#key-editor label { white-space: normal; flex-wrap: wrap; margin: 12px 0; }
+#key-editor select { max-width: 100%; flex: 1; min-width: 0; }
+#key-editor fieldset { border: 1px solid #dce3ec; border-radius: 7px; margin: 16px 0; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+#key-editor input[type="checkbox"] { width: 20px; height: 20px; }
+.editor-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+#editor-error { color: #a52c39; }

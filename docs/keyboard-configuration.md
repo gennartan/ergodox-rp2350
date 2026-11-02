@@ -141,8 +141,12 @@ network connection/context budgets also include DHCP. TCP windows are capped at
 
 The embedded HTML/CSS/JavaScript viewer validates the record length, version,
 dimensions, and CRC before displaying it. It shows the layout name, default layer,
-all available layers, and both physical keyboard halves. Selecting a key displays
-its action details. Transparent assignments remain explicitly transparent rather
+all available layers, and both physical keyboard halves. Left-clicking a key opens an action editor. Choose the key type and its settings
+using dropdowns and modifier/button checkboxes; no keyboard input is needed.
+Apply to preview stages the assignment on the selected hand and layer. Cancel
+closes the editor without changes. Save to keyboard persists the preview for
+the next reboot, and Discard preview restores the current layout. All twelve
+action types are supported, including modifier-only keys and layer switching. Transparent assignments remain explicitly transparent rather
 than pretending to resolve all possible combinations of active layers.
 The display-layout identifier is saved with each configuration, independently
 of host settings, and can be edited without importing a file. The browser downloads labels from a pinned revision of

@@ -42,9 +42,19 @@
         <section class="half"><h3>Right hand</h3><svg id="right" viewBox="-8 0 710 510" aria-label="Right-hand keys"></svg></section>
       </div>
       <div class="legend"><span class="pressed-legend">● Pressed key</span><span>Legends: lower left = base · upper left = Shift · lower right = AltGr · upper right = Shift+AltGr</span><span>Dotted underline = dead key</span><span>↳ Transparent: falls through to a lower active layer</span><span>— No action</span></div>
-      <section class="details" aria-live="polite"><h3 id="detail-title">Key details</h3><p id="detail">Select a key to inspect its assigned action.</p></section>
+      <section class="details" aria-live="polite"><h3 id="detail-title">Key details</h3><p id="detail">Left-click a key to edit its assigned action.</p></section>
       <p class="note">Standard keys show characters from your selected display layout. Assigned combinations and special keys keep their action labels. Your computer’s keyboard language determines the characters typed.</p>
     </section>
+    <dialog id="key-editor" aria-labelledby="editor-title">
+      <form id="key-editor-form">
+        <h2 id="editor-title">Edit key</h2>
+        <p class="note">Choose an action with the mouse, then apply it to the preview.</p>
+        <label>Key type <select id="action-type"></select></label>
+        <div id="action-fields"></div>
+        <p id="editor-error" role="alert"></p>
+        <div class="editor-buttons"><button type="submit">Apply to preview</button><button id="cancel-key-edit" type="button">Cancel</button></div>
+      </form>
+    </dialog>
     <footer>To return to keyboard mode, release the boot chord and reconnect USB. Display mappings: <a href="https://github.com/hid-io/layouts" target="_blank" rel="noopener noreferrer">hid-io/layouts</a> (MIT).</footer>
   </main>
 </body>

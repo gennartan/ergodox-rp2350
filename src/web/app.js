@@ -537,6 +537,98 @@ function showDetails(hand, index) {
   document.getElementById("detail-title").textContent = `${hand === "left" ? "Left" : "Right"} hand · Key ${index + 1} · Layer ${layer}`;
   document.getElementById("detail").textContent = describe(layout.actions[hand === "left" ? 0 : 1][layer][index]).detail;
 }
+// The editor uses selects and checkboxes so no physical keyboard is needed.
+const actionTypeLabels = ["Transparent (fall through)", "No action", "Keyboard key / modifiers",
+  "Media / consumer", "System", "Mouse buttons", "Mouse movement", "Mouse wheel",
+  "Lighting", "Momentary layer (hold)", "Toggle layer", "Set default layer"];
+let editingKey = null;
+function editorSelect(field, title, choices, value) {
+  const label = document.createElement("label");
+  label.textContent = title;
+  const select = document.createElement("select");
+  select.id = `edit-${field}`;
+  for (const [code, name] of choices) select.append(new Option(name, code));
+  select.value = String(value);
+  label.append(select);
+  document.getElementById("action-fields").append(label);
+}
+function editorMask(field, title, names, value) {
+  const group = document.createElement("fieldset"), legend = document.createElement("legend");
+  legend.textContent = title; group.append(legend);
+  names.forEach((name, bit) => {
+    const label = document.createElement("label"), input = document.createElement("input");
+    input.type = "checkbox"; input.name = field; input.value = String(1 << bit);
+    input.checked = Boolean(value & (1 << bit));
+    label.append(input, document.createTextNode(name.replaceAll("_", " "))); group.append(label);
+  });
+  document.getElementById("action-fields").append(group);
+}
+function renderActionFields(action = {}) {
+  const type = Number(document.getElementById("action-type").value);
+  document.getElementById("action-fields").replaceChildren();
+  document.getElementById("editor-error").textContent = "";
+  const range = (min, max, label) => Array.from({length:max-min+1}, (_, i) => [min+i, label(min+i)]);
+  const tokens = map => Object.entries(map).map(([code, name]) => [code, name.replaceAll("_", " ")]);
+  switch (type) {
+    case 2:
+      editorSelect("keycode", "Key", Object.keys(keyTokens).map(code => [code, `${displayKeyName(Number(code))} (${keyTokens[code]})`]), action.keycode ?? 4);
+      editorMask("modifier", "Modifiers", modifierTokens, action.modifier ?? 0); break;
+    case 3:
+      editorSelect("usage", "Consumer action", [...tokens(consumerTokens), ...range(0,1023,n => `Usage ${n}`).filter(([n]) => !Object.hasOwn(consumerTokens,n))], action.usage ?? 0xcd); break;
+    case 4: editorSelect("usage", "System action", tokens(systemTokens), action.usage ?? 0); break;
+    case 5: editorMask("buttons", "Mouse buttons", buttonTokens, action.usage ?? 1); break;
+    case 6:
+      editorSelect("x", "Horizontal (negative = left)", range(-127,127,String), action.x ?? 0);
+      editorSelect("y", "Vertical (negative = up)", range(-127,127,String), action.y ?? 0); break;
+    case 7: editorSelect("y", "Scroll amount", range(-127,127,String), action.y ?? 1); break;
+    case 8: editorSelect("usage", "Lighting action", tokens(lightingTokens), action.usage ?? 0); break;
+    case 9: case 10: case 11:
+      editorSelect("layer", "Target layer", range(0,layout.layerCount-1,n => `Layer ${n}`), action.layer ?? 0); break;
+  }
+}
+function openKeyEditor(hand, index) {
+  if (layoutTransferBusy) return;
+  showDetails(hand, index);
+  editingKey = {hand:indexHand(hand), index, layer:Number(document.getElementById("layer").value)};
+  const action = layout.actions[editingKey.hand][editingKey.layer][index];
+  document.getElementById("editor-title").textContent = document.getElementById("detail-title").textContent;
+  const type = document.getElementById("action-type");
+  type.replaceChildren(...actionTypeLabels.map((name, i) => new Option(name,i)));
+  type.value = String(action.type); renderActionFields(action);
+  document.getElementById("key-editor").showModal();
+}
+function indexHand(hand) { return hand === "left" ? 0 : 1; }
+function readEditorAction() {
+  const number = field => Number(document.getElementById(`edit-${field}`).value);
+  const mask = field => [...document.querySelectorAll(`#action-fields input[name="${field}"]:checked`)].reduce((value,input) => value | Number(input.value),0);
+  const action = {type:Number(document.getElementById("action-type").value), modifier:0, keycode:0, usage:0, x:0, y:0, layer:0};
+  switch (action.type) {
+    case 2: action.keycode=number("keycode"); action.modifier=mask("modifier"); break;
+    case 3: case 4: case 8: action.usage=number("usage"); break;
+    case 5: action.usage=mask("buttons"); break;
+    case 6: action.x=number("x"); action.y=number("y"); break;
+    case 7: action.y=number("y"); break;
+    case 9: case 10: case 11: action.layer=number("layer"); break;
+  }
+  return action;
+}
+function applyKeyEdit(event) {
+  event.preventDefault();
+  if (!editingKey || layoutTransferBusy) return;
+  try {
+    const draft = layoutFromJSON(layoutToJSON(layout));
+    draft.actions[editingKey.hand][editingKey.layer][editingKey.index] = readEditorAction();
+    pendingLayout = layoutFromJSON(layoutToJSON(draft));
+    pendingSaved = false; layout = pendingLayout;
+    document.getElementById("mode-badge").textContent = "Unsaved configuration";
+    document.getElementById("import-preview").hidden = false;
+    document.getElementById("preview-message").textContent = "Key assignments changed. Review your layers and save to keyboard to apply after reboot.";
+    document.getElementById("save-layout").textContent = "Save to keyboard";
+    document.getElementById("discard-import").textContent = "Discard preview";
+    document.getElementById("key-editor").close(); editingKey = null;
+    render(); updateTransferControls(); transferMessage("");
+  } catch (error) { document.getElementById("editor-error").textContent = error.message; }
+}
 function render() {
   const layer = Number(document.getElementById("layer").value);
   for (const [hand, handIndex] of [["left",0],["right",1]]) {
@@ -550,9 +642,9 @@ function render() {
       group.append(svgElement("title", {}, description.detail));
       group.append(svgElement("text", {x:key.x+key.w/2,y:key.y+11,class:"key-index"}, String(key.index+1)));
       appendKeyLabels(group, key, description, standardKeyLegends(action));
-      group.addEventListener("click", () => showDetails(hand,key.index));
+      group.addEventListener("click", () => openKeyEditor(hand,key.index));
       group.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); showDetails(hand,key.index); }
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openKeyEditor(hand,key.index); }
       });
       svg.append(group);
     }
@@ -580,7 +672,7 @@ function displayLayout(current) {
   if (!Object.hasOwn(displayLayouts, id)) displaySelector.append(new Option(`Unavailable (${id})`, id));
   displaySelector.value = id;
   document.getElementById("detail-title").textContent="Key details";
-  document.getElementById("detail").textContent="Select a key to inspect its assigned action.";
+  document.getElementById("detail").textContent="Left-click a key to edit its assigned action.";
   document.getElementById("layout-name").textContent=layout.name || "Unnamed layout";
   document.getElementById("summary").textContent=`${layout.layerCount} layers · 38 keys per hand · Default: layer ${layout.defaultLayer}`;
   const selector=document.getElementById("layer");
@@ -690,6 +782,11 @@ async function loadLayout() {
   }
 }
 if (typeof document !== "undefined") {
+  document.getElementById("action-type").addEventListener("change", () => renderActionFields());
+  document.getElementById("key-editor-form").addEventListener("submit", applyKeyEdit);
+  document.getElementById("cancel-key-edit").addEventListener("click", () => {
+    document.getElementById("key-editor").close(); editingKey = null;
+  });
   document.getElementById("retry-labels").addEventListener("click",loadDisplayLabels);
   document.getElementById("display-layout").addEventListener("change",changeDisplayLayout);
   document.getElementById("download-json").addEventListener("click",downloadLayout);
