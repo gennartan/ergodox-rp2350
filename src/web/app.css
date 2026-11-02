@@ -69,3 +69,8 @@ button:disabled { opacity: .55; cursor: default; }
 #key-editor input[type="checkbox"] { width: 20px; height: 20px; }
 .editor-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
 #editor-error { color: #a52c39; }
+
+#key-editor .macro-step { display: block; padding: 12px; }
+#key-editor .macro-step fieldset { display: flex; }
+#macro-steps > .editor-buttons { margin-bottom: 16px; }
+#key-editor fieldset { min-inline-size: 0; max-width: 100%; }

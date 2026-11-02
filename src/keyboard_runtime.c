@@ -84,6 +84,18 @@ bool keyboard_runtime_handle_key(struct keyboard_runtime *runtime,
     }
 
     switch (action->type) {
+    case KEYBOARD_ACTION_MACRO:
+        /* One macro at a time; never restart on repeat or trigger release. */
+        if (pressed && !runtime->macro_phase && runtime->layout->macros != NULL &&
+            action->usage < KEYBOARD_MACRO_COUNT &&
+            runtime->layout->macros[action->usage].count > 0 &&
+            runtime->layout->macros[action->usage].count <= KEYBOARD_MACRO_MAX_STEPS) {
+            runtime->macro_index = action->usage;
+            runtime->macro_step = 0;
+            runtime->macro_phase = 1;
+            report_changed = true;
+        }
+        break;
     case KEYBOARD_ACTION_KEY:
     case KEYBOARD_ACTION_CONSUMER:
     case KEYBOARD_ACTION_SYSTEM:
@@ -181,6 +193,17 @@ void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
     uint8_t report_index = 2;
 
     memset(report, 0, KEYBOARD_HID_REPORT_SIZE);
+    /* Keep physical modifiers/keys out of the sequence, tracking their state
+     * normally so the current physical report can be restored at completion. */
+    if (runtime->macro_phase) {
+        if (runtime->macro_phase == 2) {
+            const struct keyboard_macro_step *step =
+                &runtime->layout->macros[runtime->macro_index].steps[runtime->macro_step];
+            report[0] = step->modifier;
+            report[2] = step->keycode;
+        }
+        return;
+    }
 
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; hand++) {
         for (int i = 0; i < KEYBOARD_KEY_COUNT; i++) {
@@ -212,4 +235,36 @@ const struct keyboard_action *keyboard_runtime_pressed_action(
     }
 
     return &runtime->pressed_actions[hand][key_index];
+}
+
+void keyboard_runtime_macro_cancel(struct keyboard_runtime *runtime)
+{
+    runtime->macro_phase = 0;
+    runtime->macro_index = 0;
+    runtime->macro_step = 0;
+}
+
+void keyboard_runtime_macro_advance(struct keyboard_runtime *runtime)
+{
+    switch (runtime->macro_phase) {
+    case 1: runtime->macro_phase = 2; break;
+    case 2: runtime->macro_phase = 3; break;
+    case 3:
+        if (++runtime->macro_step < runtime->layout->macros[runtime->macro_index].count) {
+            runtime->macro_phase = 2;
+        } else {
+            keyboard_runtime_macro_cancel(runtime);
+        }
+        break;
+    default: break;
+    }
+}
+
+uint32_t keyboard_runtime_macro_delay(const struct keyboard_runtime *runtime)
+{
+    uint32_t delay = KEYBOARD_MACRO_TAP_MS;
+    if (runtime->macro_phase == 3) {
+        delay += runtime->layout->macros[runtime->macro_index].steps[runtime->macro_step].delay_ms;
+    }
+    return delay;
 }

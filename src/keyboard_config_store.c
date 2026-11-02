@@ -63,6 +63,7 @@ int keyboard_config_init(bool configuration_mode)
     active.default_layer = factory->default_layer;
     strcpy(active.display_layout, KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT);
     memcpy(active.actions, *factory->layers, sizeof(active.actions));
+    if (factory->macros != NULL) { memcpy(active.macros, factory->macros, sizeof(active.macros)); }
     ret = keyboard_config_validate(&active);
     if (ret != 0) {
         LOG_ERR("Invalid compiled factory configuration");
@@ -84,6 +85,7 @@ int keyboard_config_init(bool configuration_mode)
         .layer_count = active.layer_count,
         .default_layer = active.default_layer,
         .layers = &active.actions,
+        .macros = active.macros,
     };
     LOG_INF("Configuration: %s, %u layers, %u-byte actions", active.name,
         active.layer_count, (unsigned int)sizeof(struct keyboard_action));

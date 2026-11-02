@@ -160,9 +160,90 @@ static void test_runtime(void)
     assert(report[2] == HID_KEY_B);
 }
 
+static void setup_macro(void)
+{
+    setup();
+    source.macros[0].count = 3;
+    source.macros[0].steps[0] = (struct keyboard_macro_step){64, 50, 20};
+    source.macros[0].steps[1] = (struct keyboard_macro_step){0, 44, 0};
+    source.macros[0].steps[2] = (struct keyboard_macro_step){0, 44, 5000};
+    source.actions[0][0][2] = (struct keyboard_action)KB_MACRO(0);
+    source.actions[0][0][3] = (struct keyboard_action)KB_MACRO(0);
+}
+
+static void test_macros(void)
+{
+    size_t length;
+    uint8_t report[8];
+    struct keyboard_runtime runtime;
+    setup_macro();
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(length == 3040 && blob[4] == 3);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(memcmp(&source, &decoded, sizeof(source)) == 0);
+    /* Even a valid CRC cannot bypass step, padding, or reference checks. */
+    const size_t offsets[] = {2496, 2497, 2501, 2503, 2512, 74};
+    for (unsigned int i = 0; i < sizeof(offsets)/sizeof(offsets[0]); ++i) {
+        uint8_t old = blob[offsets[i]];
+        blob[offsets[i]] = 255;
+        update_crc(blob, length);
+        assert(keyboard_config_decode(blob, length, &decoded) < 0);
+        assert(memcmp(&source, &decoded, sizeof(source)) == 0);
+        blob[offsets[i]] = old;
+    }
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_decode(blob, length - 1, &decoded) < 0);
+    FILE *out = fopen("/tmp/ergodox-macro-test.bin", "wb");
+    assert(out && fwrite(blob, 1, length, out) == length); fclose(out);
+    struct keyboard_layout layout = {.name=source.name, .layer_count=8,
+        .layers=&source.actions, .macros=source.macros};
+    keyboard_runtime_init(&runtime, &layout);
+    keyboard_runtime_handle_key(&runtime, 0, 0, true); /* physical A */
+    assert(keyboard_runtime_handle_key(&runtime, 0, 2, true));
+    assert(!keyboard_runtime_handle_key(&runtime, 0, 2, true)); /* no repeat */
+    assert(!keyboard_runtime_handle_key(&runtime, 0, 3, true)); /* no overlap */
+    assert(!keyboard_runtime_handle_key(&runtime, 0, 2, false)); /* keep running */
+    keyboard_runtime_build_hid_report(&runtime, report);
+    assert(report[0] == 0 && report[2] == 0); /* isolate initial state */
+    keyboard_runtime_macro_advance(&runtime);
+    keyboard_runtime_build_hid_report(&runtime, report);
+    assert(report[0] == 64 && report[2] == 50);
+    assert(keyboard_runtime_macro_delay(&runtime) == 10);
+    keyboard_runtime_macro_advance(&runtime);
+    keyboard_runtime_build_hid_report(&runtime, report);
+    assert(report[0] == 0 && report[2] == 0);
+    assert(keyboard_runtime_macro_delay(&runtime) == 30);
+    for (int i = 0; i < 2; ++i) {
+        keyboard_runtime_macro_advance(&runtime);
+        keyboard_runtime_build_hid_report(&runtime, report);
+        assert(report[0] == 0 && report[2] == 44);
+        keyboard_runtime_macro_advance(&runtime);
+        keyboard_runtime_build_hid_report(&runtime, report);
+        assert(report[0] == 0 && report[2] == 0); /* release even repeated Space */
+    }
+    assert(keyboard_runtime_macro_delay(&runtime) == 5010);
+    keyboard_runtime_macro_advance(&runtime);
+    keyboard_runtime_build_hid_report(&runtime, report);
+    assert(runtime.macro_phase == 0 && report[2] == HID_KEY_A); /* restore */
+    assert(keyboard_runtime_handle_key(&runtime, 0, 2, true));
+    keyboard_runtime_handle_key(&runtime, 0, 0, false); /* physical release during macro */
+    keyboard_runtime_macro_cancel(&runtime);
+    keyboard_runtime_build_hid_report(&runtime, report);
+    assert(runtime.macro_phase == 0 && report[0] == 0 && report[2] == 0);
+    source.macros[0].count = 0;
+    assert(keyboard_config_validate(&source) < 0);
+    setup_macro(); source.actions[0][0][2].usage = 8;
+    assert(keyboard_config_validate(&source) < 0);
+    setup_macro(); source.macros[0].count = 17;
+    assert(keyboard_config_validate(&source) < 0);
+    setup_macro(); source.macros[0].steps[0].delay_ms = 5001;
+    assert(keyboard_config_validate(&source) < 0);
+}
+
 #ifdef CONFIG_ZTEST
 ZTEST(config, test_codec_roundtrip) { test_codec(); }
 ZTEST(config, test_master_runtime) { test_runtime(); }
+ZTEST(config, test_macro_codec_and_execution) { test_macros(); }
 
 ZTEST(config, test_nvm_save_reload_and_fallback)
 {
@@ -174,7 +255,7 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     assert(flash_area_erase(area, 0, area->fa_size) == 0);
     assert(keyboard_config_init(true) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
-    setup();
+    setup_macro();
     strcpy(source.display_layout, "be-azerty");
     assert(keyboard_config_save(&source) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0); /* apply only on reboot */
@@ -192,6 +273,7 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     assert(keyboard_config_layout()->layer_count == 8);
     assert(keyboard_config_layout()->default_layer == source.default_layer);
     assert(memcmp(*keyboard_config_layout()->layers, source.actions, sizeof(source.actions)) == 0);
+    assert(memcmp(keyboard_config_layout()->macros, source.macros, sizeof(source.macros)) == 0);
     assert(keyboard_config_save(&source) == -EACCES);
     assert(keyboard_config_export(blob, sizeof(blob), &length) == 0);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
@@ -218,7 +300,7 @@ ZTEST(config, test_binary_import_persists_without_live_apply)
     assert(flash_area_open(PARTITION_ID(keyboard_config_partition), &area) == 0);
     assert(flash_area_erase(area, 0, area->fa_size) == 0);
     assert(keyboard_config_init(true) == 0);
-    setup();
+    setup_macro();
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
     assert(keyboard_config_import(blob, length) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
@@ -282,6 +364,7 @@ int main(void)
 {
     test_codec();
     test_runtime();
+    test_macros();
     puts("Configuration codec, corrupt/truncated inputs, and master layer/HID tests passed");
     return 0;
 }

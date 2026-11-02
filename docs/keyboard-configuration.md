@@ -35,17 +35,18 @@ layer slots. The C layout files provide a factory fallback rather than the live
 runtime table. The offline configurator's C export remains usable for generating
 factory defaults.
 
-## NVM binary record, version 2
+## NVM binary record, versions 1–3
 
 This is an explicit byte encoding, not a dump of a C structure. All multibyte
 integers are little-endian. Signed mouse deltas use two's-complement bytes.
 Version-1 records remain readable and default to the `qwerty` display layout.
-Unknown versions are rejected. All new saves use version 2.
+Unknown versions are rejected. Saves without macros use version 2; saves containing macros use version 3.
+Both remain readable, along with version 1.
 
 | Header offset | Size | Field |
 | --- | --- | --- |
 | 0 | 4 | ASCII magic `EKCF` |
-| 4 | 2 | Format version, currently 2 |
+| 4 | 2 | Format version: 1, 2, or 3 |
 | 6 | 2 | Header size, 64 |
 | 8 | 4 | Total record length, including header |
 | 12 | 1 | Active layer count, 1–8 |
@@ -74,6 +75,7 @@ Hand 0 is left; hand 1 is right. Only active layers are serialized. An action is
 | Momentary layer | 9 | `0`, target layer |
 | Toggle layer | 10 | `0`, target layer |
 | Default layer | 11 | `0`, target layer |
+| Macro | 12 | 16-bit macro slot index, little-endian (version 3 only) |
 
 The display-layout identifier uses lowercase letters, digits, hyphens, and
 underscores, beginning with a letter or digit. Factory defaults use `qwerty`.
@@ -81,8 +83,37 @@ It is a UI preference and does not alter HID reports or host settings.
 
 Unused action fields must be zero. Validation checks action types, supported HID
 usage ranges, mouse ranges, lighting commands, and layer references. The maximum
-record size is **2,496 bytes**; four layers use **1,280 bytes**. Malformed data
+record size is **3,040 bytes** with macros (**2,496** without); four layers use
+**1,824 bytes** with macros (**1,280** without). Malformed data
 never partially replaces the RAM configuration.
+
+Version 3 appends a fixed 544-byte macro bank after the actions: eight slots of
+68 bytes each. A slot starts with a one-byte step count (0–16) and three zero
+reserved bytes, followed by sixteen four-byte steps. A step is
+`[modifier, keycode, delay_ms_low, delay_ms_high]`. Unused steps must be zero.
+Keys are HID usages 0–101; modifiers are the usual eight-bit keyboard mask;
+delays are 0–5,000 ms. An action may only reference a nonempty slot.
+
+## Macro execution and editing
+
+Left-click a key, choose **Macro (key sequence)**, and select one of eight shared
+slots. Add, remove, or reorder up to sixteen taps using the mouse. Each tap has a
+key, modifier checkboxes, and an optional delay after release. Apply to preview
+and save to keyboard as usual. Editing a slot affects every key that
+references it; Cancel or Discard preview does not alter the active configuration.
+
+A macro runs once per physical press, continues after its trigger is released,
+and does not repeat while held. Other macro triggers are ignored while one is
+running. The executor sends an initial empty keyboard report, then a press and
+release for each tap (at least 10 ms between transitions), plus the configured
+after-release delay. A zero key with no modifiers can be used as a pause.
+Physical keyboard keys/modifiers are temporarily excluded from keyboard reports
+while the macro runs; physical state changes are still tracked, and the current
+state is restored afterward. A key held across that restoration can register a
+new press. Mouse and consumer/system actions continue normally. Failed HID sends
+retry the same transition; an unavailable USB interface cancels the macro.
+The executor uses delayed work, so delays do not sleep in key-event processing.
+Macro output uses the computer's active keyboard locale, just like ordinary keys.
 
 ## Flash storage and boot behavior
 
@@ -145,7 +176,7 @@ all available layers, and both physical keyboard halves. Left-clicking a key ope
 using dropdowns and modifier/button checkboxes; no keyboard input is needed.
 Apply to preview stages the assignment on the selected hand and layer. Cancel
 closes the editor without changes. Save to keyboard persists the preview for
-the next reboot, and Discard preview restores the current layout. All twelve
+the next reboot, and Discard preview restores the current layout. All thirteen
 action types are supported, including modifier-only keys and layer switching. Transparent assignments remain explicitly transparent rather
 than pretending to resolve all possible combinations of active layers.
 The display-layout identifier is saved with each configuration, independently
@@ -236,6 +267,7 @@ Test human-readable JSON interchange and strict validation:
 
 ```sh
 node tests/config/test_json.js
+node tests/config/test_macros.js
 ```
 
 Exercise the upload callback with fragmented HTTP/1.1 bodies, captured headers,
@@ -243,4 +275,5 @@ and completion/abort resets (requires a host C compiler):
 
 ```sh
 python3 tests/config/test_upload.py
+python3 tests/config/test_macro_worker.py
 ```

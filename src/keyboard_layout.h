@@ -12,6 +12,21 @@
 #define KEYBOARD_HID_REPORT_SIZE 8
 #define KEYBOARD_MAX_REPORT_KEYS 6
 #define KEYBOARD_MOUSE_MOVE_STEP 16
+#define KEYBOARD_MACRO_COUNT 8
+#define KEYBOARD_MACRO_MAX_STEPS 16
+#define KEYBOARD_MACRO_MAX_DELAY_MS 5000
+#define KEYBOARD_MACRO_TAP_MS 10
+
+/* A tap presses this chord, releases it, then waits delay_ms. */
+struct keyboard_macro_step {
+    uint8_t modifier;
+    uint8_t keycode;
+    uint16_t delay_ms;
+};
+struct keyboard_macro {
+    uint8_t count;
+    struct keyboard_macro_step steps[KEYBOARD_MACRO_MAX_STEPS];
+};
 
 enum keyboard_hand {
     KEYBOARD_HAND_LEFT,
@@ -40,6 +55,7 @@ enum keyboard_action_type {
     KEYBOARD_ACTION_LAYER_MOMENTARY = 9,
     KEYBOARD_ACTION_LAYER_TOGGLE = 10,
     KEYBOARD_ACTION_LAYER_DEFAULT = 11,
+    KEYBOARD_ACTION_MACRO = 12,
 };
 
 /* Four bytes, naturally aligned: tag, modifiers, and a two-byte payload. */
@@ -67,6 +83,7 @@ struct keyboard_layout {
     const char *name;
     uint8_t layer_count;
     uint8_t default_layer;
+    const struct keyboard_macro *macros;
     const struct keyboard_action (*layers)[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT];
 };
 
@@ -76,6 +93,10 @@ struct keyboard_runtime {
     bool pressed[KEYBOARD_HAND_COUNT][KEYBOARD_KEY_COUNT];
     uint32_t default_layer;
     uint32_t active_layers;
+    /* 0 = idle, 1 = initial release, 2 = tap down, 3 = tap up. */
+    uint8_t macro_phase;
+    uint8_t macro_index;
+    uint8_t macro_step;
 };
 
 #define KB_TRNS \
@@ -102,6 +123,8 @@ struct keyboard_runtime {
     { .type = KEYBOARD_ACTION_LAYER_MOMENTARY, .layer = (target_layer) }
 #define KB_TG(target_layer) \
     { .type = KEYBOARD_ACTION_LAYER_TOGGLE, .layer = (target_layer) }
+#define KB_MACRO(index) \
+    { .type = KEYBOARD_ACTION_MACRO, .usage = (index) }
 #define KB_DF(target_layer) \
     { .type = KEYBOARD_ACTION_LAYER_DEFAULT, .layer = (target_layer) }
 
@@ -116,6 +139,11 @@ void keyboard_runtime_build_hid_report(const struct keyboard_runtime *runtime,
 uint16_t keyboard_runtime_consumer_usage(const struct keyboard_runtime *runtime);
 uint8_t keyboard_runtime_system_usage(const struct keyboard_runtime *runtime);
 uint8_t keyboard_runtime_mouse_buttons(const struct keyboard_runtime *runtime);
+/* Advance only after the previous report was successfully delivered and its
+ * delay elapsed. Callers serialize this with key events. */
+void keyboard_runtime_macro_advance(struct keyboard_runtime *runtime);
+uint32_t keyboard_runtime_macro_delay(const struct keyboard_runtime *runtime);
+void keyboard_runtime_macro_cancel(struct keyboard_runtime *runtime);
 uint32_t keyboard_runtime_active_layers(const struct keyboard_runtime *runtime);
 const struct keyboard_action *keyboard_runtime_pressed_action(
     const struct keyboard_runtime *runtime, uint8_t hand, uint8_t key_index);

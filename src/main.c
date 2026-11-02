@@ -125,6 +125,9 @@ UDC_STATIC_BUF_DEFINE(system_hid_report, ERGODOX_HID_SYSTEM_REPORT_SIZE);
 UDC_STATIC_BUF_DEFINE(mouse_hid_report, ERGODOX_HID_MOUSE_REPORT_SIZE);
 
 static bool lighting_enabled = true;
+static struct k_work_delayable macro_work;
+/* Key-event HID sends and macro scheduling run on the system work queue. */
+static bool macro_report_pending;
 
 
 static void kb_iface_ready(const struct device *dev, const bool ready)
@@ -319,29 +322,30 @@ static void update_leds_for_layers(void)
     }
 }
 
-static void send_hid_report(const struct device *dev, bool ready,
+static int send_hid_report(const struct device *dev, bool ready,
     const uint8_t *report, size_t size)
 {
     int ret;
 
     if (!ready) {
         LOG_DBG("USB HID interface %s is not ready", dev->name);
-        return;
+        return -ENODEV;
     }
 
     /* Boot hosts understand only the unnumbered eight-byte keyboard report. */
     if (atomic_get(&hid_protocol) == HID_PROTOCOL_BOOT &&
         report != boot_keyboard_hid_report) {
-        return;
+        return -ENODEV;
     }
 
     ret = hid_device_submit_report(dev, size, report);
     if (ret != 0) {
         LOG_ERR("Failed to submit HID report: %d", ret);
     }
+    return ret;
 }
 
-static void submit_hid_report_from_runtime(void)
+static int submit_hid_report_from_runtime(void)
 {
     k_spinlock_key_t key = k_spin_lock(&runtime_lock);
 
@@ -352,10 +356,10 @@ static void submit_hid_report_from_runtime(void)
 
     k_spin_unlock(&runtime_lock, key);
     if (atomic_get(&hid_protocol) == HID_PROTOCOL_BOOT) {
-        send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+        return send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
             boot_keyboard_hid_report, KEYBOARD_HID_REPORT_SIZE);
     } else {
-        send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
+        return send_hid_report(keyboard_hid_dev, keyboard_hid_ready,
             /* UDC buffers are padded for alignment; send only report bytes. */
             keyboard_hid_report, ERGODOX_HID_KEYBOARD_REPORT_SIZE);
     }
@@ -423,6 +427,30 @@ static void apply_lighting_action(uint16_t command)
     update_leds_for_layers();
 }
 
+static void macro_work_handler(struct k_work *work)
+{
+    ARG_UNUSED(work);
+    if (!keyboard_hid_ready) {
+        k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+        keyboard_runtime_macro_cancel(&keyboard);
+        k_spin_unlock(&runtime_lock, key);
+        macro_report_pending = false;
+        return;
+    }
+    k_spinlock_key_t key = k_spin_lock(&runtime_lock);
+    if (!macro_report_pending) { keyboard_runtime_macro_advance(&keyboard); }
+    uint32_t delay = keyboard_runtime_macro_delay(&keyboard);
+    bool active = keyboard.macro_phase != 0;
+    k_spin_unlock(&runtime_lock, key);
+
+    /* A failed send retries the same state, including the final restore report.
+     * Advancing only after delivery prevents missing presses or stuck modifiers. */
+    macro_report_pending = submit_hid_report_from_runtime() != 0;
+    if (active || macro_report_pending) {
+        k_work_reschedule(&macro_work, K_MSEC(macro_report_pending ? 10 : delay));
+    }
+}
+
 static void process_key_event(const struct split_key_event *event)
 {
     struct keyboard_action action;
@@ -467,6 +495,7 @@ static void process_key_event(const struct split_key_event *event)
     action = *keyboard_runtime_pressed_action(&keyboard, event->hand,
         event->key_index);
     active_layers = keyboard_runtime_active_layers(&keyboard);
+    bool macro_active = keyboard.macro_phase != 0;
 
     k_spin_unlock(&runtime_lock, key);
 
@@ -478,8 +507,12 @@ static void process_key_event(const struct split_key_event *event)
 
     if (report_changed) {
         switch (action.type) {
+        case KEYBOARD_ACTION_MACRO:
+            macro_report_pending = true;
+            k_work_reschedule(&macro_work, K_NO_WAIT);
+            break;
         case KEYBOARD_ACTION_KEY:
-            submit_hid_report_from_runtime();
+            if (!macro_active) { submit_hid_report_from_runtime(); }
             break;
         case KEYBOARD_ACTION_CONSUMER:
             submit_consumer_report_from_runtime();
@@ -733,6 +766,7 @@ int main(void)
 
     LOG_INF("Keyboard interrupt setup start");
     k_work_init(&split_events_work, split_events_work_handler);
+    k_work_init_delayable(&macro_work, macro_work_handler);
 
     ret = select_transport_mode();
     if (ret != 0) {

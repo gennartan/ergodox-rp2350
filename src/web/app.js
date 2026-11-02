@@ -52,13 +52,13 @@ function decodeLayout(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer);
   if (bytes.length < 64 || String.fromCharCode(...bytes.slice(0,4)) !== "EKCF") throw new Error("Invalid layout response.");
   const version = view.getUint16(4,true);
-  if (![1,2].includes(version) || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
+  if (![1,2,3].includes(version) || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
   const layerCount = bytes[12], defaultLayer = bytes[13];
   if (layerCount < 1 || layerCount > 8 || defaultLayer >= layerCount || bytes[14] !== 2 || bytes[15] !== 38 ||
-      bytes.length !== 64 + 2 * layerCount * 38 * 4 || view.getUint32(8,true) !== bytes.length ||
+      bytes.length !== 64 + 2 * layerCount * 38 * 4 + (version === 3 ? 544 : 0) || view.getUint32(8,true) !== bytes.length ||
       (version === 1 && bytes.slice(48,60).some(byte => byte !== 0)) || view.getUint32(60,true) !== crc32(bytes)) throw new Error("The layout response is incomplete or corrupt.");
   let displayLayout = "qwerty";
-  if (version === 2) {
+  if (version >= 2) {
     const field = bytes.slice(48,60), end = field.indexOf(0);
     if (end < 0) throw new Error("Invalid display layout identifier.");
     displayLayout = validateDisplayLayout(String.fromCharCode(...field.slice(0,end)));
@@ -71,10 +71,28 @@ function decodeLayout(buffer) {
     const action = {type: bytes[offset], modifier: bytes[offset+1], keycode: bytes[offset+2], layer: bytes[offset+3],
       usage: view.getUint16(offset+2,true), x: view.getInt8(offset+2), y: view.getInt8(offset+3)};
     offset += 4;
-    if (action.type > 11) throw new Error("Unknown key action in layout.");
+    if (action.type > (version === 3 ? 12 : 11)) throw new Error("Unknown key action in layout.");
     return action;
   })));
-  return {name, layerCount, defaultLayer, displayLayout, actions};
+  const macros = Array.from({length:8}, () => []);
+  if (version === 3) {
+    for (const macro of macros) {
+      const count = bytes[offset];
+      if (count > 16 || bytes[offset+1] || bytes[offset+2] || bytes[offset+3]) throw new Error("Invalid macro header.");
+      offset += 4;
+      for (let i=0; i<16; ++i) {
+        const step = {modifier:bytes[offset],keycode:bytes[offset+1],delayMs:view.getUint16(offset+2,true)};
+        offset += 4;
+        if (step.keycode > 101 || step.delayMs > 5000 ||
+            (i >= count && (step.modifier || step.keycode || step.delayMs))) throw new Error("Invalid macro step.");
+        if (i < count) macro.push(step);
+      }
+    }
+  }
+  for (const hand of actions) for (const layer of hand) for (const a of layer) {
+    if (a.type === 12 && (a.modifier || a.usage >= 8 || !macros[a.usage].length)) throw new Error("Macro refers to an empty or invalid slot.");
+  }
+  return {name, layerCount, defaultLayer, displayLayout, actions, macros};
 }
 
 const keyNames = {
@@ -349,12 +367,16 @@ function describe(action) {
     case 6: return {lines:["Mouse move",`${action.x}, ${action.y}`], detail:`Move mouse: X ${action.x}, Y ${action.y}`, kind:"special"};
     case 7: return {lines:["Scroll",String(action.y)], detail:`Mouse wheel: ${action.y}`, kind:"special"};
     case 8: { const text = ["Toggle","On","Off","Brighter","Dimmer"][action.usage] || String(action.usage); return {lines:["Lighting",text], detail:`Lighting: ${text}`, kind:"special"}; }
+    case 12: {
+      const macro = layout?.macros?.[action.usage] ?? [];
+      return {lines:["Macro", String(action.usage + 1)], detail:`Macro ${action.usage + 1} · ${macro.length} steps`, kind:"special"};
+    }
     default: { const text = ({9:"Hold",10:"Toggle",11:"Default"})[action.type]; return {lines:[text,`Layer ${action.layer}`], detail:`${text} layer ${action.layer}`, kind:"layer"}; }
   }
 }
 
 // JSON interchange stays in the browser; the device still receives compact bytes.
-const actionTypes = ["transparent","none","key","consumer","system","mouse_button","mouse_move","mouse_wheel","lighting","layer_momentary","layer_toggle","layer_default"];
+const actionTypes = ["transparent","none","key","consumer","system","mouse_button","mouse_move","mouse_wheel","lighting","layer_momentary","layer_toggle","layer_default","macro"];
 const modifierTokens = ["LEFT_CTRL","LEFT_SHIFT","LEFT_ALT","LEFT_GUI","RIGHT_CTRL","RIGHT_SHIFT","RIGHT_ALT","RIGHT_GUI"];
 const buttonTokens = ["LEFT","RIGHT","MIDDLE","BACK","FORWARD"];
 const lightingTokens = ["TOGGLE","ON","OFF","BRIGHTNESS_UP","BRIGHTNESS_DOWN"];
@@ -375,6 +397,7 @@ function validateDisplayLayout(value) {
 }
 function layoutToJSON(current) {
   return {format:"ergodox-layout",version:1,name:current.name,default_layer:current.defaultLayer,display_layout:current.displayLayout ?? "qwerty",
+    ...((current.macros ?? []).some(macro => macro.length) ? {macros:current.macros.map(macro => macro.map(step => ({key:keyTokens[step.keycode],modifiers:modifierTokens.filter((_,i)=>step.modifier&(1<<i)),delay_ms:step.delayMs})))} : {}),
     layers:Array.from({length:current.layerCount},(_,layer)=>Object.fromEntries(["left","right"].map((hand,handIndex)=>[hand,
       current.actions[handIndex][layer].map((a,index)=>{
         const out={position:index+1,type:actionTypes[a.type]};
@@ -387,6 +410,7 @@ function layoutToJSON(current) {
           case 7: out.delta=a.y;break;
           case 8: out.command=lightingTokens[a.usage];break;
           case 9: case 10: case 11: out.layer=a.layer;break;
+          case 12: out.macro=a.usage;break;
         }
         return out;
       })
@@ -417,11 +441,21 @@ function maskFromNames(value,names,path) {
   return mask;
 }
 function layoutFromJSON(value) {
-  checkFields(value,["format","version","name","default_layer","display_layout","layers"],"Layout");
+  checkFields(value,["format","version","name","default_layer","display_layout","layers","macros"],"Layout");
   if(value.format!=="ergodox-layout" || value.version!==1) throw new Error("Expected ergodox-layout JSON version 1.");
   if(typeof value.name!=="string" || value.name.includes("\0") || new TextEncoder().encode(value.name).length>31) throw new Error("Layout name must contain at most 31 UTF-8 bytes and no NUL character.");
   if(!Array.isArray(value.layers) || value.layers.length<1 || value.layers.length>8) throw new Error("Expected between 1 and 8 layers.");
   const result={name:value.name,displayLayout:validateDisplayLayout(value.display_layout === undefined ? "qwerty" : value.display_layout),layerCount:value.layers.length,defaultLayer:integer(value.default_layer,0,value.layers.length-1,"default_layer"),actions:[[],[]]};
+  if (value.macros !== undefined && (!Array.isArray(value.macros) || value.macros.length !== 8)) throw new Error("Expected exactly 8 macro slots.");
+  result.macros = Array.from({length:8}, (_,i) => {
+    const steps = value.macros === undefined ? [] : value.macros[i];
+    if (!Array.isArray(steps) || steps.length > 16) throw new Error(`Macro ${i+1}: expected at most 16 steps.`);
+    return steps.map((step,j) => {
+      const path = `Macro ${i+1}, step ${j+1}`;
+      checkFields(step,["key","modifiers","delay_ms"],path);
+      return {keycode:namedNumber(step.key,keyTokens,0,101,path),modifier:maskFromNames(step.modifiers ?? [],modifierTokens,path),delayMs:integer(step.delay_ms ?? 0,0,5000,path)};
+    });
+  });
   value.layers.forEach((layer,layerIndex)=>{
     checkFields(layer,["left","right"],`Layer ${layerIndex}`);
     ["left","right"].forEach((hand,handIndex)=>{
@@ -432,7 +466,7 @@ function layoutFromJSON(value) {
         if(!entry || entry.position!==index+1) throw new Error(`${path}: position must be ${index+1}.`);
         const type=actionTypes.indexOf(entry.type);
         if(type<0) throw new Error(`${path}: unknown action type.`);
-        const fields=[[],[],["key","modifiers"],["usage"],["usage"],["buttons"],["x","y"],["delta"],["command"],["layer"],["layer"],["layer"]][type];
+        const fields=[[],[],["key","modifiers"],["usage"],["usage"],["buttons"],["x","y"],["delta"],["command"],["layer"],["layer"],["layer"],["macro"]][type];
         checkFields(entry,["position","type",...fields],path);
         const a={type,modifier:0,keycode:0,usage:0,x:0,y:0,layer:0};
         switch(type) {
@@ -444,6 +478,10 @@ function layoutFromJSON(value) {
           case 7: a.y=integer(entry.delta,-127,127,path);break;
           case 8: a.usage=namedNumber(entry.command,lightingTokens,0,4,path);break;
           case 9: case 10: case 11: a.layer=integer(entry.layer,0,result.layerCount-1,path);break;
+          case 12:
+            a.usage=integer(entry.macro,0,7,path);
+            if (!result.macros[a.usage].length) throw new Error(`${path}: macro slot is empty.`);
+            break;
         }
         return a;
       });
@@ -452,8 +490,9 @@ function layoutFromJSON(value) {
   return decodeLayout(encodeLayout(result).buffer);
 }
 function encodeLayout(current) {
-  const bytes=new Uint8Array(64+2*current.layerCount*38*4),view=new DataView(bytes.buffer);
-  bytes.set([69,75,67,70,2,0,64,0]);view.setUint32(8,bytes.length,true);
+  const hasMacros = (current.macros ?? []).some(macro => macro.length);
+  const bytes=new Uint8Array(64+2*current.layerCount*38*4+(hasMacros ? 544 : 0)),view=new DataView(bytes.buffer);
+  bytes.set([69,75,67,70,hasMacros ? 3 : 2,0,64,0]);view.setUint32(8,bytes.length,true);
   bytes.set([current.layerCount,current.defaultLayer,2,38],12);
   bytes.set(new TextEncoder().encode(current.name),16);
   bytes.set(new TextEncoder().encode(validateDisplayLayout(current.displayLayout ?? "qwerty")),48);
@@ -462,12 +501,23 @@ function encodeLayout(current) {
     bytes[offset]=a.type;
     switch(a.type) {
       case 2: bytes[offset+1]=a.modifier;bytes[offset+2]=a.keycode;break;
-      case 3: case 4: case 5: case 8: view.setUint16(offset+2,a.usage,true);break;
+      case 3: case 4: case 5: case 8: case 12: view.setUint16(offset+2,a.usage,true);break;
       case 6: view.setInt8(offset+2,a.x);view.setInt8(offset+3,a.y);break;
       case 7: view.setInt8(offset+3,a.y);break;
       case 9: case 10: case 11: bytes[offset+3]=a.layer;break;
     }
     offset+=4;
+  }
+  if (hasMacros) {
+    for (let i=0; i<8; ++i) {
+      const macro = current.macros[i];
+      bytes[offset]=macro.length; offset+=4;
+      for (let j=0; j<16; ++j) {
+        const step=macro[j];
+        if (step) { bytes[offset]=step.modifier; bytes[offset+1]=step.keycode; view.setUint16(offset+2,step.delayMs,true); }
+        offset+=4;
+      }
+    }
   }
   view.setUint32(60,crc32(bytes),true);
   return bytes;
@@ -553,19 +603,21 @@ function showDetails(hand, index) {
 // The editor uses selects and checkboxes so no physical keyboard is needed.
 const actionTypeLabels = ["Transparent (fall through)", "No action", "Keyboard key / modifiers",
   "Media / consumer", "System", "Mouse buttons", "Mouse movement", "Mouse wheel",
-  "Lighting", "Momentary layer (hold)", "Toggle layer", "Set default layer"];
-let editingKey = null;
-function editorSelect(field, title, choices, value) {
+  "Lighting", "Momentary layer (hold)", "Toggle layer", "Set default layer", "Macro (key sequence)"];
+let editingKey = null, editorMacros = null, editorMacroSlot = 0;
+function editorSelect(field, title, choices, value, target = document.getElementById("action-fields")) {
   const label = document.createElement("label");
   label.textContent = title;
   const select = document.createElement("select");
   select.id = `edit-${field}`;
+  if (field === "keycode" || field.startsWith("macro-key-")) select.className = "hid-key-choices";
   for (const [code, name] of choices) select.append(new Option(name, code));
   select.value = String(value);
   label.append(select);
-  document.getElementById("action-fields").append(label);
+  target.append(label);
+  return select;
 }
-function editorMask(field, title, names, value) {
+function editorMask(field, title, names, value, target = document.getElementById("action-fields")) {
   const group = document.createElement("fieldset"), legend = document.createElement("legend");
   legend.textContent = title; group.append(legend);
   names.forEach((name, bit) => {
@@ -574,7 +626,50 @@ function editorMask(field, title, names, value) {
     input.checked = Boolean(value & (1 << bit));
     label.append(input, document.createTextNode(name.replaceAll("_", " "))); group.append(label);
   });
-  document.getElementById("action-fields").append(group);
+  target.append(group);
+}
+function macroEditorButton(text, handler, target, disabled = false) {
+  const button = document.createElement("button");
+  button.type = "button"; button.textContent = text; button.disabled = disabled;
+  button.addEventListener("click", handler); target.append(button);
+}
+function renderMacroSteps() {
+  const target = document.getElementById("macro-steps");
+  target.replaceChildren();
+  const steps = editorMacros[editorMacroSlot];
+  const slots = document.getElementById("edit-macro-slot");
+  for (let i=0; i<8; ++i) slots.options[i].textContent = `Macro ${i+1} (${editorMacros[i].length} steps)`;
+  steps.forEach((step,i) => {
+    const row = document.createElement("fieldset"), legend = document.createElement("legend");
+    row.className = "macro-step"; legend.textContent = `Step ${i+1}`; row.append(legend);
+    const key = editorSelect(`macro-key-${i}`, "Key", Object.keys(keyTokens).map(code => [code,keyIdentity(Number(code))]), step.keycode, row);
+    key.addEventListener("change", () => { step.keycode = Number(key.value); });
+    editorMask(`macro-mod-${i}`, "Modifiers", modifierTokens, step.modifier, row);
+    row.addEventListener("change", () => {
+      step.modifier = [...row.querySelectorAll('input:checked')].reduce((mask,input) => mask | Number(input.value),0);
+    });
+    const delays = [...new Set([0,10,20,50,100,200,500,1000,2000,5000,step.delayMs])].sort((a,b)=>a-b);
+    const delay = editorSelect(`macro-delay-${i}`, "Delay after release", delays.map(ms => [ms,`${ms} ms`]), step.delayMs, row);
+    delay.addEventListener("change", () => { step.delayMs = Number(delay.value); });
+    const buttons = document.createElement("div"); buttons.className = "editor-buttons";
+    macroEditorButton("Move up", () => { [steps[i-1],steps[i]]=[steps[i],steps[i-1]]; renderMacroSteps(); }, buttons, i===0);
+    macroEditorButton("Move down", () => { [steps[i+1],steps[i]]=[steps[i],steps[i+1]]; renderMacroSteps(); }, buttons, i===steps.length-1);
+    macroEditorButton("Remove step", () => { steps.splice(i,1); renderMacroSteps(); }, buttons);
+    row.append(buttons); target.append(row);
+  });
+  const buttons = document.createElement("div"); buttons.className = "editor-buttons";
+  macroEditorButton("Add step", () => { steps.push({keycode:4,modifier:0,delayMs:0}); renderMacroSteps(); }, buttons, steps.length>=16);
+  target.append(buttons);
+}
+function renderMacroEditor(slot) {
+  editorMacroSlot = slot;
+  const select = editorSelect("macro-slot", "Macro slot", Array.from({length:8},(_,i)=>[i,`Macro ${i+1} (${editorMacros[i].length} steps)`]), slot);
+  const note = document.createElement("p"); note.className = "note";
+  note.textContent = "Shared slot: edits affect all assigned keys. Up to 16 taps; one run per press. Other macro triggers are ignored while running.";
+  const rows = document.createElement("div"); rows.id = "macro-steps";
+  document.getElementById("action-fields").append(note,rows);
+  select.addEventListener("change", () => { editorMacroSlot=Number(select.value); renderMacroSteps(); });
+  renderMacroSteps();
 }
 function renderActionFields(action = {}) {
   const type = Number(document.getElementById("action-type").value);
@@ -599,6 +694,7 @@ function renderActionFields(action = {}) {
       editorSelect("y", "Vertical (negative = up)", range(-127,127,String), action.y ?? 0); break;
     case 7: editorSelect("y", "Scroll amount", range(-127,127,String), action.y ?? 1); break;
     case 8: editorSelect("usage", "Lighting action", tokens(lightingTokens), action.usage ?? 0); break;
+    case 12: renderMacroEditor(action.usage ?? editorMacroSlot); break;
     case 9: case 10: case 11:
       editorSelect("layer", "Target layer", range(0,layout.layerCount-1,n => `Layer ${n}`), action.layer ?? 0); break;
   }
@@ -608,6 +704,8 @@ function openKeyEditor(hand, index) {
   showDetails(hand, index);
   editingKey = {hand:indexHand(hand), index, layer:Number(document.getElementById("layer").value)};
   const action = layout.actions[editingKey.hand][editingKey.layer][index];
+  editorMacros = (layout.macros ?? Array.from({length:8},()=>[])).map(macro => macro.map(step => ({...step})));
+  editorMacroSlot = action.type === 12 ? action.usage : Math.max(0,editorMacros.findIndex(macro => !macro.length));
   document.getElementById("editor-title").textContent = document.getElementById("detail-title").textContent;
   const type = document.getElementById("action-type");
   type.replaceChildren(...actionTypeLabels.map((name, i) => new Option(name,i)));
@@ -623,6 +721,7 @@ function readEditorAction() {
     case 2: action.keycode=number("keycode"); action.modifier=mask("modifier"); break;
     case 3: case 4: case 8: action.usage=number("usage"); break;
     case 5: action.usage=mask("buttons"); break;
+    case 12: action.usage=number("macro-slot"); break;
     case 6: action.x=number("x"); action.y=number("y"); break;
     case 7: action.y=number("y"); break;
     case 9: case 10: case 11: action.layer=number("layer"); break;
@@ -634,6 +733,7 @@ function applyKeyEdit(event) {
   if (!editingKey || layoutTransferBusy) return;
   try {
     const draft = layoutFromJSON(layoutToJSON(layout));
+    if (editorMacros) draft.macros = editorMacros;
     draft.actions[editingKey.hand][editingKey.layer][editingKey.index] = readEditorAction();
     pendingLayout = layoutFromJSON(layoutToJSON(draft));
     pendingSaved = false; layout = pendingLayout;
@@ -647,8 +747,9 @@ function applyKeyEdit(event) {
   } catch (error) { document.getElementById("editor-error").textContent = error.message; }
 }
 function render() {
-  const keyChoices = document.getElementById("edit-keycode");
-  if (keyChoices) for (const option of keyChoices.options) option.textContent = keyIdentity(Number(option.value));
+  for (const choices of document.querySelectorAll("select.hid-key-choices")) {
+    for (const option of choices.options) option.textContent = keyIdentity(Number(option.value));
+  }
   const layer = Number(document.getElementById("layer").value);
   for (const [hand, handIndex] of [["left",0],["right",1]]) {
     const svg = document.getElementById(hand);

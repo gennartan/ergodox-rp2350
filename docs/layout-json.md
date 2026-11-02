@@ -18,14 +18,17 @@ an import preview.
 The display-layout preference is included in downloads and saved to NVM.
 Older JSON files without this field use `qwerty`. It does not change key
 assignments or the computer’s settings. The UI offers `qwerty` (default),
-`azerty`, `qwertz`, `colemak`, `en_us`, `fr_fr`, and `de_de`. Their display labels
-are downloaded from hid-io/layouts and cached in the browser. Unknown identifiers
+`azerty`, `qwertz`, `colemak`, `en_us`, `fr_fr`, `fr_be`, and `de_de`. Their display labels
+are downloaded from hid-io/layouts and cached in the browser; Belgian overrides
+are bundled locally. Unknown identifiers
 are retained on import/export and shown with QWERTY fallback labels.
 
 The browser uses native JSON parsing and named action values. The firmware does
 not parse JSON: the browser converts the validated file to the existing binary
 record, and the firmware independently validates its bounds, version, CRC, and
-actions before saving it. The browser writes version-2 NVM records; key-event processing is unchanged.
+actions before saving it. The browser writes version-2 NVM records without macros and version-3 records
+when any macro slot is populated. New firmware reads versions 1, 2, and 3; older
+firmware cannot import version-3 records.
 The old offline Python configurator JSON is a different format and is not
 implicitly migrated.
 
@@ -37,6 +40,7 @@ implicitly migrated.
 | `display_layout` | Optional identifier, default `"qwerty"`; 1–11 lowercase ASCII letters, digits, hyphens or underscores, starting with a letter or digit |
 | `default_layer` | Zero-based index of an existing layer |
 | `layers` | An array of 1–8 layer objects |
+| `macros` | Optional array of exactly eight macro slots, each an array of 0–16 steps |
 
 Each layer contains `left` and `right` arrays, each with exactly 38 action
 objects. Every action has `position`, numbered **1–38** in array order to match
@@ -73,6 +77,7 @@ entries):
 | `layer_momentary` | `layer`: an existing zero-based layer index |
 | `layer_toggle` | `layer`: an existing zero-based layer index |
 | `layer_default` | `layer`: an existing zero-based layer index |
+| `macro` | `macro`: a zero-based index (0–7) of a nonempty macro slot |
 
 Keyboard key names include `A`–`Z`, `0`–`9`, `F1`–`F12`, `ENTER`, `ESCAPE`,
 `BACKSPACE`, `TAB`, `SPACE`, `PAGE_UP`, `PAGE_DOWN`, `LEFT`, `RIGHT`, `UP`, `DOWN`,
@@ -94,8 +99,8 @@ controls. Exports prefer names whenever one is known.
 ## Device upload endpoint
 
 `POST /api/layout/import` accepts only `application/octet-stream`, containing one
-complete version-1 or version-2 binary record. The JSON conversion happens in the browser.
-The resource accumulates at most 2,496 bytes across request fragments. An aborted,
+complete version-1, version-2, or version-3 binary record. The JSON conversion happens in the browser.
+The resource accumulates at most 3,040 bytes across request fragments. An aborted,
 oversized, invalid, or wrong-content-type request does not save a layout.
 Only a fully received, valid record is submitted to NVS in configuration mode.
 The endpoint does not provide CORS access.
@@ -111,3 +116,28 @@ browser pauses live key polling while saving to avoid competing HTTP requests
 during flash programming. The NVS save/import tests verify deferred activation,
 invalid-record rejection, and retry behavior. Physical flash interruptions still
 need hardware testing.
+
+## Macros
+
+A macro slot is an array of taps. Each step contains a `key` (the same HID names
+as ordinary keys), optional `modifiers` (default `[]`), and optional `delay_ms`
+(default `0`, integer 0–5000). Each chord is pressed and released before the
+delay and next step. Slots are shared by every action that references them.
+
+For example, a root-level bank containing two key taps is:
+
+```json
+"macros": [
+  [
+    {"key": "A", "modifiers": ["LEFT_SHIFT"], "delay_ms": 100},
+    {"key": "B", "modifiers": [], "delay_ms": 0}
+  ],
+  [], [], [], [], [], [], []
+]
+```
+
+Assign it with `{"position": 1, "type": "macro", "macro": 0}`. A zero key
+(`"NONE"`) without modifiers can represent a pause. Empty slots cannot be
+assigned. Macro actions run once per press; overlapping macro triggers are
+ignored, and physically held keyboard keys/modifiers are restored afterward.
+The host's keyboard language determines the resulting characters.

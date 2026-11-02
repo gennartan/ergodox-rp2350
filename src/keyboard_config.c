@@ -36,7 +36,7 @@ static uint32_t blob_crc(const uint8_t *blob, size_t length)
     return ~crc;
 }
 
-static bool valid_action(const struct keyboard_action *a, uint8_t layers)
+static bool valid_action(const struct keyboard_action *a, uint8_t layers, const struct keyboard_macro *macros)
 {
     struct keyboard_action canonical = { .type = a->type };
 
@@ -48,6 +48,10 @@ static bool valid_action(const struct keyboard_action *a, uint8_t layers)
         if (a->keycode > 101) { return false; }
         canonical.keycode = a->keycode;
         canonical.modifier = a->modifier;
+        break;
+    case KEYBOARD_ACTION_MACRO:
+        if (a->usage >= KEYBOARD_MACRO_COUNT || macros[a->usage].count == 0) { return false; }
+        canonical.usage = a->usage;
         break;
     case KEYBOARD_ACTION_CONSUMER:
         if (a->usage > 0x3ff) { return false; }
@@ -107,11 +111,22 @@ int keyboard_config_validate(const struct keyboard_config *config)
         !valid_display_layout((const uint8_t *)config->display_layout, true)) {
         return -EINVAL;
     }
+    for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
+        const struct keyboard_macro *macro = &config->macros[i];
+        if (macro->count > KEYBOARD_MACRO_MAX_STEPS) { return -EINVAL; }
+        for (int j = 0; j < KEYBOARD_MACRO_MAX_STEPS; ++j) {
+            const struct keyboard_macro_step *step = &macro->steps[j];
+            if (step->keycode > 101 || step->delay_ms > KEYBOARD_MACRO_MAX_DELAY_MS ||
+                (j >= macro->count && (step->modifier || step->keycode || step->delay_ms))) {
+                return -EINVAL;
+            }
+        }
+    }
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
         for (int layer = 0; layer < config->layer_count; ++layer) {
             for (int key = 0; key < KEYBOARD_KEY_COUNT; ++key) {
                 if (!valid_action(&config->actions[hand][layer][key],
-                    config->layer_count)) {
+                    config->layer_count, config->macros)) {
                     return -EINVAL;
                 }
             }
@@ -129,7 +144,7 @@ static struct keyboard_action decode_action(const uint8_t *p)
         a.x = p[2] < 128 ? p[2] : (int)p[2] - 256;
         a.y = p[3] < 128 ? p[3] : (int)p[3] - 256;
     } else if (a.type == KEYBOARD_ACTION_KEY ||
-        a.type >= KEYBOARD_ACTION_LAYER_MOMENTARY) {
+        (a.type >= KEYBOARD_ACTION_LAYER_MOMENTARY && a.type <= KEYBOARD_ACTION_LAYER_DEFAULT)) {
         a.keycode = p[2];
         a.layer = p[3];
     } else {
@@ -150,10 +165,13 @@ int keyboard_config_encode(const struct keyboard_config *config,
     }
     size = KEYBOARD_CONFIG_HEADER_SIZE +
         KEYBOARD_HAND_COUNT * config->layer_count * KEYBOARD_KEY_COUNT * 4;
+    bool has_macros = false;
+    for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) { has_macros |= config->macros[i].count != 0; }
+    if (has_macros) { size += KEYBOARD_CONFIG_MACRO_BANK_SIZE; }
     if (capacity < size) { return -ENOSPC; }
     memset(blob, 0, size);
     memcpy(blob, "EKCF", 4);
-    blob[4] = KEYBOARD_CONFIG_VERSION;
+    blob[4] = has_macros ? KEYBOARD_CONFIG_VERSION : 2;
     blob[6] = KEYBOARD_CONFIG_HEADER_SIZE;
     put32(blob + 8, size);
     blob[12] = config->layer_count;
@@ -174,13 +192,28 @@ int keyboard_config_encode(const struct keyboard_config *config,
                     blob[offset + 2] = (uint8_t)a->x;
                     blob[offset + 3] = (uint8_t)a->y;
                 } else if (a->type == KEYBOARD_ACTION_KEY ||
-                    a->type >= KEYBOARD_ACTION_LAYER_MOMENTARY) {
+                    (a->type >= KEYBOARD_ACTION_LAYER_MOMENTARY && a->type <= KEYBOARD_ACTION_LAYER_DEFAULT)) {
                     blob[offset + 2] = a->keycode;
                     blob[offset + 3] = a->layer;
                 } else {
                     blob[offset + 2] = a->usage & 0xff;
                     blob[offset + 3] = a->usage >> 8;
                 }
+                offset += 4;
+            }
+        }
+    }
+    if (has_macros) {
+        for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
+            const struct keyboard_macro *macro = &config->macros[i];
+            blob[offset] = macro->count;
+            offset += 4;
+            for (int j = 0; j < KEYBOARD_MACRO_MAX_STEPS; ++j) {
+                const struct keyboard_macro_step *step = &macro->steps[j];
+                blob[offset] = step->modifier;
+                blob[offset + 1] = step->keycode;
+                blob[offset + 2] = step->delay_ms & 0xff;
+                blob[offset + 3] = step->delay_ms >> 8;
                 offset += 4;
             }
         }
@@ -199,10 +232,11 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
     if (blob == NULL || config == NULL || length < KEYBOARD_CONFIG_HEADER_SIZE ||
         length > KEYBOARD_CONFIG_MAX_BLOB_SIZE) { return -EINVAL; }
     uint16_t version = get16(blob + 4);
-    if (memcmp(blob, "EKCF", 4) != 0 || (version != 1 && version != KEYBOARD_CONFIG_VERSION) ||
+    if (memcmp(blob, "EKCF", 4) != 0 || (version != 1 && version != 2 && version != KEYBOARD_CONFIG_VERSION) ||
         get16(blob + 6) != KEYBOARD_CONFIG_HEADER_SIZE) { return -ENOTSUP; }
     layers = blob[12];
     expected = KEYBOARD_CONFIG_HEADER_SIZE + KEYBOARD_HAND_COUNT * layers * KEYBOARD_KEY_COUNT * 4;
+    if (version == 3) { expected += KEYBOARD_CONFIG_MACRO_BANK_SIZE; }
     if (layers == 0 || layers > KEYBOARD_MAX_LAYERS || blob[13] >= layers ||
         blob[14] != KEYBOARD_HAND_COUNT || blob[15] != KEYBOARD_KEY_COUNT ||
         length != expected || get32(blob + 8) != length ||
@@ -215,13 +249,36 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
         return -EINVAL;
     }
     if (get32(blob + 60) != blob_crc(blob, length)) { return -EBADMSG; }
+    /* Decode/validate the small macro bank before touching the destination. */
+    struct keyboard_macro macros[KEYBOARD_MACRO_COUNT] = {0};
+    size_t actions_end = KEYBOARD_CONFIG_HEADER_SIZE + KEYBOARD_HAND_COUNT * layers * KEYBOARD_KEY_COUNT * 4;
+    if (version == 3) {
+        size_t macro_offset = actions_end;
+        for (int i = 0; i < KEYBOARD_MACRO_COUNT; ++i) {
+            struct keyboard_macro *macro = &macros[i];
+            macro->count = blob[macro_offset];
+            if (macro->count > KEYBOARD_MACRO_MAX_STEPS || blob[macro_offset + 1] ||
+                blob[macro_offset + 2] || blob[macro_offset + 3]) { return -EINVAL; }
+            macro_offset += 4;
+            for (int j = 0; j < KEYBOARD_MACRO_MAX_STEPS; ++j) {
+                struct keyboard_macro_step *step = &macro->steps[j];
+                step->modifier = blob[macro_offset];
+                step->keycode = blob[macro_offset + 1];
+                step->delay_ms = get16(blob + macro_offset + 2);
+                if (step->keycode > 101 || step->delay_ms > KEYBOARD_MACRO_MAX_DELAY_MS ||
+                    (j >= macro->count && (step->modifier || step->keycode || step->delay_ms))) { return -EINVAL; }
+                macro_offset += 4;
+            }
+        }
+    }
     /* Validate the entire candidate before modifying any destination data. */
-    for (size_t i = KEYBOARD_CONFIG_HEADER_SIZE; i < length; i += 4) {
+    for (size_t i = KEYBOARD_CONFIG_HEADER_SIZE; i < actions_end; i += 4) {
         struct keyboard_action a = decode_action(blob + i);
-        if (!valid_action(&a, layers)) { return -EINVAL; }
+        if (!valid_action(&a, layers, macros)) { return -EINVAL; }
     }
     memset(config, 0, sizeof(*config));
     memcpy(config->name, blob + 16, sizeof(config->name));
+    memcpy(config->macros, macros, sizeof(macros));
     config->layer_count = layers;
     config->default_layer = blob[13];
     if (version == 1) {
