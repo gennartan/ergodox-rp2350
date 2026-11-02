@@ -1,4 +1,6 @@
 #include <errno.h>
+#include <string.h>
+#include <strings.h>
 
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
@@ -94,12 +96,93 @@ static struct http_resource_detail_dynamic keys_resource = {
     .cb = keys_handler,
 };
 
+HTTP_SERVER_REGISTER_HEADER_CAPTURE(configurator_content_type, "Content-Type");
+
+static int upload_handler(struct http_client_ctx *client,
+    enum http_transaction_status status,
+    const struct http_request_ctx *request,
+    struct http_response_ctx *response, void *user_data)
+{
+    /* One holder per dynamic resource; aborted requests never reach NVM. */
+    static uint8_t upload[KEYBOARD_CONFIG_MAX_BLOB_SIZE];
+    static size_t used;
+    static bool oversized;
+    static bool binary_content_type;
+    static const struct http_header headers[] = {
+        { .name = "Cache-Control", .value = "no-store" },
+    };
+    const char *body;
+    int ret;
+
+    ARG_UNUSED(user_data);
+    ARG_UNUSED(client);
+    if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+        status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+        used = 0;
+        oversized = false;
+        binary_content_type = false;
+        return 0;
+    }
+    /* HTTP/1.1 exposes captured headers on the first body callback only. */
+    for (size_t i = 0; i < request->header_count; ++i) {
+        if (strcasecmp(request->headers[i].name, "Content-Type") == 0) {
+            binary_content_type =
+                strcasecmp(request->headers[i].value, "application/octet-stream") == 0;
+        }
+    }
+    if (request->data_len > sizeof(upload) - used) {
+        oversized = true;
+    }
+    if (!oversized && request->data_len != 0) {
+        memcpy(upload + used, request->data, request->data_len);
+        used += request->data_len;
+    }
+    if (status != HTTP_SERVER_REQUEST_DATA_FINAL) { return 0; }
+
+    if (!binary_content_type) {
+        response->status = HTTP_415_UNSUPPORTED_MEDIA_TYPE;
+        body = "{\"error\":\"Expected application/octet-stream\"}";
+    } else if (oversized) {
+        response->status = HTTP_413_PAYLOAD_TOO_LARGE;
+        body = "{\"error\":\"Layout record is too large\"}";
+    } else {
+        ret = keyboard_config_import(upload, used);
+        if (ret == 0) {
+            response->status = HTTP_200_OK;
+            body = "{\"saved\":true,\"reboot_required\":true}";
+        } else if (ret == -EINVAL || ret == -EBADMSG || ret == -ENOTSUP) {
+            response->status = HTTP_400_BAD_REQUEST;
+            body = "{\"error\":\"Invalid layout record; nothing saved\"}";
+        } else {
+            response->status = HTTP_500_INTERNAL_SERVER_ERROR;
+            body = "{\"error\":\"NVM save failed; reboot and retry\"}";
+            LOG_ERR("Layout upload save failed: %d", ret);
+        }
+    }
+    response->headers = headers;
+    response->header_count = ARRAY_SIZE(headers);
+    response->body = (const uint8_t *)body;
+    response->body_len = strlen(body);
+    response->final_chunk = true;
+    return 0;
+}
+
+static struct http_resource_detail_dynamic upload_resource = {
+    .common = {
+        .type = HTTP_RESOURCE_TYPE_DYNAMIC,
+        .bitmask_of_supported_http_methods = BIT(HTTP_POST),
+        .content_type = "application/json",
+    },
+    .cb = upload_handler,
+};
+
 static uint16_t http_port = 80;
 HTTP_SERVICE_DEFINE(configurator_http, CONFIGURATOR_ADDRESS, &http_port,
     CONFIG_HTTP_SERVER_MAX_CLIENTS, CONFIG_HTTP_SERVER_MAX_CLIENTS, NULL, NULL, NULL);
 HTTP_RESOURCE_DEFINE(configurator_index, configurator_http, "/", &index_resource);
 HTTP_RESOURCE_DEFINE(configurator_layout, configurator_http, "/api/layout", &layout_resource);
 HTTP_RESOURCE_DEFINE(configurator_keys, configurator_http, "/api/keys", &keys_resource);
+HTTP_RESOURCE_DEFINE(configurator_upload, configurator_http, "/api/layout/import", &upload_resource);
 
 static void configurator_usb_message(struct usbd_context *const ctx,
     const struct usbd_msg *const msg)

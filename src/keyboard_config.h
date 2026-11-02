@@ -32,5 +32,7 @@ const struct keyboard_layout *keyboard_config_layout(void);
 int keyboard_config_export(uint8_t *blob, size_t capacity, size_t *length);
 /* Persists a candidate for next boot; never modifies the live runtime table. */
 int keyboard_config_save(const struct keyboard_config *config);
+/* Validate a complete binary upload and persist it for the next boot. */
+int keyboard_config_import(const uint8_t *blob, size_t length);
 
 #endif

@@ -46,3 +46,13 @@ footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #dce3ec; }
 .key.pressed.selected rect { stroke: #10275b; stroke-width: 4; }
 
 .pressed-legend { color: #4567bd; }
+
+.transfers { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 18px 0 8px; }
+.transfers span, #transfer-status { font-size: .85rem; color: #61718b; }
+#transfer-status { min-height: 1.5em; overflow-wrap: anywhere; }
+#transfer-status.error { color: #a52c39; }
+.import-preview { background: #fff7df; border: 1px solid #e2cd91; border-radius: 12px; padding: 16px 20px; margin-top: 10px; }
+.import-preview p { margin-bottom: 12px; overflow-wrap: anywhere; }
+.import-preview button { margin: 0 8px 4px 0; }
+#save-layout { background: #4567bd; color: white; border-color: #4567bd; }
+button:disabled { opacity: .55; cursor: default; }

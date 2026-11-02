@@ -19,6 +19,7 @@ static struct nvs_fs storage;
 static uint8_t blob[KEYBOARD_CONFIG_MAX_BLOB_SIZE];
 static bool writes_allowed;
 K_MUTEX_DEFINE(config_store_lock);
+K_MUTEX_DEFINE(config_import_lock);
 
 static int mount_storage(void)
 {
@@ -115,5 +116,19 @@ int keyboard_config_save(const struct keyboard_config *config)
             (written == 0 || written == length ? 0 : -EIO);
     }
     k_mutex_unlock(&config_store_lock);
+    return ret;
+}
+
+int keyboard_config_import(const uint8_t *input, size_t length)
+{
+    /* Keep the candidate off small stacks and serialize all import callers. */
+    static struct keyboard_config candidate;
+    int ret;
+
+    if (!writes_allowed) { return -EACCES; }
+    k_mutex_lock(&config_import_lock, K_FOREVER);
+    ret = keyboard_config_decode(input, length, &candidate);
+    if (ret == 0) { ret = keyboard_config_save(&candidate); }
+    k_mutex_unlock(&config_import_lock);
     return ret;
 }

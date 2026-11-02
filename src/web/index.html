@@ -12,7 +12,7 @@
   <main>
     <header>
       <div><p class="eyebrow">ERGODOX CONFIGURATOR</p><h1>Current layout</h1></div>
-      <span class="badge">Read only</span>
+      <span id="mode-badge" class="badge">Current layout</span>
     </header>
     <p id="status" role="status" aria-live="polite">Loading the keyboard’s layout…</p>
     <button id="retry" type="button" hidden>Try again</button>
@@ -22,6 +22,17 @@
         <div><h2 id="layout-name"></h2><p id="summary"></p></div>
         <label>View layer <select id="layer"></select></label>
       </div>
+      <div class="transfers">
+        <button id="download-json" type="button">Download JSON</button>
+        <button id="upload-json" type="button">Upload JSON…</button>
+        <input id="layout-file" type="file" accept=".json,application/json" hidden>
+        <span>Import a file to preview it before saving.</span>
+      </div>
+      <p id="transfer-status" role="status" aria-live="polite"></p>
+      <section id="import-preview" class="import-preview" hidden>
+        <p id="preview-message"></p>
+        <div><button id="save-layout" type="button">Save to keyboard</button><button id="discard-import" type="button">Discard preview</button></div>
+      </section>
       <p id="live-status" class="live-status" role="status">Connecting live key display…</p>
       <div class="keyboard">
         <section class="half"><h3>Left hand</h3><svg id="left" viewBox="-8 0 710 510" aria-label="Left-hand keys"></svg></section>

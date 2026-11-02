@@ -167,6 +167,30 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     flash_area_close(area);
 }
 
+ZTEST(config, test_binary_import_persists_without_live_apply)
+{
+    const struct flash_area *area;
+    size_t length;
+
+    assert(flash_area_open(PARTITION_ID(keyboard_config_partition), &area) == 0);
+    assert(flash_area_erase(area, 0, area->fa_size) == 0);
+    assert(keyboard_config_init(true) == 0);
+    setup();
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_import(blob, length) == 0);
+    assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
+    blob[64] ^= 1;
+    assert(keyboard_config_import(blob, length) == -EBADMSG);
+    assert(keyboard_config_import(blob, length - 1) == -EINVAL);
+    blob[64] ^= 1;
+    assert(keyboard_config_import(blob, length) == 0); /* idempotent retry */
+    assert(keyboard_config_init(false) == 0);
+    assert(strcmp(keyboard_config_layout()->name, "test") == 0);
+    assert(memcmp(*keyboard_config_layout()->layers, source.actions, sizeof(source.actions)) == 0);
+    assert(keyboard_config_import(blob, length) == -EACCES);
+    flash_area_close(area);
+}
+
 ZTEST(config, test_physical_key_bitmap)
 {
     uint8_t snapshot[KEYBOARD_INPUT_BITMAP_SIZE];

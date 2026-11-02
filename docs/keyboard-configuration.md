@@ -104,7 +104,8 @@ On master boot or configuration-mode entry:
 
 `keyboard_config_save()` validates and persists a complete candidate for the
 next boot. It is permitted only in configuration mode. It does not replace the
-live RAM table, and no HTTP write endpoint or editor is available.
+live RAM table, and the web interface uses it for explicit JSON imports. See
+[human-readable layout files](layout-json.md).
 A save that is interrupted before NVS commits can leave the previous committed
 record available; malformed committed records fall back to factory defaults.
 Power interruption on physical RP2350 flash still needs hardware testing.
@@ -114,14 +115,15 @@ reflashing can preserve saved data. A chip erase clears it. Firmware changes
 that alter the binary meaning should bump the version and use the fallback;
 there is no compatibility/migration layer.
 
-## Read-only web viewer
+## Web viewer and layout transfer
 
 The configurator serves `GET /api/layout` as `application/octet-stream`, using
 exactly the binary format above. The response is a snapshot of the active RAM
 configuration, not a freshly read NVM record or a saved candidate awaiting
 reboot. It is encoded once when configuration mode starts and served as a static
 resource, allowing concurrent reads without modifying configuration state.
-Only GET is enabled; there is no write endpoint.
+Viewing uses GET; validated uploads use the separate `POST /api/layout/import`
+endpoint described in [the JSON format documentation](layout-json.md).
 
 The maintained HTML, CSS, and JavaScript sources are bundled into a single gzip
 HTML response at build time. The page and layout snapshot each need only one request, so a missing stylesheet
@@ -192,4 +194,17 @@ after the document is ready:
 
 ```sh
 python3 tests/config/test_web_bundle.py
+```
+
+Test human-readable JSON interchange and strict validation:
+
+```sh
+node tests/config/test_json.js
+```
+
+Exercise the upload callback with fragmented HTTP/1.1 bodies, captured headers,
+and completion/abort resets (requires a host C compiler):
+
+```sh
+python3 tests/config/test_upload.py
 ```

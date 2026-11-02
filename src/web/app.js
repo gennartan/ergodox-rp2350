@@ -108,6 +108,119 @@ function describe(action) {
   }
 }
 
+// JSON interchange stays in the browser; the device still receives compact bytes.
+const actionTypes = ["transparent","none","key","consumer","system","mouse_button","mouse_move","mouse_wheel","lighting","layer_momentary","layer_toggle","layer_default"];
+const modifierTokens = ["LEFT_CTRL","LEFT_SHIFT","LEFT_ALT","LEFT_GUI","RIGHT_CTRL","RIGHT_SHIFT","RIGHT_ALT","RIGHT_GUI"];
+const buttonTokens = ["LEFT","RIGHT","MIDDLE","BACK","FORWARD"];
+const lightingTokens = ["TOGGLE","ON","OFF","BRIGHTNESS_UP","BRIGHTNESS_DOWN"];
+const keyTokens = Object.assign({},
+  Object.fromEntries(Array.from({length:26},(_,i)=>[i+4,String.fromCharCode(65+i)])),
+  Object.fromEntries(Array.from({length:10},(_,i)=>[i+30,"1234567890"[i]])),
+  Object.fromEntries(Array.from({length:12},(_,i)=>[i+58,`F${i+1}`])),
+  Object.fromEntries(Array.from({length:9},(_,i)=>[i+89,`KP_${i+1}`])),
+  {0:"NONE",1:"ERROR_ROLLOVER",2:"POST_FAIL",3:"ERROR_UNDEFINED",40:"ENTER",41:"ESCAPE",42:"BACKSPACE",43:"TAB",44:"SPACE",45:"MINUS",46:"EQUAL",47:"LEFT_BRACKET",48:"RIGHT_BRACKET",49:"BACKSLASH",50:"NON_US_HASH",51:"SEMICOLON",52:"APOSTROPHE",53:"GRAVE",54:"COMMA",55:"DOT",56:"SLASH",57:"CAPS_LOCK",70:"PRINT_SCREEN",71:"SCROLL_LOCK",72:"PAUSE",73:"INSERT",74:"HOME",75:"PAGE_UP",76:"DELETE",77:"END",78:"PAGE_DOWN",79:"RIGHT",80:"LEFT",81:"DOWN",82:"UP",83:"NUM_LOCK",84:"KP_DIVIDE",85:"KP_MULTIPLY",86:"KP_MINUS",87:"KP_PLUS",88:"KP_ENTER",98:"KP_0",99:"KP_DOT",100:"NON_US_BACKSLASH",101:"MENU"});
+const consumerTokens = {0:"NONE",0x6f:"BRIGHTNESS_UP",0x70:"BRIGHTNESS_DOWN",0xb2:"RECORD",0xb3:"FAST_FORWARD",0xb4:"REWIND",0xb5:"NEXT_TRACK",0xb6:"PREVIOUS_TRACK",0xb7:"STOP",0xb8:"EJECT",0xcd:"PLAY_PAUSE",0xe2:"MUTE",0xe9:"VOLUME_UP",0xea:"VOLUME_DOWN",0x18a:"MAIL",0x192:"CALCULATOR",0x221:"SEARCH",0x223:"BROWSER_HOME",0x224:"BROWSER_BACK",0x225:"BROWSER_FORWARD",0x226:"BROWSER_STOP",0x227:"BROWSER_REFRESH",0x22a:"BOOKMARKS"};
+const systemTokens = {0:"NONE",0x81:"POWER",0x82:"SLEEP",0x83:"WAKE"};
+
+function layoutToJSON(current) {
+  return {format:"ergodox-layout",version:1,name:current.name,default_layer:current.defaultLayer,
+    layers:Array.from({length:current.layerCount},(_,layer)=>Object.fromEntries(["left","right"].map((hand,handIndex)=>[hand,
+      current.actions[handIndex][layer].map((a,index)=>{
+        const out={position:index+1,type:actionTypes[a.type]};
+        switch(a.type) {
+          case 2: out.key=keyTokens[a.keycode];out.modifiers=modifierTokens.filter((_,i)=>a.modifier&(1<<i));break;
+          case 3: out.usage=consumerTokens[a.usage] ?? a.usage;break;
+          case 4: out.usage=systemTokens[a.usage];break;
+          case 5: out.buttons=buttonTokens.filter((_,i)=>a.usage&(1<<i));break;
+          case 6: out.x=a.x;out.y=a.y;break;
+          case 7: out.delta=a.y;break;
+          case 8: out.command=lightingTokens[a.usage];break;
+          case 9: case 10: case 11: out.layer=a.layer;break;
+        }
+        return out;
+      })
+    ])))};
+}
+function checkFields(value, allowed, path) {
+  if (!value || typeof value!=="object" || Array.isArray(value)) throw new Error(`${path}: expected an object.`);
+  for(const key of Object.keys(value)) if(!allowed.includes(key)) throw new Error(`${path}: unknown field "${key}".`);
+}
+function integer(value,min,max,path) {
+  if(!Number.isInteger(value) || value<min || value>max) throw new Error(`${path}: expected an integer from ${min} to ${max}.`);
+  return value;
+}
+function namedNumber(value,names,min,max,path) {
+  if(typeof value==="number") return integer(value,min,max,path);
+  const found=Object.entries(names).find(([,name])=>name===value);
+  if(!found) throw new Error(`${path}: unknown value "${String(value)}".`);
+  return Number(found[0]);
+}
+function maskFromNames(value,names,path) {
+  if(!Array.isArray(value)) throw new Error(`${path}: expected an array of names.`);
+  let mask=0;
+  for(const name of value) {
+    const bit=names.indexOf(name);
+    if(bit<0 || (mask&(1<<bit))) throw new Error(`${path}: unknown or duplicate name "${String(name)}".`);
+    mask|=1<<bit;
+  }
+  return mask;
+}
+function layoutFromJSON(value) {
+  checkFields(value,["format","version","name","default_layer","layers"],"Layout");
+  if(value.format!=="ergodox-layout" || value.version!==1) throw new Error("Expected ergodox-layout JSON version 1.");
+  if(typeof value.name!=="string" || value.name.includes("\0") || new TextEncoder().encode(value.name).length>31) throw new Error("Layout name must contain at most 31 UTF-8 bytes and no NUL character.");
+  if(!Array.isArray(value.layers) || value.layers.length<1 || value.layers.length>8) throw new Error("Expected between 1 and 8 layers.");
+  const result={name:value.name,layerCount:value.layers.length,defaultLayer:integer(value.default_layer,0,value.layers.length-1,"default_layer"),actions:[[],[]]};
+  value.layers.forEach((layer,layerIndex)=>{
+    checkFields(layer,["left","right"],`Layer ${layerIndex}`);
+    ["left","right"].forEach((hand,handIndex)=>{
+      const entries=layer[hand];
+      if(!Array.isArray(entries) || entries.length!==38) throw new Error(`Layer ${layerIndex}, ${hand}: expected exactly 38 keys.`);
+      result.actions[handIndex][layerIndex]=entries.map((entry,index)=>{
+        const path=`Layer ${layerIndex}, ${hand} key ${index+1}`;
+        if(!entry || entry.position!==index+1) throw new Error(`${path}: position must be ${index+1}.`);
+        const type=actionTypes.indexOf(entry.type);
+        if(type<0) throw new Error(`${path}: unknown action type.`);
+        const fields=[[],[],["key","modifiers"],["usage"],["usage"],["buttons"],["x","y"],["delta"],["command"],["layer"],["layer"],["layer"]][type];
+        checkFields(entry,["position","type",...fields],path);
+        const a={type,modifier:0,keycode:0,usage:0,x:0,y:0,layer:0};
+        switch(type) {
+          case 2: a.keycode=namedNumber(entry.key,keyTokens,0,101,`${path}, key`);a.modifier=maskFromNames(entry.modifiers ?? [],modifierTokens,path);break;
+          case 3: a.usage=namedNumber(entry.usage,consumerTokens,0,1023,path);break;
+          case 4: a.usage=namedNumber(entry.usage,systemTokens,0,131,path);if(![0,129,130,131].includes(a.usage)) throw new Error(`${path}: invalid system usage.`);break;
+          case 5: a.usage=maskFromNames(entry.buttons,buttonTokens,path);break;
+          case 6: a.x=integer(entry.x,-127,127,path);a.y=integer(entry.y,-127,127,path);break;
+          case 7: a.y=integer(entry.delta,-127,127,path);break;
+          case 8: a.usage=namedNumber(entry.command,lightingTokens,0,4,path);break;
+          case 9: case 10: case 11: a.layer=integer(entry.layer,0,result.layerCount-1,path);break;
+        }
+        return a;
+      });
+    });
+  });
+  return decodeLayout(encodeLayout(result).buffer);
+}
+function encodeLayout(current) {
+  const bytes=new Uint8Array(64+2*current.layerCount*38*4),view=new DataView(bytes.buffer);
+  bytes.set([69,75,67,70,1,0,64,0]);view.setUint32(8,bytes.length,true);
+  bytes.set([current.layerCount,current.defaultLayer,2,38],12);
+  bytes.set(new TextEncoder().encode(current.name),16);
+  let offset=64;
+  for(const hand of current.actions) for(const layer of hand) for(const a of layer) {
+    bytes[offset]=a.type;
+    switch(a.type) {
+      case 2: bytes[offset+1]=a.modifier;bytes[offset+2]=a.keycode;break;
+      case 3: case 4: case 5: case 8: view.setUint16(offset+2,a.usage,true);break;
+      case 6: view.setInt8(offset+2,a.x);view.setInt8(offset+3,a.y);break;
+      case 7: view.setInt8(offset+3,a.y);break;
+      case 9: case 10: case 11: bytes[offset+3]=a.layer;break;
+    }
+    offset+=4;
+  }
+  view.setUint32(60,crc32(bytes),true);
+  return bytes;
+}
+
 const svgNS = "http://www.w3.org/2000/svg";
 function svgElement(tag, attrs, text) {
   const element = document.createElementNS(svgNS, tag);
@@ -139,7 +252,7 @@ function stopKeyPolling() {
 }
 function startKeyPolling() {
   stopKeyPolling();
-  if (document.hidden || !layout) return;
+  if (document.hidden || !layout || layoutTransferBusy) return;
   const generation = keyPollGeneration;
   let failures = 0;
   async function poll() {
@@ -212,6 +325,90 @@ function render() {
   if (selectedKey) showDetails(selectedKey.hand, selectedKey.index);
   applyPressedKeys(pressedKeys);
 }
+let currentLayout = null, pendingLayout = null, pendingSaved = false, layoutTransferBusy = false;
+function transferMessage(message, error = false) {
+  const status=document.getElementById("transfer-status");
+  status.textContent=message;status.classList.toggle("error",error);
+}
+function updateTransferControls() {
+  document.getElementById("download-json").disabled=layoutTransferBusy || !layout;
+  document.getElementById("upload-json").disabled=layoutTransferBusy || !currentLayout;
+  document.getElementById("save-layout").disabled=layoutTransferBusy || !pendingLayout || pendingSaved;
+  document.getElementById("discard-import").disabled=layoutTransferBusy;
+}
+function displayLayout(current) {
+  layout=current;selectedKey=null;
+  document.getElementById("detail-title").textContent="Key details";
+  document.getElementById("detail").textContent="Select a key to inspect its assigned action.";
+  document.getElementById("layout-name").textContent=layout.name || "Unnamed layout";
+  document.getElementById("summary").textContent=`${layout.layerCount} layers · 38 keys per hand · Default: layer ${layout.defaultLayer}`;
+  const selector=document.getElementById("layer");
+  selector.replaceChildren(...Array.from({length:layout.layerCount},(_,i)=>new Option(`Layer ${i}${i===layout.defaultLayer ? " (default)" : ""}`,i)));
+  selector.value=String(layout.defaultLayer);render();updateTransferControls();
+}
+function discardImport() {
+  pendingLayout=null;pendingSaved=false;
+  document.getElementById("import-preview").hidden=true;
+  document.getElementById("mode-badge").textContent="Current layout";
+  document.getElementById("layout-file").value="";
+  if(currentLayout) displayLayout(currentLayout);
+}
+function downloadLayout() {
+  if(!layout || layoutTransferBusy) return;
+  const data=JSON.stringify(layoutToJSON(layout),null,2)+"\n";
+  const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  const link=document.createElement("a");link.href=url;
+  link.download=(layout.name.replace(/[^a-zA-Z0-9_-]/g,"_") || "layout")+".json";
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function selectLayoutFile() {
+  const input=document.getElementById("layout-file"),file=input.files[0];
+  if(!file || layoutTransferBusy) return;
+  discardImport();
+  layoutTransferBusy=true;updateTransferControls();
+  transferMessage("Reading layout file…");
+  try {
+    if(file.size>256*1024) throw new Error("Layout file exceeds 256 KiB.");
+    const parsed=JSON.parse(await file.text());
+    pendingLayout=layoutFromJSON(parsed);pendingSaved=false;
+    displayLayout(pendingLayout);
+    document.getElementById("mode-badge").textContent="Import preview";
+    document.getElementById("import-preview").hidden=false;
+    document.getElementById("preview-message").textContent=`Previewing ${file.name}. Nothing has been saved. Save to this keyboard to apply after reboot.`;
+    document.getElementById("save-layout").textContent="Save to keyboard";
+    document.getElementById("discard-import").textContent="Discard preview";
+    transferMessage("File validated. Review both halves and layers before saving.");
+  } catch(error) {
+    pendingLayout=null;
+    transferMessage(`Unable to import: ${error.message}`,true);
+  } finally {
+    input.value="";layoutTransferBusy=false;updateTransferControls();
+  }
+}
+async function saveImportedLayout() {
+  if(!pendingLayout || pendingSaved || layoutTransferBusy) return;
+  layoutTransferBusy=true;updateTransferControls();stopKeyPolling();
+  transferMessage("Saving layout to keyboard… Keep USB connected.");
+  try {
+    const response=await fetch("/api/layout/import",{method:"POST",headers:{"Content-Type":"application/octet-stream"},
+      body:encodeLayout(pendingLayout),cache:"no-store",signal:AbortSignal.timeout(15000)});
+    const result=await response.json();
+    if(!response.ok || result.saved!==true) throw new Error(result.error || `HTTP ${response.status}`);
+    pendingSaved=true;
+    document.getElementById("mode-badge").textContent="Saved for reboot";
+    document.getElementById("preview-message").textContent="Saved to this USB-connected half. Release the boot chord and reconnect USB to use this layout. The other half's NVM is unchanged.";
+    document.getElementById("save-layout").textContent="Saved";
+    document.getElementById("discard-import").textContent="Show current layout";
+    transferMessage("Layout saved. Reboot the keyboard to apply it.");
+  } catch(error) {
+    transferMessage(`Save not confirmed: ${error.message}. You can retry saving the same file.`,true);
+  } finally {
+    layoutTransferBusy=false;updateTransferControls();
+    if(!document.hidden) startKeyPolling();
+  }
+}
+
 async function loadLayout() {
   stopKeyPolling();
   const status = document.getElementById("status"), retry = document.getElementById("retry");
@@ -221,16 +418,9 @@ async function loadLayout() {
   try {
     const response = await fetch("/api/layout", {cache:"no-store", signal:AbortSignal.timeout(10000)});
     if (!response.ok) throw new Error(`Keyboard returned HTTP ${response.status}.`);
-    layout = decodeLayout(await response.arrayBuffer());
-    selectedKey = null;
-    document.getElementById("detail-title").textContent = "Key details";
-    document.getElementById("detail").textContent = "Select a key to inspect its assigned action.";
-    document.getElementById("layout-name").textContent = layout.name || "Unnamed layout";
-    document.getElementById("summary").textContent = `${layout.layerCount} layers · 38 keys per hand · Default: layer ${layout.defaultLayer}`;
-    const selector = document.getElementById("layer");
-    selector.replaceChildren(...Array.from({length:layout.layerCount}, (_,i) => new Option(`Layer ${i}${i === layout.defaultLayer ? " (default)" : ""}`,i)));
-    selector.value = String(layout.defaultLayer);
-    render();
+    currentLayout = decodeLayout(await response.arrayBuffer());
+    discardImport();
+    transferMessage("");
     document.getElementById("layout").hidden = false;
     status.hidden = true;
     startKeyPolling();
@@ -240,6 +430,11 @@ async function loadLayout() {
   }
 }
 if (typeof document !== "undefined") {
+  document.getElementById("download-json").addEventListener("click",downloadLayout);
+  document.getElementById("upload-json").addEventListener("click",()=>document.getElementById("layout-file").click());
+  document.getElementById("layout-file").addEventListener("change",selectLayoutFile);
+  document.getElementById("save-layout").addEventListener("click",saveImportedLayout);
+  document.getElementById("discard-import").addEventListener("click",()=>{ discardImport();transferMessage(""); });
   document.getElementById("layer").addEventListener("change",render);
   document.getElementById("retry").addEventListener("click",loadLayout);
   document.addEventListener("visibilitychange", () => {

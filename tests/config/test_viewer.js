@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
-const context = vm.createContext({TextDecoder});
+const context = vm.createContext({TextDecoder,TextEncoder});
 vm.runInContext(fs.readFileSync(path.join(__dirname,"../../src/web/app.js"),"utf8"),context);
 const decode = vm.runInContext("decodeLayout",context);
 const describe = vm.runInContext("describe",context);
