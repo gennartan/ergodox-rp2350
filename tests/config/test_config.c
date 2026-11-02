@@ -19,6 +19,7 @@ static void setup(void)
 {
     memset(&source, 0, sizeof(source));
     strcpy(source.name, "test");
+    strcpy(source.display_layout, "qwerty");
     source.layer_count = 8;
     source.default_layer = 0;
     source.actions[0][0][0] = (struct keyboard_action)KB_KEY(HID_KEY_A);
@@ -35,6 +36,20 @@ static void setup(void)
     source.actions[1][0][10] = (struct keyboard_action)KB_NONE;
 }
 
+static void update_crc(uint8_t *data, size_t length)
+{
+    uint32_t crc = UINT32_MAX;
+    memset(data + 60, 0, 4);
+    for (size_t i = 0; i < length; ++i) {
+        crc ^= data[i];
+        for (int bit = 0; bit < 8; ++bit) {
+            crc = (crc >> 1) ^ ((crc & 1) ? 0xedb88320U : 0);
+        }
+    }
+    crc ^= UINT32_MAX;
+    for (int i = 0; i < 4; ++i) { data[60 + i] = crc >> (8 * i); }
+}
+
 static void test_codec(void)
 {
     size_t length;
@@ -42,7 +57,7 @@ static void test_codec(void)
     assert(sizeof(struct keyboard_action) == 4);
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
     assert(length == 2496);
-    assert(memcmp(blob, "EKCF\1\0\100\0", 8) == 0);
+    assert(memcmp(blob, "EKCF\2\0\100\0", 8) == 0);
     assert(blob[64] == KEYBOARD_ACTION_KEY && blob[66] == HID_KEY_A);
     assert(keyboard_config_decode(blob, length, &decoded) == 0);
     assert(memcmp(&source, &decoded, sizeof(source)) == 0);
@@ -74,6 +89,33 @@ static void test_codec(void)
     source.actions[0][0][0] = (struct keyboard_action)KB_MOUSE_MOVE(-128, 0);
     assert(keyboard_config_validate(&source) == -EINVAL);
     setup();
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    strcpy(source.display_layout, "be-azerty");
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(strcmp(decoded.display_layout, "be-azerty") == 0);
+    memset(source.display_layout, 'x', sizeof(source.display_layout));
+    assert(keyboard_config_validate(&source) == -EINVAL);
+    strcpy(source.display_layout, "bad/id");
+    assert(keyboard_config_validate(&source) == -EINVAL);
+    source.display_layout[0] = '\0';
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(strcmp(decoded.display_layout, "qwerty") == 0);
+    /* Existing version-1 records retain their actions and acquire the default. */
+    blob[4] = 1;
+    memset(blob + 48, 0, 12);
+    update_crc(blob, length);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(strcmp(decoded.display_layout, "qwerty") == 0);
+    assert(memcmp(source.actions, decoded.actions, sizeof(source.actions)) == 0);
+    blob[48] = 'x';
+    update_crc(blob, length);
+    assert(keyboard_config_decode(blob, length, &decoded) == -EINVAL);
+    assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
+    memset(blob + 48, 'x', 12);
+    update_crc(blob, length);
+    assert(keyboard_config_decode(blob, length, &decoded) == -EINVAL);
     assert(keyboard_config_encode(&source, blob, sizeof(blob), &length) == 0);
     FILE *out = fopen("/tmp/ergodox-config-test.bin", "wb");
     assert(out != NULL);
@@ -133,6 +175,7 @@ ZTEST(config, test_nvm_save_reload_and_fallback)
     assert(keyboard_config_init(true) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0);
     setup();
+    strcpy(source.display_layout, "be-azerty");
     assert(keyboard_config_save(&source) == 0);
     assert(strcmp(keyboard_config_layout()->name, "simple") == 0); /* apply only on reboot */
     assert(keyboard_config_save(&source) == 0); /* unchanged save is successful */
@@ -187,6 +230,9 @@ ZTEST(config, test_binary_import_persists_without_live_apply)
     assert(keyboard_config_init(false) == 0);
     assert(strcmp(keyboard_config_layout()->name, "test") == 0);
     assert(memcmp(*keyboard_config_layout()->layers, source.actions, sizeof(source.actions)) == 0);
+    assert(keyboard_config_export(blob, sizeof(blob), &length) == 0);
+    assert(keyboard_config_decode(blob, length, &decoded) == 0);
+    assert(strcmp(decoded.display_layout, "qwerty") == 0);
     assert(keyboard_config_import(blob, length) == -EACCES);
     flash_area_close(area);
 }

@@ -87,12 +87,24 @@ static bool valid_action(const struct keyboard_action *a, uint8_t layers)
     return memcmp(a, &canonical, sizeof(*a)) == 0;
 }
 
+static bool valid_display_layout(const uint8_t *name, bool allow_empty)
+{
+    for (size_t i = 0; i < KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE; ++i) {
+        uint8_t c = name[i];
+        if (c == 0) { return i != 0 || allow_empty; }
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+            (i != 0 && (c == '-' || c == '_')))) { return false; }
+    }
+    return false;
+}
+
 int keyboard_config_validate(const struct keyboard_config *config)
 {
     if (config == NULL || config->layer_count == 0 ||
         config->layer_count > KEYBOARD_MAX_LAYERS ||
         config->default_layer >= config->layer_count ||
-        memchr(config->name, '\0', sizeof(config->name)) == NULL) {
+        memchr(config->name, '\0', sizeof(config->name)) == NULL ||
+        !valid_display_layout((const uint8_t *)config->display_layout, true)) {
         return -EINVAL;
     }
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
@@ -149,6 +161,9 @@ int keyboard_config_encode(const struct keyboard_config *config,
     blob[14] = KEYBOARD_HAND_COUNT;
     blob[15] = KEYBOARD_KEY_COUNT;
     memcpy(blob + 16, config->name, strlen(config->name));
+    const char *display_layout = config->display_layout[0] ?
+        config->display_layout : KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT;
+    memcpy(blob + 48, display_layout, strlen(display_layout));
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
         for (int layer = 0; layer < config->layer_count; ++layer) {
             for (int key = 0; key < KEYBOARD_KEY_COUNT; ++key) {
@@ -183,7 +198,8 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
 
     if (blob == NULL || config == NULL || length < KEYBOARD_CONFIG_HEADER_SIZE ||
         length > KEYBOARD_CONFIG_MAX_BLOB_SIZE) { return -EINVAL; }
-    if (memcmp(blob, "EKCF", 4) != 0 || get16(blob + 4) != KEYBOARD_CONFIG_VERSION ||
+    uint16_t version = get16(blob + 4);
+    if (memcmp(blob, "EKCF", 4) != 0 || (version != 1 && version != KEYBOARD_CONFIG_VERSION) ||
         get16(blob + 6) != KEYBOARD_CONFIG_HEADER_SIZE) { return -ENOTSUP; }
     layers = blob[12];
     expected = KEYBOARD_CONFIG_HEADER_SIZE + KEYBOARD_HAND_COUNT * layers * KEYBOARD_KEY_COUNT * 4;
@@ -191,8 +207,12 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
         blob[14] != KEYBOARD_HAND_COUNT || blob[15] != KEYBOARD_KEY_COUNT ||
         length != expected || get32(blob + 8) != length ||
         memchr(blob + 16, '\0', KEYBOARD_CONFIG_NAME_SIZE) == NULL) { return -EINVAL; }
-    for (int i = 48; i < 60; ++i) {
-        if (blob[i] != 0) { return -EINVAL; }
+    if (version == 1) {
+        for (int i = 48; i < 60; ++i) {
+            if (blob[i] != 0) { return -EINVAL; }
+        }
+    } else if (!valid_display_layout(blob + 48, false)) {
+        return -EINVAL;
     }
     if (get32(blob + 60) != blob_crc(blob, length)) { return -EBADMSG; }
     /* Validate the entire candidate before modifying any destination data. */
@@ -204,6 +224,11 @@ int keyboard_config_decode(const uint8_t *blob, size_t length,
     memcpy(config->name, blob + 16, sizeof(config->name));
     config->layer_count = layers;
     config->default_layer = blob[13];
+    if (version == 1) {
+        strcpy(config->display_layout, KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT);
+    } else {
+        memcpy(config->display_layout, blob + 48, sizeof(config->display_layout));
+    }
     for (int hand = 0; hand < KEYBOARD_HAND_COUNT; ++hand) {
         for (int layer = 0; layer < layers; ++layer) {
             for (int key = 0; key < KEYBOARD_KEY_COUNT; ++key) {

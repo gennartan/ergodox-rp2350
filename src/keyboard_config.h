@@ -6,7 +6,9 @@
 
 #define KEYBOARD_CONFIG_NAME_SIZE 32
 #define KEYBOARD_CONFIG_HEADER_SIZE 64
-#define KEYBOARD_CONFIG_VERSION 1
+#define KEYBOARD_CONFIG_VERSION 2
+#define KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE 12
+#define KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT "qwerty"
 #define KEYBOARD_CONFIG_MAX_BLOB_SIZE (KEYBOARD_CONFIG_HEADER_SIZE + \
     KEYBOARD_HAND_COUNT * KEYBOARD_MAX_LAYERS * KEYBOARD_KEY_COUNT * 4)
 
@@ -15,6 +17,8 @@ struct keyboard_config {
     char name[KEYBOARD_CONFIG_NAME_SIZE];
     uint8_t layer_count;
     uint8_t default_layer;
+    /* UI preference only; never changes HID interpretation. Empty means qwerty. */
+    char display_layout[KEYBOARD_CONFIG_DISPLAY_LAYOUT_SIZE];
     struct keyboard_action actions[KEYBOARD_HAND_COUNT][KEYBOARD_MAX_LAYERS][KEYBOARD_KEY_COUNT];
 };
 

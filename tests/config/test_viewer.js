@@ -26,6 +26,7 @@ for (const byte of bytes) {
 view.setUint32(60,(~crc)>>>0,true);
 const layout = decode(bytes.buffer);
 assert.equal(layout.name,"Viewer test");
+assert.equal(layout.displayLayout,"qwerty");
 assert.equal(layout.defaultLayer,7);
 assert.equal(layout.actions[0][0][0].keycode,4);
 assert.match(describe(layout.actions[0][0][0]).detail,/Shift \+ A/);

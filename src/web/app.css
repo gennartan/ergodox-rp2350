@@ -16,7 +16,7 @@ h3 { font-size: .9rem; font-weight: 600; }
 .toolbar { background: #fff; padding: 20px 24px; border: 1px solid #e0e6ef; border-radius: 14px; }
 #summary, .note, footer { color: #61718b; font-size: .85rem; }
 label { display: flex; align-items: center; gap: 12px; font-size: .85rem; white-space: nowrap; }
-select, button { font: inherit; color: inherit; background: #fff; border: 1px solid #bcc7d8; border-radius: 7px; padding: 8px 12px; }
+select, button, input[type="text"] { font: inherit; color: inherit; background: #fff; border: 1px solid #bcc7d8; border-radius: 7px; padding: 8px 12px; }
 button { cursor: pointer; }
 .keyboard { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
 .half { min-width: 0; background: #fff; border: 1px solid #e0e6ef; border-radius: 14px; padding: 18px 12px 4px; }

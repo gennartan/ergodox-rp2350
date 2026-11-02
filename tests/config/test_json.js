@@ -3,7 +3,7 @@ const assert=require("node:assert/strict"), fs=require("node:fs"), vm=require("n
 const context=vm.createContext({TextDecoder,TextEncoder});
 vm.runInContext(fs.readFileSync(path.join(__dirname,"../../src/web/app.js"),"utf8"),context);
 const fromJSON=vm.runInContext("layoutFromJSON",context),toJSON=vm.runInContext("layoutToJSON",context),encode=vm.runInContext("encodeLayout",context),decode=vm.runInContext("decodeLayout",context);
-function fixture(){return {format:"ergodox-layout",version:1,name:"é test",default_layer:7,layers:Array.from({length:8},()=>({left:Array.from({length:38},(_,i)=>({position:i+1,type:"none"})),right:Array.from({length:38},(_,i)=>({position:i+1,type:"transparent"}))}))}}
+function fixture(){return {format:"ergodox-layout",version:1,name:"é test",default_layer:7,display_layout:"qwerty",layers:Array.from({length:8},()=>({left:Array.from({length:38},(_,i)=>({position:i+1,type:"none"})),right:Array.from({length:38},(_,i)=>({position:i+1,type:"transparent"}))}))}}
 const value=fixture();
 const samples=[
   {type:"key",key:"A",modifiers:["LEFT_CTRL","RIGHT_ALT"]},
@@ -24,7 +24,17 @@ assert.equal(layout.actions[1][7][37].modifier,64);
 assert.deepEqual(JSON.parse(JSON.stringify(toJSON(decode(blob.buffer)))),value);
 const normalized=encode(fromJSON(JSON.parse(JSON.stringify(toJSON(layout)))));
 assert.deepEqual(Array.from(normalized),Array.from(blob));
+assert.equal(layout.displayLayout,"qwerty");
+const custom=fixture(); custom.display_layout="be-azerty";
+assert.equal(decode(encode(fromJSON(custom)).buffer).displayLayout,"be-azerty");
+assert.equal(toJSON(fromJSON(custom)).display_layout,"be-azerty");
+const legacy=fixture(); delete legacy.display_layout;
+assert.equal(fromJSON(legacy).displayLayout,"qwerty");
 const badCases=[
+  [v=>v.display_layout=null,/Display layout/],
+  [v=>v.display_layout="",/Display layout/],
+  [v=>v.display_layout="abcdefghijkl",/Display layout/],
+  [v=>v.display_layout="../bad",/Display layout/],
   [v=>v.version=2,/version/], [v=>v.extra=1,/unknown field/],
   [v=>v.name="é".repeat(16),/31 UTF-8/], [v=>v.name="x\0y",/NUL/],
   [v=>v.default_layer=8,/integer/], [v=>v.layers=[],/1 and 8/],
@@ -50,4 +60,29 @@ if(process.argv[2]) {
 }
 fs.writeFileSync("/tmp/ergodox-json-test.bin",blob);
 fs.writeFileSync("/tmp/ergodox-json-test.json",JSON.stringify(value,null,2));
-console.log("JSON round trips, all action types, UTF-8 names, stable binary encoding, and 16 invalid-file cases passed");
+// Editing only the preference must create a saveable preview without changing
+// the running configuration, and must preserve actions from an imported preview.
+const controls = new Map();
+context.document = {getElementById(id) {
+  if (!controls.has(id)) controls.set(id,{value:"",classList:{toggle(){} }});
+  return controls.get(id);
+}};
+context.fixtureLayout = layout;
+vm.runInContext(`
+  render = () => {};
+  displayLayout = current => { layout = current; updateTransferControls(); };
+  currentLayout = fixtureLayout;
+  layout = currentLayout;
+`,context);
+controls.set("display-layout",{value:"be-azerty"});
+vm.runInContext("changeDisplayLayout()",context);
+assert.equal(vm.runInContext("currentLayout.displayLayout",context),"qwerty");
+assert.equal(vm.runInContext("pendingLayout.displayLayout",context),"be-azerty");
+assert.equal(vm.runInContext("pendingLayout.actions === currentLayout.actions",context),true);
+assert.equal(controls.get("save-layout").disabled,false);
+assert.equal(controls.get("import-preview").hidden,false);
+controls.get("display-layout").value="../bad";
+vm.runInContext("changeDisplayLayout()",context);
+assert.equal(vm.runInContext("pendingLayout.displayLayout",context),"be-azerty");
+assert.equal(controls.get("display-layout").value,"be-azerty");
+console.log("JSON round trips, action validation, persisted display preferences, and UI preview tests passed");

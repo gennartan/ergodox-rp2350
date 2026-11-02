@@ -15,10 +15,15 @@ an import preview.
 
 ## JSON structure, version 1
 
+The display-layout preference is included in downloads and saved to NVM.
+Older JSON files without this field use `qwerty`. It does not change key
+assignments or the computer’s settings. Additional label mappings are not yet
+implemented.
+
 The browser uses native JSON parsing and named action values. The firmware does
 not parse JSON: the browser converts the validated file to the existing binary
 record, and the firmware independently validates its bounds, version, CRC, and
-actions before saving it. The NVM format and key-event processing are unchanged.
+actions before saving it. The browser writes version-2 NVM records; key-event processing is unchanged.
 The old offline Python configurator JSON is a different format and is not
 implicitly migrated.
 
@@ -27,6 +32,7 @@ implicitly migrated.
 | `format` | `"ergodox-layout"` |
 | `version` | `1` |
 | `name` | At most 31 UTF-8 bytes, without NUL characters |
+| `display_layout` | Optional identifier, default `"qwerty"`; 1–11 lowercase ASCII letters, digits, hyphens or underscores, starting with a letter or digit |
 | `default_layer` | Zero-based index of an existing layer |
 | `layers` | An array of 1–8 layer objects |
 
@@ -86,7 +92,7 @@ controls. Exports prefer names whenever one is known.
 ## Device upload endpoint
 
 `POST /api/layout/import` accepts only `application/octet-stream`, containing one
-complete version-1 binary record. The JSON conversion happens in the browser.
+complete version-1 or version-2 binary record. The JSON conversion happens in the browser.
 The resource accumulates at most 2,496 bytes across request fragments. An aborted,
 oversized, invalid, or wrong-content-type request does not save a layout.
 Only a fully received, valid record is submitted to NVS in configuration mode.

@@ -10,9 +10,9 @@ fallback.
 ## RAM
 
 `struct keyboard_config` owns a name, an active layer count (1–8), a default
-layer, and a fixed `actions[2][8][38]` table. `struct keyboard_layout` is a
+layer, a display-layout identifier, and a fixed `actions[2][8][38]` table. `struct keyboard_layout` is a
 read-only view into that RAM. The table uses 2,432 bytes, and the complete owned
-configuration uses 2,466 bytes on the target.
+configuration uses 2,478 bytes on the target.
 
 Each naturally aligned action uses four bytes:
 
@@ -35,16 +35,17 @@ layer slots. The C layout files provide a factory fallback rather than the live
 runtime table. The offline configurator's C export remains usable for generating
 factory defaults.
 
-## NVM binary record, version 1
+## NVM binary record, version 2
 
 This is an explicit byte encoding, not a dump of a C structure. All multibyte
 integers are little-endian. Signed mouse deltas use two's-complement bytes.
-No migration is attempted: an unsupported version is rejected.
+Version-1 records remain readable and default to the `qwerty` display layout.
+Unknown versions are rejected. All new saves use version 2.
 
 | Header offset | Size | Field |
 | --- | --- | --- |
 | 0 | 4 | ASCII magic `EKCF` |
-| 4 | 2 | Format version, currently 1 |
+| 4 | 2 | Format version, currently 2 |
 | 6 | 2 | Header size, 64 |
 | 8 | 4 | Total record length, including header |
 | 12 | 1 | Active layer count, 1–8 |
@@ -52,7 +53,7 @@ No migration is attempted: an unsupported version is rejected.
 | 14 | 1 | Hand count, exactly 2 |
 | 15 | 1 | Keys per hand, exactly 38 |
 | 16 | 32 | NUL-terminated name, at most 31 bytes |
-| 48 | 12 | Reserved, zero |
+| 48 | 12 | NUL-terminated display-layout identifier, at most 11 ASCII characters |
 | 60 | 4 | IEEE CRC-32 of the entire record, treating this field as zero |
 | 64 | variable | Four-byte actions, ordered by hand, active layer, key index |
 
@@ -73,6 +74,10 @@ Hand 0 is left; hand 1 is right. Only active layers are serialized. An action is
 | Momentary layer | 9 | `0`, target layer |
 | Toggle layer | 10 | `0`, target layer |
 | Default layer | 11 | `0`, target layer |
+
+The display-layout identifier uses lowercase letters, digits, hyphens, and
+underscores, beginning with a letter or digit. Factory defaults use `qwerty`.
+It is a UI preference and does not alter HID reports or host settings.
 
 Unused action fields must be zero. Validation checks action types, supported HID
 usage ranges, mouse ranges, lighting commands, and layer references. The maximum
@@ -112,8 +117,7 @@ Power interruption on physical RP2350 flash still needs hardware testing.
 
 A regular UF2 image does not include the reserved configuration partition, so
 reflashing can preserve saved data. A chip erase clears it. Firmware changes
-that alter the binary meaning should bump the version and use the fallback;
-there is no compatibility/migration layer.
+that alter the binary meaning should bump the version and explicitly define compatibility or use the fallback.
 
 ## Web viewer and layout transfer
 
@@ -138,8 +142,11 @@ The embedded HTML/CSS/JavaScript viewer validates the record length, version,
 dimensions, and CRC before displaying it. It shows the layout name, default layer,
 all available layers, and both physical keyboard halves. Selecting a key displays
 its action details. Transparent assignments remain explicitly transparent rather
-than pretending to resolve all possible combinations of active layers. Labels
-use HID key names; the host keyboard language determines the typed characters.
+than pretending to resolve all possible combinations of active layers.
+The display-layout identifier is saved with each configuration, independently
+of host settings, and can be edited without importing a file. Current labels
+use QWERTY/HID names; loading other label mappings is not implemented yet.
+The host keyboard language still determines the typed characters.
 The physical indices match the offline configurator's geometry.
 
 ## Live physical key display

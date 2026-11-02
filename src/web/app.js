@@ -51,11 +51,18 @@ function crc32(bytes) {
 function decodeLayout(buffer) {
   const bytes = new Uint8Array(buffer), view = new DataView(buffer);
   if (bytes.length < 64 || String.fromCharCode(...bytes.slice(0,4)) !== "EKCF") throw new Error("Invalid layout response.");
-  if (view.getUint16(4,true) !== 1 || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
+  const version = view.getUint16(4,true);
+  if (![1,2].includes(version) || view.getUint16(6,true) !== 64) throw new Error("Unsupported layout format. Reload after updating firmware.");
   const layerCount = bytes[12], defaultLayer = bytes[13];
   if (layerCount < 1 || layerCount > 8 || defaultLayer >= layerCount || bytes[14] !== 2 || bytes[15] !== 38 ||
       bytes.length !== 64 + 2 * layerCount * 38 * 4 || view.getUint32(8,true) !== bytes.length ||
-      bytes.slice(48,60).some(byte => byte !== 0) || view.getUint32(60,true) !== crc32(bytes)) throw new Error("The layout response is incomplete or corrupt.");
+      (version === 1 && bytes.slice(48,60).some(byte => byte !== 0)) || view.getUint32(60,true) !== crc32(bytes)) throw new Error("The layout response is incomplete or corrupt.");
+  let displayLayout = "qwerty";
+  if (version === 2) {
+    const field = bytes.slice(48,60), end = field.indexOf(0);
+    if (end < 0) throw new Error("Invalid display layout identifier.");
+    displayLayout = validateDisplayLayout(String.fromCharCode(...field.slice(0,end)));
+  }
   const nameBytes = bytes.slice(16,48), terminator = nameBytes.indexOf(0);
   if (terminator < 0) throw new Error("Invalid layout name.");
   const name = new TextDecoder().decode(nameBytes.slice(0,terminator));
@@ -67,7 +74,7 @@ function decodeLayout(buffer) {
     if (action.type > 11) throw new Error("Unknown key action in layout.");
     return action;
   })));
-  return {name, layerCount, defaultLayer, actions};
+  return {name, layerCount, defaultLayer, displayLayout, actions};
 }
 
 const keyNames = {
@@ -122,8 +129,14 @@ const keyTokens = Object.assign({},
 const consumerTokens = {0:"NONE",0x6f:"BRIGHTNESS_UP",0x70:"BRIGHTNESS_DOWN",0xb2:"RECORD",0xb3:"FAST_FORWARD",0xb4:"REWIND",0xb5:"NEXT_TRACK",0xb6:"PREVIOUS_TRACK",0xb7:"STOP",0xb8:"EJECT",0xcd:"PLAY_PAUSE",0xe2:"MUTE",0xe9:"VOLUME_UP",0xea:"VOLUME_DOWN",0x18a:"MAIL",0x192:"CALCULATOR",0x221:"SEARCH",0x223:"BROWSER_HOME",0x224:"BROWSER_BACK",0x225:"BROWSER_FORWARD",0x226:"BROWSER_STOP",0x227:"BROWSER_REFRESH",0x22a:"BOOKMARKS"};
 const systemTokens = {0:"NONE",0x81:"POWER",0x82:"SLEEP",0x83:"WAKE"};
 
+function validateDisplayLayout(value) {
+  if (typeof value !== "string" || !/^[a-z0-9][a-z0-9_-]{0,10}$/.test(value)) {
+    throw new Error("Display layout must be 1–11 lowercase letters, digits, hyphens or underscores, starting with a letter or digit.");
+  }
+  return value;
+}
 function layoutToJSON(current) {
-  return {format:"ergodox-layout",version:1,name:current.name,default_layer:current.defaultLayer,
+  return {format:"ergodox-layout",version:1,name:current.name,default_layer:current.defaultLayer,display_layout:current.displayLayout ?? "qwerty",
     layers:Array.from({length:current.layerCount},(_,layer)=>Object.fromEntries(["left","right"].map((hand,handIndex)=>[hand,
       current.actions[handIndex][layer].map((a,index)=>{
         const out={position:index+1,type:actionTypes[a.type]};
@@ -166,11 +179,11 @@ function maskFromNames(value,names,path) {
   return mask;
 }
 function layoutFromJSON(value) {
-  checkFields(value,["format","version","name","default_layer","layers"],"Layout");
+  checkFields(value,["format","version","name","default_layer","display_layout","layers"],"Layout");
   if(value.format!=="ergodox-layout" || value.version!==1) throw new Error("Expected ergodox-layout JSON version 1.");
   if(typeof value.name!=="string" || value.name.includes("\0") || new TextEncoder().encode(value.name).length>31) throw new Error("Layout name must contain at most 31 UTF-8 bytes and no NUL character.");
   if(!Array.isArray(value.layers) || value.layers.length<1 || value.layers.length>8) throw new Error("Expected between 1 and 8 layers.");
-  const result={name:value.name,layerCount:value.layers.length,defaultLayer:integer(value.default_layer,0,value.layers.length-1,"default_layer"),actions:[[],[]]};
+  const result={name:value.name,displayLayout:validateDisplayLayout(value.display_layout === undefined ? "qwerty" : value.display_layout),layerCount:value.layers.length,defaultLayer:integer(value.default_layer,0,value.layers.length-1,"default_layer"),actions:[[],[]]};
   value.layers.forEach((layer,layerIndex)=>{
     checkFields(layer,["left","right"],`Layer ${layerIndex}`);
     ["left","right"].forEach((hand,handIndex)=>{
@@ -202,9 +215,10 @@ function layoutFromJSON(value) {
 }
 function encodeLayout(current) {
   const bytes=new Uint8Array(64+2*current.layerCount*38*4),view=new DataView(bytes.buffer);
-  bytes.set([69,75,67,70,1,0,64,0]);view.setUint32(8,bytes.length,true);
+  bytes.set([69,75,67,70,2,0,64,0]);view.setUint32(8,bytes.length,true);
   bytes.set([current.layerCount,current.defaultLayer,2,38],12);
   bytes.set(new TextEncoder().encode(current.name),16);
+  bytes.set(new TextEncoder().encode(validateDisplayLayout(current.displayLayout ?? "qwerty")),48);
   let offset=64;
   for(const hand of current.actions) for(const layer of hand) for(const a of layer) {
     bytes[offset]=a.type;
@@ -331,6 +345,7 @@ function transferMessage(message, error = false) {
   status.textContent=message;status.classList.toggle("error",error);
 }
 function updateTransferControls() {
+  document.getElementById("display-layout").disabled=layoutTransferBusy || !layout;
   document.getElementById("download-json").disabled=layoutTransferBusy || !layout;
   document.getElementById("upload-json").disabled=layoutTransferBusy || !currentLayout;
   document.getElementById("save-layout").disabled=layoutTransferBusy || !pendingLayout || pendingSaved;
@@ -338,6 +353,7 @@ function updateTransferControls() {
 }
 function displayLayout(current) {
   layout=current;selectedKey=null;
+  document.getElementById("display-layout").value=current.displayLayout ?? "qwerty";
   document.getElementById("detail-title").textContent="Key details";
   document.getElementById("detail").textContent="Select a key to inspect its assigned action.";
   document.getElementById("layout-name").textContent=layout.name || "Unnamed layout";
@@ -345,6 +361,25 @@ function displayLayout(current) {
   const selector=document.getElementById("layer");
   selector.replaceChildren(...Array.from({length:layout.layerCount},(_,i)=>new Option(`Layer ${i}${i===layout.defaultLayer ? " (default)" : ""}`,i)));
   selector.value=String(layout.defaultLayer);render();updateTransferControls();
+}
+function changeDisplayLayout() {
+  if (!layout || layoutTransferBusy) return;
+  const input = document.getElementById("display-layout");
+  try {
+    const value = validateDisplayLayout(input.value);
+    pendingLayout = {...layout, displayLayout:value};
+    pendingSaved = false;
+    displayLayout(pendingLayout);
+    document.getElementById("mode-badge").textContent = "Unsaved configuration";
+    document.getElementById("import-preview").hidden = false;
+    document.getElementById("preview-message").textContent = "Display layout preference changed. Save to keyboard to keep it after reboot.";
+    document.getElementById("save-layout").textContent = "Save to keyboard";
+    document.getElementById("discard-import").textContent = "Discard preview";
+    transferMessage(value === "qwerty" ? "" : "Preference stored in this preview. Additional label mappings are not available yet; labels use QWERTY.");
+  } catch (error) {
+    input.value = layout.displayLayout ?? "qwerty";
+    transferMessage(error.message, true);
+  }
 }
 function discardImport() {
   pendingLayout=null;pendingSaved=false;
@@ -430,6 +465,7 @@ async function loadLayout() {
   }
 }
 if (typeof document !== "undefined") {
+  document.getElementById("display-layout").addEventListener("change",changeDisplayLayout);
   document.getElementById("download-json").addEventListener("click",downloadLayout);
   document.getElementById("upload-json").addEventListener("click",()=>document.getElementById("layout-file").click());
   document.getElementById("layout-file").addEventListener("change",selectLayoutFile);

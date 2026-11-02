@@ -61,6 +61,7 @@ int keyboard_config_init(bool configuration_mode)
     strncpy(active.name, factory->name, sizeof(active.name) - 1);
     active.layer_count = factory->layer_count;
     active.default_layer = factory->default_layer;
+    strcpy(active.display_layout, KEYBOARD_CONFIG_DEFAULT_DISPLAY_LAYOUT);
     memcpy(active.actions, *factory->layers, sizeof(active.actions));
     ret = keyboard_config_validate(&active);
     if (ret != 0) {

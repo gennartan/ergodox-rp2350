@@ -20,8 +20,10 @@
     <section id="layout" hidden>
       <div class="toolbar">
         <div><h2 id="layout-name"></h2><p id="summary"></p></div>
+        <label>Display layout <input id="display-layout" type="text" value="qwerty" maxlength="11" pattern="[a-z0-9][a-z0-9_-]{0,10}" spellcheck="false" autocapitalize="none" aria-describedby="display-layout-note"></label>
         <label>View layer <select id="layer"></select></label>
       </div>
+      <p id="display-layout-note" class="note">Saved with your configuration. QWERTY labels are currently available; other mapping identifiers are retained for future support.</p>
       <div class="transfers">
         <button id="download-json" type="button">Download JSON</button>
         <button id="upload-json" type="button">Upload JSON…</button>
